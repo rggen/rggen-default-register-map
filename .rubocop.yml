@@ -1,0 +1,50 @@
+AllCops:
+  TargetRubyVersion: 2.3
+  Exclude:
+    - sample/**/*
+    - spec/**/*
+
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+
+Layout/EndOfLine:
+  EnforcedStyle: lf
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented_relative_to_receiver
+
+Lint/AmbiguousRegexpLiteral:
+  Enabled: false
+
+Metrics/BlockLength:
+  ExcludedMethods:
+    - base_feature
+    - build
+    - configuration
+    - define_helpers
+    - define_list_feature
+    - define_list_item_feature
+    - define_simple_feature
+    - factory
+    - register_map
+
+Style/Alias:
+  EnforcedStyle: prefer_alias_method
+
+Style/BracesAroundHashParameters:
+  Enabled: false
+
+Style/EmptyMethod:
+  EnforcedStyle: expanded
+
+Style/FormatStringToken:
+  EnforcedStyle: unannotated
+
+Style/RaiseArgs:
+  EnforcedStyle: compact
+
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
+Style/WordArray:
+  EnforcedStyle: brackets

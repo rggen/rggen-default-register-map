@@ -1,0 +1,44 @@
+email:
+  false
+
+dist:
+  trusty
+
+git:
+  depth:
+    false
+
+env:
+  global:
+    - secure: "PSSXbB3XZtGEPdUCvqE5OgqccVo2iz3gzL134RR7gQiXXhd4k9CI0n8d6l50A9QRnOym1nZTAGOW1Munf0pTkemzSxWIg6VvbgtfCPE9abKosf3I5/C3PkESO7hgdqGnw7K9+JJq3MJgIy92Vr4J59iZr9aZlTPtUJjoOa21YvUHllC7/zAsSoJYm0Lcpq5zNmvAh9LYyjNrHaMtn/K5fZ4Ex9vB5tRtOR1j9uGpwbi//BQVlvPLf5YIMnsYodNHUmgvOT4OhFAJYqwJ9RE1hwh3aOE0TDWN+AOyXRhF8ocpKhotiV7CIzy0cgzML0gmL9Cjmg7YgdFg+LzJTZ2lPTSELv+TSPGEh9fUCHs85Q0ikBhOsoTIYEU9Tee3t0kA4B0WDjaA1SeJPdfRLcbFtJvdhYeUSdZvfGfqsioqExnuVN0tXOguyfbPcBdJ2JAX71swZXFtHnIm/Dfwxt0s7PENGdvRW1lQcoEKK2OyZkzGZOWpoFYgTkUjMr/eOVOokTNwPZ4QldLSWrpXMtWbPgG1wBTCdJHsNou5E8vshQuHUf36Ah+8Z7SUOtiBNeQmiAlHvb8ULBac0jDDXJYkps1H8OHCxzSPqB4r3tbmb34odSFg52cUizVeLRuxwH+gJVUU3XVpMVIib13Nazt9yUeL/MzSHN0q0lqH0MIWl8Q="
+
+cache:
+  bundler
+
+language:
+  ruby
+
+matrix:
+  include:
+    - rvm: 2.3.8
+    - rvm: 2.4.6
+      env: RUBYOPT=--enable-frozen-string-literal USE_FIXED_GEMS=yes
+    - rvm: 2.5.5
+      env: RUBYOPT=--enable-frozen-string-literal USE_FIXED_GEMS=yes
+    - rvm: 2.6.3
+      env: RUBYOPT=--enable-frozen-string-literal USE_FIXED_GEMS=yes
+
+addons:
+  sonarcloud:
+    organization:
+      rggen
+    token:
+      secure: "IH4cHcbJZYQRX+9LtFCF6eCuvAax68XFUnHmMkqcL1xlWyJeIyQsF6JtPRBcn8J5/m9rT28/ZdUfL9g5ZuAMt+EYF1eiuLQG32y09WTWVvqD9e6CZ8cn1ISdq1ad0Cf+C9cCHPe4kLEPSQ5RQ0GWGCfDfNu0Bib1K9QldFTlPaTmxojv3dfyNsc6YdR8iWZdE1+YdwbKBtt3Sj+D/8KWlNovnMM3fwQAn0hTYEU6xhMpjNZSQ/xM4CQE0qTvLtDX4NAiDjO3+eTMWGFkQsIIn0mEQ0EUFROFfW6QR44wkJhMEaSMwARqgKG+BprgJKtRTvfwaUy0GvXTbFbg38bjF5Vzuz7YQx1HhFlIXPds7DrL1IQHmA3nly9VuRMz1NrzJgKONom9wWTecf0dTvzl27pj5pMadcWF0HEALERHWxhYwIE/xGYaWQITSjkhz45tM3qC9GUbgwh70AWoN8kLRFDPQG7DPYJRuEQZV90/9+eYSwmUlqr08X0CfTGG/G1WDuiUXAFmzmjhcts+TDcQ9DsP8HSkZCP1NrzxcPR89a+RkFW2rEszSzhh1hi64fCrMJQ2swkdRc5c4DB5in+Aeli4vwWTBmC86C24Noj5gMlK/xUoUNDrEzbQML8XpuvPiGYBynbKZBSQWSU13KfAYGLPv2sDQpHUCCILXJakStc="
+
+before_install:
+  - "env -u RUBYOPT gem update --system"
+  - "env -u RUBYOPT gem install bundler"
+
+script:
+  - bundle exec rake coverage
+  - sonar-scanner
