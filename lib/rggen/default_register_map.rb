@@ -6,6 +6,8 @@ module RgGen
   module DefaultRegisterMap
     FEATURES = [
       'default_register_map/bit_field/name',
+      'default_register_map/global/address_width',
+      'default_register_map/global/bus_width',
       'default_register_map/register/name',
       'default_register_map/register_block/name'
     ].freeze
