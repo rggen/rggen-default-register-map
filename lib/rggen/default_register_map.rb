@@ -39,10 +39,8 @@ module RgGen
       FEATURES.each { |file| require_relative file }
     end
 
-    def self.setup(_builder)
+    def self.default_setup(_builder)
       load_features
     end
   end
-
-  setup :'default-register_map', DefaultRegisterMap
 end
