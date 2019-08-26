@@ -26,8 +26,11 @@ module RgGen
       'default_register_map/global/address_width',
       'default_register_map/global/bus_width',
       'default_register_map/register/name',
+      'default_register_map/register/offset_address',
       'default_register_map/register/size',
       'default_register_map/register/type',
+      'default_register_map/register/type/external',
+      'default_register_map/register/type/indirect',
       'default_register_map/register_block/byte_size',
       'default_register_map/register_block/name'
     ].freeze

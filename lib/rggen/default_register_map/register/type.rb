@@ -42,8 +42,8 @@ RgGen.define_list_feature(:register, :type) do
 
       property :type, default: :default
       property :match_type?, body: ->(register) { register.type == type }
-      property :writable?, forward_to: :writability
-      property :readable?, forward_to: :readability
+      property :writable?, initial: -> { writability }
+      property :readable?, initial: -> { readability }
       property :settings, forward_to_helper: true
 
       build do |value|
@@ -64,11 +64,7 @@ RgGen.define_list_feature(:register, :type) do
       attr_reader :options
 
       def writability
-        if @writability.nil?
-          block = helper.writability || default_writability
-          @writability = instance_exec(&block)
-        end
-        @writability
+        instance_exec(&(helper.writability || default_writability))
       end
 
       def default_writability
@@ -76,11 +72,7 @@ RgGen.define_list_feature(:register, :type) do
       end
 
       def readability
-        if @readability.nil?
-          block = helper.readability || default_readability
-          @readability = instance_exec(&block)
-        end
-        @readability
+        instance_exec(&(helper.readability || default_readability))
       end
 
       def default_readability
