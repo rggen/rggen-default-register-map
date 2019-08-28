@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'lib/rggen/default_register_map/version'
+lib = File.expand_path('lib', __dir__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'rggen/default_register_map/version'
 
 Gem::Specification.new do |spec|
   spec.name = 'rggen-default-register-map'
