@@ -13,6 +13,6 @@ RgGen.setup :'defualt-register-map', RgGen::DefaultRegisterMap do |builder|
   builder.enable :bit_field, :type, [
     :rc, :reserved, :ro, :rof, :rs,
     :rw, :rwc, :rwe, :rwl, :w0c, :w0s, :w0trg,
-    :w1c, :w1s, :w1trg
+    :w1c, :w1s, :w1trg, :wo
   ]
 end

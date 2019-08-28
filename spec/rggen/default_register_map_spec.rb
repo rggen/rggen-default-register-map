@@ -20,8 +20,9 @@ RSpec.describe RgGen::DefaultRegisterMap do
       expect(builder).to receive(:enable).with(:register, [:name, :offset_address, :size, :type]).and_call_original
       expect(builder).to receive(:enable).with(:register, :type, [:external, :indirect]).and_call_original
       expect(builder).to receive(:enable).with(:bit_field, [:name, :bit_assignment, :type, :initial_value, :reference, :comment]).and_call_original
-      expect(builder).to receive(:enable).with(:bit_field, :type, [:rc, :reserved, :ro, :rof, :rs, :rw, :rwc, :rwe, :rwl, :w0c, :w0s, :w0trg, :w1c, :w1s, :w1trg]).and_call_original
+      expect(builder).to receive(:enable).with(:bit_field, :type, [:rc, :reserved, :ro, :rof, :rs, :rw, :rwc, :rwe, :rwl, :w0c, :w0s, :w0trg, :w1c, :w1s, :w1trg, :wo]).and_call_original
       require 'rggen/default_register_map/setup'
+      builder.activate_plugins
     end
   end
 end
