@@ -1,43 +1,45 @@
-# Rggen::Default::Register::Map
+[![Gem Version](https://badge.fury.io/rb/rggen-default-register-map.svg)](https://badge.fury.io/rb/rggen-default-register-map)
+[![Build Status](https://travis-ci.com/rggen/rggen-default-register-map.svg?branch=master)](https://travis-ci.com/rggen/rggen-default-register-map)
+[![Maintainability](https://api.codeclimate.com/v1/badges/73177494e096af47f09e/maintainability)](https://codeclimate.com/github/rggen/rggen-default-register-map/maintainability)
+[![codecov](https://codecov.io/gh/rggen/rggen-default-register-map/branch/master/graph/badge.svg)](https://codecov.io/gh/rggen/rggen-default-register-map)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=rggen_rggen-default-register-map&metric=alert_status)](https://sonarcloud.io/dashboard?id=rggen_rggen-default-register-map)
+[![Gitter](https://badges.gitter.im/rggen/rggen.svg)](https://gitter.im/rggen/rggen?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/rggen/default/register/map`. To experiment with that code, run `bin/console` for an interactive prompt.
 
-TODO: Delete this and the text above, and describe your gem
+# Rggen::DefaultRegisterMap
+
+RgGen::DefaultRegisterMap provides following features.
+
+* Format of regiter map
+* APIs to handle elements of regiter map
 
 ## Installation
 
-Add this line to your application's Gemfile:
+During RgGen installation, RgGen::DefaultRegisterMap will also be installed automatically.
 
-```ruby
-gem 'rggen-default-register-map'
+```
+$ gem install rggen
 ```
 
-And then execute:
+If you to install RgGen::DefaultRegisterMap only, use the command below:
 
-    $ bundle
+```
+$ gem install rggen-default-register-map
+```
 
-Or install it yourself as:
+## Contact
 
-    $ gem install rggen-default-register-map
+Feedbacks, bug reports, questions and etc. are wellcome! You can post them by using following ways:
 
-## Usage
+* [GitHub Issue Tracker](https://github.com/rggen/rggen-default-register-map/issues)
+* [Chat Room](https://gitter.im/rggen/rggen)
+* [Mailing List](https://groups.google.com/d/forum/rggen)
+* [Mail](mailto:rggen@googlegroups.com)
 
-TODO: Write usage instructions here
+## Copyright & License
 
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/rggen-default-register-map. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
-## License
-
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+Copyright &copy; 2019 Taichi Ishitani. RgGen::DefaultRegisterMap is licensed under the [MIT License](https://opensource.org/licenses/MIT), see [LICENSE](LICENSE) for futher details.
 
 ## Code of Conduct
 
-Everyone interacting in the Rggen::Default::Register::Map project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/rggen-default-register-map/blob/master/CODE_OF_CONDUCT.md).
+Everyone interacting in the RgGen project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/rggen/rggen-default-register-map/blob/master/CODE_OF_CONDUCT.md).
