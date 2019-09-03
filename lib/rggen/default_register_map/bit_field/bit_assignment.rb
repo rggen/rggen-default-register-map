@@ -116,7 +116,7 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     def overlap?
       register
         .bit_fields
-        .any? { |bit_field| (bit_field.bit_map & bit_map).positive? }
+        .any? { |bit_field| (bit_field.bit_map & bit_map).nonzero? }
     end
   end
 end
