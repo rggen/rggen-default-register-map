@@ -2,7 +2,7 @@
 
 require 'rggen/default_register_map'
 
-RgGen.setup :'defualt-register-map', RgGen::DefaultRegisterMap do |builder|
+RgGen.setup :'rggen-defualt-register-map', RgGen::DefaultRegisterMap do |builder|
   builder.enable :global, [:bus_width, :address_width]
   builder.enable :register_block, [:name, :byte_size]
   builder.enable :register, [:name, :offset_address, :size, :type]
