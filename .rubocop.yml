@@ -28,6 +28,9 @@ Metrics/BlockLength:
     - factory
     - register_map
 
+Metrics/LineLength:
+  Max: 90
+
 Style/Alias:
   EnforcedStyle: prefer_alias_method
 
