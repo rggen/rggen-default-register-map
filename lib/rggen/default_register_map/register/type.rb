@@ -98,12 +98,8 @@ RgGen.define_list_feature(:register, :type) do
         { type: find_type(type), options: Array(options) }
       end
 
-      def select_feature(cell)
-        if cell.empty_value?
-          target_feature
-        else
-          target_features[cell.value[:type]]
-        end
+      def target_feature_key(cell)
+        (!cell.empty_value? && cell.value[:type]) || nil
       end
 
       private
