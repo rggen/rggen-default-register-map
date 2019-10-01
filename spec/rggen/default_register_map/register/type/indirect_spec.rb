@@ -228,6 +228,44 @@ RSpec.describe 'register/type/indirect' do
     end
   end
 
+  describe '#printables[:index_bit_fields]' do
+    it '表示可能オブジェクトとして、インデックスビットフィールドの一覧を返す' do
+      registers = create_registers do
+        register do
+          name :foo
+          offset_address 0x0
+          type [:indirect, ['fizz.fizz_2', 0]]
+          bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+        end
+        register do
+          name :bar
+          offset_address 0x00
+          size [2]
+          type [:indirect, 'fizz.fizz_1', ['fizz.fizz_2', 1]]
+          bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+        end
+        register do
+          name :baz
+          offset_address 0x00
+          size [2, 3]
+          type [:indirect, 'fizz.fizz_0', 'fizz.fizz_1', ['fizz.fizz_2', 2]]
+          bit_field { name :baz_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+        end
+        register do
+          name :fizz
+          offset_address 0x08
+          bit_field { name :fizz_0; bit_assignment lsb: 0, width: 2; type :rw; initial_value 0 }
+          bit_field { name :fizz_1; bit_assignment lsb: 2, width: 2; type :rw; initial_value 0 }
+          bit_field { name :fizz_2; bit_assignment lsb: 4, width: 2; type :rw; initial_value 0 }
+        end
+      end
+
+      expect(registers[0].printables[:index_bit_fields]).to match_array(['fizz.fizz_2: 0'])
+      expect(registers[1].printables[:index_bit_fields]).to match_array(['fizz.fizz_1', 'fizz.fizz_2: 1'])
+      expect(registers[2].printables[:index_bit_fields]).to match_array(['fizz.fizz_0', 'fizz.fizz_1', 'fizz.fizz_2: 2'])
+    end
+  end
+
   describe 'エラーチェック' do
     context 'インデックスの指定がない場合' do
       it 'RegisterMapErrorを起こす' do

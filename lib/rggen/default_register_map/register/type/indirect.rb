@@ -56,6 +56,10 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
       def find_index_field(bit_fields)
         bit_fields.find { |bit_field| bit_field.full_name == name }
       end
+
+      def to_s
+        [name, value].compact.join(': ')
+      end
     end
 
     property :index_entries
@@ -174,6 +178,10 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
     verify(:all) do
       error_condition { !distinguishable? }
       message { 'cannot be distinguished from other registers' }
+    end
+
+    printable(:index_bit_fields) do
+      index_entries.map(&:to_s)
     end
 
     private

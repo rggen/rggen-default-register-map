@@ -59,6 +59,8 @@ RgGen.define_list_feature(:register, :type) do
         message { 'no bit fields are given' }
       end
 
+      printable :type
+
       private
 
       attr_reader :options
