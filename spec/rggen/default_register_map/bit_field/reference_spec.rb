@@ -149,6 +149,33 @@ RSpec.describe 'bit_field/reference' do
     end
   end
 
+  describe '#printables[:reference]' do
+    context '参照ビットフィールドが設定されている場合' do
+      it '表示可能オブジェクトとして、参照ビットフィールド名を返す' do
+        bit_fields = create_bit_fields do
+          register do
+            name 'foo_0'
+            bit_field { name 'foo_0_0'; reference 'foo_0.foo_0_1'; settings default_settings }
+            bit_field { name 'foo_0_1' }
+          end
+        end
+        expect(bit_fields[0].printables[:reference]).to eq 'foo_0.foo_0_1'
+      end
+    end
+
+    context '参照ビットフィールドが設定されていない場合' do
+      it 'nilを返す' do
+        bit_fields = create_bit_fields do
+          register do
+            name 'foo_0'
+            bit_field { name 'foo_0_0'; settings default_settings }
+          end
+        end
+        expect(bit_fields[0].printables[:reference]).to be_nil
+      end
+    end
+  end
+
   describe 'エラーチェック' do
     context '参照ビットフィールド名が入力パターンに合致しない場合' do
       it 'RegisterMapErrorを起こす' do

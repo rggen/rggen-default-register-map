@@ -87,6 +87,10 @@ RgGen.define_simple_feature(:bit_field, :reference) do
       end
     end
 
+    printable(:reference) do
+      reference? && @input_reference || nil
+    end
+
     private
 
     def settings

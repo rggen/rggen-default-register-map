@@ -356,4 +356,32 @@ RSpec.describe 'register/type' do
       end
     end
   end
+
+  describe '#printables[:type]' do
+    before(:all) do
+      RgGen.define_list_item_feature(:register, :type, :foo) do
+        register_map {}
+      end
+    end
+
+    after(:all) do
+      delete_register_map_factory
+      RgGen.delete(:register, :type, :foo)
+    end
+
+    it '表示可能オブジェクトとして、指定されたレジスタ型を返す' do
+      registers = create_registers do
+        register do
+          bit_field { bit_assignment lsb: 0; type :foo }
+        end
+        register do
+          type :foo
+          bit_field { bit_assignment lsb: 0; type :foo }
+        end
+      end
+
+      expect(registers[0].printables[:type]).to eq :default
+      expect(registers[1].printables[:type]).to eq :foo
+    end
+  end
 end
