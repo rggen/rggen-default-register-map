@@ -3,35 +3,8 @@
 RgGen.define_list_item_feature(:register, :type, :indirect) do
   register_map do
     define_helpers do
-      index_verifier = Class.new do
-        def initialize(&block)
-          instance_eval(&block)
-        end
-
-        def error_condition(&block)
-          @error_condition = block
-        end
-
-        def message(&block)
-          @message = block
-        end
-
-        def verify(feature, index)
-          error?(feature, index) && raise_error(feature, index)
-        end
-
-        def error?(feature, index)
-          feature.instance_exec(index, &@error_condition)
-        end
-
-        def raise_error(feature, index)
-          error_message = feature.instance_exec(index, &@message)
-          feature.__send__(:error, error_message)
-        end
-      end
-
-      define_method(:verify_index) do |&block|
-        index_verifiers << index_verifier.new(&block)
+      def verify_index(&block)
+        index_verifiers << create_verifier(&block)
       end
 
       def index_verifiers
