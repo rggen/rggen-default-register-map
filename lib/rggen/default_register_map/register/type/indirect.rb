@@ -68,7 +68,7 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
         register.array? &&
           register.array_size.length > array_index_fields.length
       end
-      message { 'less array indices are given' }
+      message { 'few array indices are given' }
     end
 
     verify(:all) do

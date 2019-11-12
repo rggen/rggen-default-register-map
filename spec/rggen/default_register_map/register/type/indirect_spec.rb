@@ -555,7 +555,7 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_1; bit_assignment lsb: 1; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'less array indices are given'
+        }.to raise_register_map_error 'few array indices are given'
       end
     end
 
