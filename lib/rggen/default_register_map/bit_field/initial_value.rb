@@ -2,16 +2,35 @@
 
 RgGen.define_simple_feature(:bit_field, :initial_value) do
   register_map do
-    property :initial_value, default: 0
-    property :initial_value?, body: -> { !@initial_value.nil? }
+    property :initial_value
+    property :initial_values
+    property :initial_value?, forward_to: :initial_value_set?
+    property :fixed_initial_value?, forward_to: :fixed?
+    property :initial_value_array?, forward_to: :array?
+
+    input_pattern parameterized: /default:(#{integer})/,
+                  array: /#{integer}(?:[,\n]#{integer})+/
 
     build do |value|
-      @initial_value =
-        begin
-          Integer(value)
-        rescue ArgumentError, TypeError
-          error "cannot convert #{value.inspect} into initial value"
+      @input_format =
+        if value.is_a?(Hash) || match_index == :parameterized
+          :parameterized
+        elsif value.is_a?(Array) || match_index == :array
+          :array
+        else
+          :single
         end
+      @initial_value, @initial_values = parse_initial_value(value)
+    end
+
+    define_helpers do
+      def verify_initial_value(&block)
+        initial_value_verifiers << create_verifier(&block)
+      end
+
+      def initial_value_verifiers
+        @initial_value_verifiers ||= []
+      end
     end
 
     verify(:component) do
@@ -20,39 +39,129 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
     end
 
     verify(:component) do
-      error_condition { initial_value? && initial_value < min_initial_value }
+      error_condition do
+        @input_format == :array && !bit_field.sequential?
+      end
       message do
+        'arrayed initial value is not allowed for non sequential bit field'
+      end
+    end
+
+    verify(:component) do
+      error_condition do
+        @input_format == :array && initial_values.size > bit_field.sequence_size
+      end
+      message { 'too many initial values are given' }
+    end
+
+    verify(:component) do
+      error_condition do
+        @input_format == :array && initial_values.size < bit_field.sequence_size
+      end
+      message { 'few initial values are given' }
+    end
+
+    verify(:component) do
+      check_error do
+        Array(initial_value || initial_values)
+          .each(&method(:verify_initial_value))
+      end
+    end
+
+    verify_initial_value do
+      error_condition { |value| value < min_initial_value }
+      message do |value|
         'input initial value is less than minimum initial value: ' \
-        "initial value #{initial_value} " \
-        "minimum initial value #{min_initial_value}"
+        "initial value #{value} minimum initial value #{min_initial_value}"
       end
     end
 
-    verify(:component) do
-      error_condition { initial_value? && initial_value > max_initial_value }
-      message do
+    verify_initial_value do
+      error_condition { |value| value > max_initial_value }
+      message do |value|
         'input initial value is greater than maximum initial value: ' \
-        "initial value #{initial_value} " \
-        "maximum initial value #{max_initial_value}"
+        "initial value #{value} maximum initial value #{max_initial_value}"
       end
     end
 
-    verify(:component) do
-      error_condition { initial_value? && !match_valid_condition? }
-      message do
-        "does not match the valid initial value condition: #{initial_value}"
+    verify_initial_value do
+      error_condition { |value| !match_valid_condition?(value) }
+      message do |value|
+        "does not match the valid initial value condition: #{value}"
       end
     end
 
     printable(:initial_value) do
-      @initial_value &&
-        begin
-          print_width = (bit_field.width + 3) / 4
-          format('0x%0*x', print_width, @initial_value)
-        end
+      if @input_format == :parameterized
+        "default: #{format_value(initial_value)}"
+      elsif @input_format == :array
+        initial_values.map(&method(:format_value))
+      elsif initial_value?
+        format_value(initial_value)
+      end
     end
 
     private
+
+    def initial_value_format
+      @initial_value_format ||=
+        if @input_format == :parameterized
+          bit_field.sequential? && :array || :single
+        else
+          @input_format
+        end
+    end
+
+    def array?
+      initial_value_format == :array
+    end
+
+    def fixed?
+      [:array, :single].include?(@input_format)
+    end
+
+    def parse_initial_value(input_value)
+      if @input_format == :parameterized
+        [parse_parameterized_initial_value(input_value), nil]
+      elsif @input_format == :array
+        [nil, parse_arrayed_initial_value(input_value)]
+      else
+        [parse_value(input_value), nil]
+      end
+    end
+
+    def parse_parameterized_initial_value(input_value)
+      value =
+        if pattern_matched?
+          match_data.captures.first
+        else
+          input_value
+            .fetch(:default) { error 'no default value is given' }
+        end
+      parse_value(value)
+    end
+
+    def parse_arrayed_initial_value(input_value)
+      values =
+        if pattern_matched?
+          input_value.split(/[,\n]/)
+        else
+          input_value
+        end
+      values.map(&method(:parse_value))
+    end
+
+    def parse_value(value)
+      Integer(value)
+    rescue ArgumentError, TypeError
+      error "cannot convert #{value.inspect} into initial value"
+    end
+
+    def verify_initial_value(value)
+      helper.initial_value_verifiers.each do |verifier|
+        verifier.verify(self, value)
+      end
+    end
 
     def settings
       @settings ||=
@@ -67,9 +176,18 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
       2**bit_field.width - 1
     end
 
-    def match_valid_condition?
+    def match_valid_condition?(value)
       !settings.key?(:valid_condition) ||
-        instance_exec(@initial_value, &settings[:valid_condition])
+        instance_exec(value, &settings[:valid_condition])
+    end
+
+    def initial_value_set?
+      [@initial_value, @initial_values].any?
+    end
+
+    def format_value(value)
+      print_width = (bit_field.width + 3) / 4
+      format('0x%0*x', print_width, value)
     end
   end
 end
