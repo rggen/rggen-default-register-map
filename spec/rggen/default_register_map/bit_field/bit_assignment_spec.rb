@@ -8,7 +8,7 @@ RSpec.describe 'bit_field/bit_assignment' do
     RgGen.enable(:bit_field, :bit_assignment)
   end
 
-  def create_bit_field(*input_values)
+  def create_bit_fields(*input_values)
     register_map = create_register_map do
       register_block do
         register do
@@ -24,7 +24,11 @@ RSpec.describe 'bit_field/bit_assignment' do
         end
       end
     end
-    register_map.bit_fields.first
+    register_map.bit_fields
+  end
+
+  def create_bit_field(*input_values)
+    create_bit_fields(*input_values).first
   end
 
   def random_value(min, max)
@@ -65,6 +69,43 @@ RSpec.describe 'bit_field/bit_assignment' do
 
         index = 'i'
         expect(bit_field.lsb(index)).to eq lsb
+      end
+    end
+
+    context '未入力で、最初のビットフィールドの場合' do
+      it '0を返す' do
+        bit_field = create_bit_field(width: 1)
+        expect(bit_field.lsb).to eq 0
+      end
+    end
+
+    context '未入力で、1つ前のビットフィールドが単一ビットフィールドの場合' do
+      specify '1つ前のビットフィールドの lsb + width が自身の lsb になる' do
+        bit_fields = create_bit_fields([{ lsb: 0 }, { width: 1 }])
+        expect(bit_fields[1].lsb).to eq 1
+
+        bit_fields = create_bit_fields([{ lsb: 4, width: 4 }, { width: 1 }])
+        expect(bit_fields[1].lsb).to eq 8
+      end
+    end
+
+    context '未入力で、1つ前のビットフィールドが step 指定がない繰り返しビットフィールドの場合' do
+      specify '1つ前のビットフィールドの lsb + width * sequence_size が自身の lsb になる' do
+        bit_fields = create_bit_fields([{ lsb: 0, width: 4, sequence_size: 2 }, { width: 1 }])
+        expect(bit_fields[1].lsb).to eq 8
+
+        bit_fields = create_bit_fields([{ lsb: 0, width: 8, sequence_size: 4 }, { width: 1 }])
+        expect(bit_fields[1].lsb).to eq 32
+      end
+    end
+
+    context '未入力で、1つ前のビットフィールドが step 指定がある繰り返しビットフィールドの場合' do
+      specify '1つ前のビットフィールドの lsb + width が自身の lsb になる' do
+        bit_fields = create_bit_fields([{ lsb: 0, width: 4, sequence_size: 2, step: 8 }, { width: 1 }])
+        expect(bit_fields[1].lsb).to eq 4
+
+        bit_fields = create_bit_fields([{ lsb: 8, width: 8, sequence_size: 2, step:  16 }, { width: 1 }])
+        expect(bit_fields[1].lsb).to eq 16
       end
     end
   end
@@ -313,11 +354,19 @@ RSpec.describe 'bit_field/bit_assignment' do
       end
     end
 
-    context 'LSBが入力されなかった場合' do
+    context 'LSB または WIDTH が入力されなかった場合' do
       it 'RegisterMapErrorを起こす' do
         expect {
+          create_bit_field(lsb: 1, sequence_size: 1, step: 1)
+        }.not_to raise_error
+
+        expect {
           create_bit_field(width: 1, sequence_size: 1, step: 1)
-        }.to raise_register_map_error 'no lsb is given'
+        }.not_to raise_error
+
+        expect {
+          create_bit_field(sequence_size: 1, step: 1)
+        }.to raise_register_map_error 'neither lsb nor width is given'
       end
     end
 

@@ -19,13 +19,13 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     end
 
     verify(:feature) do
-      error_condition { [@lsb, @width, @sequence_size, @step].none? }
+      error_condition { [@lsb_base, @width, @sequence_size, @step].none? }
       message { 'no bit assignment is given' }
     end
 
     verify(:feature) do
-      error_condition { !@lsb }
-      message { 'no lsb is given' }
+      error_condition { [@lsb_base, @width].none? }
+      message { 'neither lsb nor width is given' }
     end
 
     verify(:feature) do
@@ -61,7 +61,11 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
 
     private
 
-    KEYS = [:lsb, :width, :sequence_size, :step].freeze
+    VARIABLE_NAMES = {
+      lsb: :@lsb_base, width: :@width, sequence_size: :@sequence_size, step: :@step
+    }.freeze
+
+    KEYS = VARIABLE_NAMES.keys.freeze
 
     def preprocess(value)
       if value.is_a?(Hash)
@@ -83,18 +87,38 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
 
     def parse_value(input_value, key)
       input_value.key?(key) &&
-        instance_variable_set("@#{key}", Integer(input_value[key]))
+        instance_variable_set(VARIABLE_NAMES[key], Integer(input_value[key]))
     rescue ArgumentError, TypeError
       error "cannot convert #{input_value[key].inspect} into " \
             "bit assignment(#{key.to_s.tr('_', ' ')})"
     end
 
+    def lsb_base
+      @lsb_base ||=
+        ((bit_field.component_index.zero? && 0) || calc_next_lsb(previous_bit_field))
+    end
+
+    def previous_bit_field
+      index = bit_field.component_index - 1
+      register.bit_fields[index]
+    end
+
+    def calc_next_lsb(bit_field)
+      compact_sequential_bit_field?(bit_field) &&
+        (bit_field.lsb + bit_field.width * bit_field.sequence_size) ||
+        (bit_field.lsb + bit_field.width)
+    end
+
+    def compact_sequential_bit_field?(bit_field)
+      bit_field.sequential? && (bit_field.step == bit_field.width)
+    end
+
     def lsb_bit(index = 0)
-      lsb_msb_bit(index, @lsb)
+      lsb_msb_bit(index, lsb_base)
     end
 
     def msb_bit(index = 0)
-      lsb_msb_bit(index, @lsb + width - 1)
+      lsb_msb_bit(index, lsb_base + width - 1)
     end
 
     def lsb_msb_bit(index, base)
