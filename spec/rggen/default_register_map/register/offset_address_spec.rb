@@ -115,6 +115,27 @@ RSpec.describe 'register/offset_address' do
       expect(registers[1]).to have_property(:offset_address, offset_address_list[1])
       expect(registers[2]).to have_property(:offset_address, offset_address_list[2])
     end
+
+    context 'オフセットアドレスが省略されて、先頭のレジスタの場合' do
+      it '0 を返す' do
+        registers = create_registers(32) do
+          register { type :foo }
+        end
+        expect(registers[0]).to have_property(:offset_address, 0)
+      end
+    end
+
+    context 'オフセットアドレスが省略されて、2番目以降のレジスタの場合' do
+      specify '直前のレジスタの offset_address + byte_size が自身の offset_address になる' do
+        registers = create_registers(32) do
+          register { offset_address 0x04; size [3]; type :foo }
+          register { type :foo }
+          register { type :foo }
+        end
+        expect(registers[1]).to have_property(:offset_address, 0x10)
+        expect(registers[2]).to have_property(:offset_address, 0x14)
+      end
+    end
   end
 
   it 'アドレス範囲を表示可能オブジェクトとして返す' do
@@ -130,28 +151,6 @@ RSpec.describe 'register/offset_address' do
   end
 
   describe 'エラーチェック' do
-    context 'オフセットアドレスが未指定の場合' do
-      it 'RegisterMapErrorを起こす' do
-        expect {
-          create_registers([16, 32, 64].sample) do
-            register {}
-          end
-        }.to raise_register_map_error 'no offset address is given'
-
-        expect {
-          create_registers([16, 32, 64].sample) do
-            register { offset_address nil }
-          end
-        }.to raise_register_map_error 'no offset address is given'
-
-        expect {
-          create_registers([16, 32, 64].sample) do
-            register { offset_address '' }
-          end
-        }.to raise_register_map_error 'no offset address is given'
-      end
-    end
-
     context '入力値が整数に変換できない場合' do
       it 'RegisterMapErrorを起こす' do
         [true, false, 'foo', '0xef_gh', Object.new].each do |value|
