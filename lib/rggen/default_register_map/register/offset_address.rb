@@ -2,7 +2,7 @@
 
 RgGen.define_simple_feature(:register, :offset_address) do
   register_map do
-    property :offset_address
+    property :offset_address, initial: -> { default_offset_address }
     property :address_range, initial: -> { start_address..end_address }
     property :overlap?, forward_to: :overlap_address_range?
 
@@ -13,11 +13,6 @@ RgGen.define_simple_feature(:register, :offset_address) do
         rescue ArgumentError, TypeError
           error "cannot convert #{value.inspect} into offset address"
         end
-    end
-
-    verify(:feature) do
-      error_condition { !offset_address }
-      message { 'no offset address is given' }
     end
 
     verify(:feature) do
@@ -61,6 +56,16 @@ RgGen.define_simple_feature(:register, :offset_address) do
     end
 
     private
+
+    def default_offset_address
+      register.component_index.zero? && 0 ||
+        (previous_register.offset_address + previous_register.byte_size)
+    end
+
+    def previous_register
+      index = register.component_index - 1
+      register_block.registers[index]
+    end
 
     def bus_width
       configuration.bus_width
