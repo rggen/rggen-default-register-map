@@ -14,6 +14,6 @@ RgGen.setup :'rggen-defualt-register-map', RgGen::DefaultRegisterMap do |builder
     :rc, :reserved, :ro, :rof, :rs,
     :rw, :rwc, :rwe, :rwl, :rws,
     :w0c, :w0crs, :w0s, :w0src, :w0trg,
-    :w1c, :w1crs, :w1s, :w1src, :w1trg, :wo
+    :w1, :w1c, :w1crs, :w1s, :w1src, :w1trg, :wo, :wo1
   ]
 end
