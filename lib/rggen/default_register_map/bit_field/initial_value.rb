@@ -8,8 +8,8 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
     property :fixed_initial_value?, forward_to: :fixed?
     property :initial_value_array?, forward_to: :array?
 
-    input_pattern parameterized: /default:(#{integer})/,
-                  array: /#{integer}(?:[,\n]#{integer})+/
+    input_pattern [{ parameterized: /default:(#{integer})/,
+                     array: /#{integer}(?:[,\n]#{integer})+/ }]
 
     build do |value|
       @input_format =
