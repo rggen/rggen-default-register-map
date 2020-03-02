@@ -6,7 +6,7 @@
 [![Gitter](https://badges.gitter.im/rggen/rggen.svg)](https://gitter.im/rggen/rggen?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 
-# Rggen::DefaultRegisterMap
+# RgGen::DefaultRegisterMap
 
 RgGen::DefaultRegisterMap provides following features.
 
