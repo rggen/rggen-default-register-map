@@ -30,9 +30,7 @@ RgGen.define_simple_feature(:register_block, :name) do
     private
 
     def duplicated_name?
-      register_map
-        .register_blocks
-        .any? { |register_block| register_block.name == name }
+      register_blocks.any? { |register_block| register_block.name == name }
     end
   end
 end

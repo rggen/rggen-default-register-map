@@ -39,9 +39,9 @@ RgGen.define_simple_feature(:register, :offset_address) do
 
     verify(:component) do
       error_condition do
-        register_block.registers.any? do |register|
-          overlap_address_range?(register) &&
-            support_unique_range_only?(register)
+        files_and_registers.any? do |file_or_register|
+          overlap_address_range?(file_or_register) &&
+            support_unique_range_only?(file_or_register)
         end
       end
       message do
@@ -83,24 +83,24 @@ RgGen.define_simple_feature(:register, :offset_address) do
       start_address + register.byte_size - 1
     end
 
-    def overlap_address_range?(other_register)
-      overlap_range?(other_register) && match_access?(other_register)
+    def overlap_address_range?(file_or_register)
+      overlap_range?(file_or_register) && match_access?(file_or_register)
     end
 
-    def overlap_range?(other_register)
+    def overlap_range?(file_or_register)
       own = address_range
-      other = other_register.address_range
+      other = file_or_register.address_range
       own.include?(other.first) || other.include?(own.first)
     end
 
-    def match_access?(other_register)
-      (register.writable? && other_register.writable?) ||
-        (register.readable? && other_register.readable?)
+    def match_access?(file_or_register)
+      (register.writable? && file_or_register.writable?) ||
+        (register.readable? && file_or_register.readable?)
     end
 
-    def support_unique_range_only?(other_register)
+    def support_unique_range_only?(file_or_register)
       !(register.settings[:support_overlapped_address] &&
-        register.match_type?(other_register))
+        register.match_type?(file_or_register))
     end
 
     def printable_address(address)

@@ -31,7 +31,7 @@ RgGen.define_simple_feature(:bit_field, :name) do
     end
 
     def duplicated_name?
-      register.bit_fields.any? { |bit_field| bit_field.name == name }
+      bit_fields.any? { |bit_field| bit_field.name == name }
     end
   end
 end
