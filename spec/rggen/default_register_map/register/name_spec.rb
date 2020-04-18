@@ -5,6 +5,7 @@ RSpec.describe 'register/name' do
   include_context 'register map common'
 
   before(:all) do
+    RgGen.enable(:register_file, :name)
     RgGen.enable(:register, :name)
   end
 
@@ -29,6 +30,35 @@ RSpec.describe 'register/name' do
       expect(register_map.registers[1]).to have_property(:name, names[1])
       expect(register_map.registers[2]).to have_property(:name, names[2])
       expect(register_map.registers[3]).to have_property(:name, names[3])
+    end
+  end
+
+  describe '#full_name' do
+    let(:register_map) do
+      create_register_map do
+        register_block do
+          register { name :register_0 }
+          register_file do
+            name :register_file_0
+            register { name :register_1 }
+            register_file do
+              name :register_file_1
+              register { name :register_2 }
+            end
+          end
+        end
+      end
+    end
+
+    it 'レジスタファイルを含めた階層名を返す' do
+      expect(register_map.registers[0]).to have_property(:full_name, 'register_0')
+      expect(register_map.registers[1]).to have_property(:full_name, 'register_file_0.register_1')
+      expect(register_map.registers[2]).to have_property(:full_name, 'register_file_0.register_file_1.register_2')
+    end
+
+    it '区切り文字を変更できる' do
+      expect(register_map.registers[2].full_name('/')).to eq 'register_file_0/register_file_1/register_2'
+      expect(register_map.registers[2].full_name('_')).to eq 'register_file_0_register_file_1_register_2'
     end
   end
 
@@ -88,6 +118,43 @@ RSpec.describe 'register/name' do
             end
           end
         }.to raise_register_map_error('duplicated register name: foo')
+
+        expect {
+          create_register_map do
+            register_block do
+              register_file { name 'foo' }
+              register { name 'foo' }
+            end
+          end
+        }.to raise_register_map_error('duplicated register name: foo')
+      end
+    end
+
+    context '同一レジスタファイル内でレジスタ名の重複がある場合' do
+      it 'RegisterMapErrorを起こす' do
+        expect {
+          create_register_map do
+            register_block do
+              register_file do
+                name 'foo'
+                register { name 'bar' }
+                register { name 'bar' }
+              end
+            end
+          end
+        }.to raise_register_map_error('duplicated register name: bar')
+
+        expect {
+          create_register_map do
+            register_block do
+              register_file do
+                name 'foo'
+                register_file { name 'bar' }
+                register { name 'bar' }
+              end
+            end
+          end
+        }.to raise_register_map_error('duplicated register name: bar')
       end
     end
 
@@ -97,6 +164,47 @@ RSpec.describe 'register/name' do
           create_register_map do
             register_block { register { name 'foo' } }
             register_block { register { name 'foo' } }
+          end
+        }.not_to raise_error
+
+        expect {
+          create_register_map do
+            register_block { register_file { name 'foo' } }
+            register_block { register { name 'foo' } }
+          end
+        }.not_to raise_error
+      end
+    end
+
+    context '異なるレジスタファイル間でレジスタ名の重複がある場合' do
+      it 'RegisterMapErrorを起こさない' do
+        expect {
+          create_register_map do
+            register_block do
+              register_file do
+                name 'foo'
+                register { name 'baz' }
+              end
+              register_file do
+                name 'bar'
+                register { name 'baz' }
+              end
+            end
+          end
+        }.not_to raise_error
+
+        expect {
+          create_register_map do
+            register_block do
+              register_file do
+                name 'foo'
+                register_file { name 'baz' }
+              end
+              register_file do
+                name 'bar'
+                register { name 'baz' }
+              end
+            end
           end
         }.not_to raise_error
       end

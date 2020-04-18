@@ -7,12 +7,9 @@ RgGen.define_simple_feature(:register_block, :name) do
     input_pattern variable_name
 
     build do |value|
-      @name =
-        if pattern_matched?
-          match_data.to_s
-        else
-          error "illegal input value for register block name: #{value.inspect}"
-        end
+      pattern_matched? ||
+        (error "illegal input value for register block name: #{value.inspect}")
+      @name = match_data.to_s
     end
 
     verify(:feature) do
