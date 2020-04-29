@@ -34,7 +34,9 @@ module RgGen
       'default_register_map/register/type/indirect',
       'default_register_map/register_block/byte_size',
       'default_register_map/register_block/name',
-      'default_register_map/register_file/name'
+      'default_register_map/register_file/name',
+      'default_register_map/register_file/offset_address',
+      'default_register_map/register_file/size',
     ].freeze
 
     def self.load_features
