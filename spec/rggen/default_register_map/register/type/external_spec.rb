@@ -61,6 +61,26 @@ RSpec.describe 'register/type/external' do
     expect(registers[2]).not_to be_array
   end
 
+  it 'レジスタファイル内では指定できない' do
+    expect {
+      create_registers do
+        register_file do
+          register { name 'register_0'; offset_address 0x00; type :external }
+        end
+      end
+    }.to raise_register_map_error 'external register type is not allowed to be put within register file'
+
+    expect {
+      create_registers do
+        register_file do
+          register_file do
+            register { name 'register_0'; offset_address 0x00; type :external }
+          end
+        end
+      end
+    }.to raise_register_map_error 'external register type is not allowed to be put within register file'
+  end
+
   it '単一サイズ定義のみ対応している' do
     expect {
       create_registers do
