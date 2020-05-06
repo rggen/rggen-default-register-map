@@ -28,7 +28,7 @@ RSpec.describe 'register_file/size' do
 
   let(:address_width) { 16 }
 
-  let(:block_byte_size) { 256 }
+  let(:block_byte_size) { 1024 }
 
   def create_register_files(&block)
     configuration =
@@ -196,7 +196,7 @@ RSpec.describe 'register_file/size' do
     context '#sizeの指定がある場合' do
       specify '配列レジスタファイルである' do
         register_file = create_register_file do
-          register_file { offset_address 0x00; size [1] }
+          register_file { offset_address 0x00; size [1]; register { type :foo } }
         end
         expect(register_file).to have_property(:array?, true)
       end
@@ -205,7 +205,7 @@ RSpec.describe 'register_file/size' do
     context '#sizeの指定がない場合' do
       specify '配列レジスタファイルではない' do
         register_file = create_register_file do
-          register_file { offset_address 0x00 }
+          register_file { offset_address 0x00; register { type :foo } }
         end
         expect(register_file).to have_property(:array?, false)
       end
@@ -218,6 +218,7 @@ RSpec.describe 'register_file/size' do
           size [2]
           register_file do
             offset_address 0x00
+            register { type :foo }
           end
         end
       end
@@ -229,6 +230,7 @@ RSpec.describe 'register_file/size' do
           register_file do
             offset_address 0x00
             size [2]
+            register { type :foo }
           end
         end
       end
@@ -308,32 +310,32 @@ RSpec.describe 'register_file/size' do
 
   specify '文字列でも入力できる' do
     register_file = create_register_file do
-      register_file { offset_address 0x00; size '1' }
+      register_file { offset_address 0x00; size '1'; register { type :foo } }
     end
     expect(register_file).to have_property(:size, match([1]))
 
     register_file = create_register_file do
-      register_file { offset_address 0x00; size '[1]' }
+      register_file { offset_address 0x00; size '[1]'; register { type :foo } }
     end
     expect(register_file).to have_property(:size, match([1]))
 
     register_file = create_register_file do
-      register_file { offset_address 0x00; size '1, 2' }
+      register_file { offset_address 0x00; size '1, 2'; register { type :foo } }
     end
     expect(register_file).to have_property(:size, match([1, 2]))
 
     register_file = create_register_file do
-      register_file { offset_address 0x00; size '[1, 2]' }
+      register_file { offset_address 0x00; size '[1, 2]'; register { type :foo } }
     end
     expect(register_file).to have_property(:size, match([1, 2]))
 
     register_file = create_register_file do
-      register_file { offset_address 0x00; size '1, 2, 3' }
+      register_file { offset_address 0x00; size '1, 2, 3'; register { type :foo } }
     end
     expect(register_file).to have_property(:size, match([1, 2, 3]))
 
     register_file = create_register_file do
-      register_file { offset_address 0x00; size '[1, 2, 3]' }
+      register_file { offset_address 0x00; size '[1, 2, 3]'; register { type :foo } }
     end
     expect(register_file).to have_property(:size, match([1, 2, 3]))
   end
@@ -342,8 +344,8 @@ RSpec.describe 'register_file/size' do
     context '配列レジスタファイルの場合' do
       it '表示可能オブジェクトとして、配列の大きさを返す' do
         register_files = create_register_files do
-          register_file { offset_address 0x00; size [1] }
-          register_file { offset_address 0x04; size [2, 3] }
+          register_file { offset_address 0x00; size [1]; register { type :foo } }
+          register_file { offset_address 0x04; size [2, 3]; register { type :foo } }
         end
         expect(register_files[0].printables[:array_size]).to eq '[1]'
         expect(register_files[1].printables[:array_size]).to eq '[2, 3]'
@@ -353,7 +355,7 @@ RSpec.describe 'register_file/size' do
     context '配列レジスタファイルではない場合' do
       it 'nilを返す' do
         register_files = create_register_files do
-          register_file { offset_address 0x00 }
+          register_file { offset_address 0x00; register { type :foo } }
         end
         expect(register_files[0].printables[:array_size]).to be_nil
       end

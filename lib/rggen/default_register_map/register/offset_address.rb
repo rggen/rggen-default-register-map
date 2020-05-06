@@ -3,6 +3,7 @@
 RgGen.define_simple_feature(:register, :offset_address) do
   register_map do
     property :offset_address, initial: -> { default_offset_address }
+    property :full_offset_address, initial: -> { start_address(true) }
     property :address_range, initial: -> { start_address..end_address }
     property :overlap?, forward_to: :overlap_address_range?
 
@@ -29,7 +30,10 @@ RgGen.define_simple_feature(:register, :offset_address) do
     end
 
     verify(:component) do
-      error_condition { end_address > register_block.byte_size }
+      error_condition do
+        register.parent.register_block? &&
+          end_address > register_block.byte_size
+      end
       message do
         'offset address range exceeds byte size of register block' \
         "(#{register_block.byte_size}): " \
@@ -39,14 +43,13 @@ RgGen.define_simple_feature(:register, :offset_address) do
 
     verify(:component) do
       error_condition do
-        files_and_registers.any? do |file_or_register|
-          overlap_address_range?(file_or_register) &&
-            support_unique_range_only?(file_or_register)
+        files_and_registers.any? do |other|
+          overlap_address_range?(other) && exclusive_range?(other)
         end
       end
       message do
         'offset address range overlaps with other offset address range: ' \
-        "0x#{start_address.to_s(16)}-0x#{end_address.to_s(16)}"
+        "0x#{start_address(true).to_s(16)}-0x#{end_address(true).to_s(16)}"
       end
     end
 
@@ -59,12 +62,12 @@ RgGen.define_simple_feature(:register, :offset_address) do
 
     def default_offset_address
       register.component_index.zero? && 0 ||
-        (previous_register.offset_address + previous_register.byte_size)
+        (previous_component.offset_address + previous_component.byte_size)
     end
 
-    def previous_register
+    def previous_component
       index = register.component_index - 1
-      register_block.registers[index]
+      files_and_registers[index]
     end
 
     def bus_width
@@ -75,32 +78,32 @@ RgGen.define_simple_feature(:register, :offset_address) do
       configuration.byte_width
     end
 
-    def start_address
-      offset_address
+    def start_address(full = false)
+      (full && register_file&.full_offset_address || 0) + offset_address
     end
 
-    def end_address
-      start_address + register.byte_size - 1
+    def end_address(full = false)
+      start_address(full) + register.byte_size - 1
     end
 
-    def overlap_address_range?(file_or_register)
-      overlap_range?(file_or_register) && match_access?(file_or_register)
+    def overlap_address_range?(other)
+      overlap_range?(other) && competitive_access?(other)
     end
 
-    def overlap_range?(file_or_register)
-      own = address_range
-      other = file_or_register.address_range
-      own.include?(other.first) || other.include?(own.first)
+    def overlap_range?(other)
+      self_range = address_range
+      othre_range = other.address_range
+      self_range.include?(othre_range.first) || othre_range.include?(self_range.first)
     end
 
-    def match_access?(file_or_register)
-      (register.writable? && file_or_register.writable?) ||
-        (register.readable? && file_or_register.readable?)
+    def competitive_access?(other)
+      other.register_file? ||
+        [:writable?, :readable?].any? { |access| [register, other].all?(&access) }
     end
 
-    def support_unique_range_only?(file_or_register)
-      !(register.settings[:support_overlapped_address] &&
-        register.match_type?(file_or_register))
+    def exclusive_range?(other)
+      other.register_file? ||
+        !(register.settings[:support_overlapped_address] && register.match_type?(other))
     end
 
     def printable_address(address)
