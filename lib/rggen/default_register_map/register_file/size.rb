@@ -3,10 +3,10 @@
 RgGen.define_simple_feature(:register_file, :size) do
   register_map do
     property :size
-    property :byte_size, initial: ->{ calc_byte_size }
+    property :byte_size, forward_to: :calc_byte_size
     property :array?, body: -> { !@size.nil? }
     property :array_size, forward_to: :size
-    property :count, initial: ->{ calc_count }
+    property :count, forward_to: :calc_count
 
     input_pattern [
       /(#{integer}(:?,#{integer})*)/,
@@ -43,8 +43,8 @@ RgGen.define_simple_feature(:register_file, :size) do
       error "cannot convert #{value.inspect} into register file size"
     end
 
-    def calc_byte_size
-      total_entries * entry_byte_size
+    def calc_byte_size(whole_size = true)
+      (whole_size ? total_entries : 1) * entry_byte_size
     end
 
     def entry_byte_size
@@ -52,8 +52,8 @@ RgGen.define_simple_feature(:register_file, :size) do
         .map { |r| r.offset_address + r.byte_size }.max
     end
 
-    def calc_count
-      total_entries *
+    def calc_count(whole_count = true)
+      (whole_count ? total_entries : 1) *
         register_file.files_and_registers.sum(&:count)
     end
 

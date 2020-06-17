@@ -105,90 +105,180 @@ RSpec.describe 'register_file/size' do
   end
 
   describe '#byte_size' do
-    it 'レジスタファイルが占める総バイト数を返す' do
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x00
-          register { offset_address 0x00; type :foo }
-        end
-      end
-      expect(register_file).to have_property(:byte_size, 4)
-
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x00
-          register { offset_address 0x04; type :foo }
-        end
-      end
-      expect(register_file).to have_property(:byte_size, 8)
-
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x00
-          register { offset_address 0x10; type :foo }
-          register { offset_address 0x00; type :foo }
-        end
-      end
-      expect(register_file).to have_property(:byte_size, 20)
-
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x00
+    context '無引数の場合' do
+      it 'レジスタファイルが占める総バイト数を返す' do
+        register_file = create_register_file do
           register_file do
             offset_address 0x00
             register { offset_address 0x00; type :foo }
           end
         end
-      end
-      expect(register_file).to have_property(:byte_size, 4)
+        expect(register_file).to have_property(:byte_size, 4)
 
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x00
+        register_file = create_register_file do
           register_file do
             offset_address 0x00
-            register { offset_address 0x00; type :foo }
+            register { offset_address 0x04; type :foo }
           end
-          register_file do
-            offset_address 0x04
-            register { offset_address 0x00; type :foo }
-          end
-          register { offset_address 0x08; type :foo }
         end
-      end
-      expect(register_file).to have_property(:byte_size, 12)
+        expect(register_file).to have_property(:byte_size, 8)
 
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x04
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            register { offset_address 0x10; type :foo }
+            register { offset_address 0x00; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:byte_size, 20)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            register_file do
+              offset_address 0x00
+              register { offset_address 0x00; type :foo }
+            end
+          end
+        end
+        expect(register_file).to have_property(:byte_size, 4)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            register_file do
+              offset_address 0x00
+              register { offset_address 0x00; type :foo }
+            end
+            register_file do
+              offset_address 0x04
+              register { offset_address 0x00; type :foo }
+            end
+            register { offset_address 0x08; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:byte_size, 12)
+
+        register_file = create_register_file do
           register_file do
             offset_address 0x04
             register_file do
               offset_address 0x04
-              register { offset_address 0x04; type :foo }
+              register_file do
+                offset_address 0x04
+                register { offset_address 0x04; type :foo }
+              end
             end
           end
         end
-      end
-      expect(register_file).to have_property(:byte_size, 16)
+        expect(register_file).to have_property(:byte_size, 16)
 
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x00
-          size [2]
-          register { offset_address 0x04; type :foo }
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            size [2]
+            register { offset_address 0x04; type :foo }
+          end
         end
-      end
-      expect(register_file).to have_property(:byte_size, 16)
+        expect(register_file).to have_property(:byte_size, 16)
 
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x00
-          size [2, 4]
-          register { offset_address 0x04; type :foo }
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            size [2, 4]
+            register { offset_address 0x04; type :foo }
+          end
         end
+        expect(register_file).to have_property(:byte_size, 64)
       end
-      expect(register_file).to have_property(:byte_size, 64)
+    end
+
+    context 'falseが与えられた場合' do
+      it '1レジスタファイルあたりの総バイト数を返す' do
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            register { offset_address 0x00; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:byte_size, [false], 4)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            register { offset_address 0x04; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:byte_size, [false], 8)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            register { offset_address 0x10; type :foo }
+            register { offset_address 0x00; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:byte_size, [false], 20)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            register_file do
+              offset_address 0x00
+              register { offset_address 0x00; type :foo }
+            end
+          end
+        end
+        expect(register_file).to have_property(:byte_size, [false], 4)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            register_file do
+              offset_address 0x00
+              register { offset_address 0x00; type :foo }
+            end
+            register_file do
+              offset_address 0x04
+              register { offset_address 0x00; type :foo }
+            end
+            register { offset_address 0x08; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:byte_size, [false], 12)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x04
+            register_file do
+              offset_address 0x04
+              register_file do
+                offset_address 0x04
+                register { offset_address 0x04; type :foo }
+              end
+            end
+          end
+        end
+        expect(register_file).to have_property(:byte_size, [false], 16)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            size [2]
+            register { offset_address 0x04; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:byte_size, [false], 8)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            size [2, 4]
+            register { offset_address 0x04; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:byte_size, [false], 8)
+      end
     end
   end
 
@@ -239,72 +329,144 @@ RSpec.describe 'register_file/size' do
   end
 
   describe '#count' do
-    it 'レジスタファイル内の総レジスタ数を返す' do
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x00
-          register { offset_address 0x00; type :foo }
+    context '無引数の場合' do
+      it 'レジスタファイル内の総レジスタ数を返す' do
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            register { offset_address 0x00; type :foo }
+          end
         end
-      end
-      expect(register_file).to have_property(:count, 1)
+        expect(register_file).to have_property(:count, 1)
 
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x00
-          register { offset_address 0x00; type :foo }
-          register { offset_address 0x04; type :foo }
-        end
-      end
-      expect(register_file).to have_property(:count, 2)
-
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x00
-          register { offset_address 0x00; size [2]; type :foo }
-          register { offset_address 0x10; size [4]; type :foo }
-        end
-      end
-      expect(register_file).to have_property(:count, 6)
-
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x00
-          size [2, 3]
-          register { offset_address 0x00; size [2]; type :foo }
-          register { offset_address 0x10; size [4]; type :foo }
-        end
-      end
-      expect(register_file).to have_property(:count, 36)
-
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x00
+        register_file = create_register_file do
           register_file do
             offset_address 0x00
             register { offset_address 0x00; type :foo }
             register { offset_address 0x04; type :foo }
           end
-          register { offset_address 0x10; size [4]; type :foo }
         end
-      end
-      expect(register_file).to have_property(:count, 6)
+        expect(register_file).to have_property(:count, 2)
 
-      register_file = create_register_file do
-        register_file do
-          offset_address 0x00
-          size [2]
+        register_file = create_register_file do
           register_file do
             offset_address 0x00
-            size [3]
+            register { offset_address 0x00; size [2]; type :foo }
+            register { offset_address 0x10; size [4]; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:count, 6)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            size [2, 3]
+            register { offset_address 0x00; size [2]; type :foo }
+            register { offset_address 0x10; size [4]; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:count, 36)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
             register_file do
               offset_address 0x00
-              size [4]
               register { offset_address 0x00; type :foo }
+              register { offset_address 0x04; type :foo }
+            end
+            register { offset_address 0x10; size [4]; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:count, 6)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            size [2]
+            register_file do
+              offset_address 0x00
+              size [3]
+              register_file do
+                offset_address 0x00
+                size [4]
+                register { offset_address 0x00; type :foo }
+              end
             end
           end
         end
+        expect(register_file).to have_property(:count, 24)
       end
-      expect(register_file).to have_property(:count, 24)
+    end
+
+    context 'falseが与えられた場合' do
+      it '1レジスタファイル当たりの総レジスタ数を返す' do
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            register { offset_address 0x00; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:count, [false], 1)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            register { offset_address 0x00; type :foo }
+            register { offset_address 0x04; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:count, [false], 2)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            register { offset_address 0x00; size [2]; type :foo }
+            register { offset_address 0x10; size [4]; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:count, [false], 6)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            size [2, 3]
+            register { offset_address 0x00; size [2]; type :foo }
+            register { offset_address 0x10; size [4]; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:count, [false], 6)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            register_file do
+              offset_address 0x00
+              register { offset_address 0x00; type :foo }
+              register { offset_address 0x04; type :foo }
+            end
+            register { offset_address 0x10; size [4]; type :foo }
+          end
+        end
+        expect(register_file).to have_property(:count, [false], 6)
+
+        register_file = create_register_file do
+          register_file do
+            offset_address 0x00
+            size [2]
+            register_file do
+              offset_address 0x00
+              size [3]
+              register_file do
+                offset_address 0x00
+                size [4]
+                register { offset_address 0x00; type :foo }
+              end
+            end
+          end
+        end
+        expect(register_file).to have_property(:count, [false], 12)
+      end
     end
   end
 
