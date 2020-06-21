@@ -284,21 +284,42 @@ RSpec.describe 'register/size' do
       end
     end
 
-    it 'レジスタの総要素数を返す' do
-      allow(registers[0]).to receive(:settings).and_return(support_array: true)
-      expect(registers[0]).to have_property(:count, 1)
+    context '無引数の場合' do
+      it 'レジスタの総要素数を返す' do
+        allow(registers[0]).to receive(:settings).and_return(support_array: true)
+        expect(registers[0]).to have_property(:count, 1)
 
-      allow(registers[1]).to receive(:settings).and_return(support_array: true)
-      expect(registers[1]).to have_property(:count, 2)
+        allow(registers[1]).to receive(:settings).and_return(support_array: true)
+        expect(registers[1]).to have_property(:count, 2)
 
-      allow(registers[2]).to receive(:settings).and_return({})
-      expect(registers[2]).to have_property(:count, 1)
+        allow(registers[2]).to receive(:settings).and_return({})
+        expect(registers[2]).to have_property(:count, 1)
 
-      allow(registers[3]).to receive(:settings).and_return(support_array: true)
-      expect(registers[3]).to have_property(:count, 6)
+        allow(registers[3]).to receive(:settings).and_return(support_array: true)
+        expect(registers[3]).to have_property(:count, 6)
 
-      allow(registers[4]).to receive(:settings).and_return({})
-      expect(registers[4]).to have_property(:count, 1)
+        allow(registers[4]).to receive(:settings).and_return({})
+        expect(registers[4]).to have_property(:count, 1)
+      end
+    end
+
+    context '引数にfalseが与えられた場合' do
+      it '1を返す' do
+        allow(registers[0]).to receive(:settings).and_return(support_array: true)
+        expect(registers[0]).to have_property(:count, [false], 1)
+
+        allow(registers[1]).to receive(:settings).and_return(support_array: true)
+        expect(registers[1]).to have_property(:count, [false], 1)
+
+        allow(registers[2]).to receive(:settings).and_return({})
+        expect(registers[2]).to have_property(:count, [false], 1)
+
+        allow(registers[3]).to receive(:settings).and_return(support_array: true)
+        expect(registers[3]).to have_property(:count, [false], 1)
+
+        allow(registers[4]).to receive(:settings).and_return({})
+        expect(registers[4]).to have_property(:count, [false], 1)
+      end
     end
   end
 

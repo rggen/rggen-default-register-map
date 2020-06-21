@@ -8,7 +8,7 @@ RgGen.define_simple_feature(:register, :size) do
     property :byte_size, initial: -> { calc_byte_size }
     property :array?, forward_to: :array_register?
     property :array_size, forward_to: :array_registers
-    property :count, initial: -> { calc_count }
+    property :count, forward_to: :calc_count
 
     input_pattern [
       /(#{integer}(:?,#{integer})*)/,
@@ -88,8 +88,8 @@ RgGen.define_simple_feature(:register, :size) do
       array_register? && @size || nil
     end
 
-    def calc_count
-      Array(array_registers).reduce(1, :*)
+    def calc_count(whole_count = true)
+      whole_count ? (@count ||= Array(array_registers).reduce(1, :*)) : 1
     end
   end
 end
