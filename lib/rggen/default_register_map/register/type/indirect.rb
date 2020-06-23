@@ -93,7 +93,7 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
 
     verify_index do
       error_condition do |index|
-        index_field(index).register.name == register.name
+        index_field(index).register.full_name == register.full_name
       end
       message do |index|
         "own bit field is not allowed for indirect index: #{index.name}"

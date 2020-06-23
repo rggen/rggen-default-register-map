@@ -568,6 +568,27 @@ RSpec.describe 'register/type/indirect' do
             end
           end
         }.to raise_register_map_error 'own bit field is not allowed for indirect index: foo.foo.foo_1'
+
+        expect {
+          create_registers do
+            register_file do
+              name :foo
+              offset_address 0x0
+              register do
+                name :bar
+                offset_address 0x0
+                type [:indirect, ['bar.baz', 0]]
+                bit_field { name :baz; bit_assignment lsb: 0; type :rw; initial_value 0 }
+              end
+            end
+
+            register do
+              name :bar
+              offset_address 0x4
+              bit_field { name :baz; bit_assignment lsb: 0; type :rw; initial_value 0 }
+            end
+          end
+        }.not_to raise_error
       end
     end
 
