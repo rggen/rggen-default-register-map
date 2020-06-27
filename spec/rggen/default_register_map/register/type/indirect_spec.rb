@@ -766,6 +766,27 @@ RSpec.describe 'register/type/indirect' do
       end
     end
 
+    context '非配列レジスタに配列インデックスが指定された場合' do
+      it 'RegisterMapErrorを起こす' do
+        expect {
+          create_registers do
+            register do
+              name :foo
+              offset_address 0x00
+              type [:indirect, 'bar.bar_0', ['bar.bar_1', 0]]
+              bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+            end
+            register do
+              name :bar
+              offset_address 0x4
+              bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+              bit_field { name :bar_1; bit_assignment lsb: 1; type :rw; initial_value 0 }
+            end
+          end
+        }.to raise_register_map_error 'array indices are given to non-array register'
+      end
+    end
+
     context '配列インデックスに過不足がある場合' do
       it 'RegisterMapErrorを起こす' do
         expect {
@@ -774,7 +795,7 @@ RSpec.describe 'register/type/indirect' do
               name :foo
               offset_address 0x0
               size [1]
-              type [:indirect, 'bar.bar_0', 'bar.bar_1']
+              type [:indirect, 'bar.bar_0', 'bar.bar_1', ['bar.bar_2', 0]]
               bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
             end
             register do
@@ -782,6 +803,7 @@ RSpec.describe 'register/type/indirect' do
               offset_address 0x4
               bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               bit_field { name :bar_1; bit_assignment lsb: 1; type :rw; initial_value 0 }
+              bit_field { name :bar_2; bit_assignment lsb: 2; type :rw; initial_value 0 }
             end
           end
         }.to raise_register_map_error 'too many array indices are given'
@@ -792,7 +814,7 @@ RSpec.describe 'register/type/indirect' do
               name :foo
               offset_address 0x0
               size [1, 2, 3]
-              type [:indirect, 'bar.bar_0', 'bar.bar_1']
+              type [:indirect, 'bar.bar_0', 'bar.bar_1', ['bar.bar_2', 0]]
               bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
             end
             register do
@@ -800,6 +822,7 @@ RSpec.describe 'register/type/indirect' do
               offset_address 0x4
               bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               bit_field { name :bar_1; bit_assignment lsb: 1; type :rw; initial_value 0 }
+              bit_field { name :bar_2; bit_assignment lsb: 2; type :rw; initial_value 0 }
             end
           end
         }.to raise_register_map_error 'few array indices are given'

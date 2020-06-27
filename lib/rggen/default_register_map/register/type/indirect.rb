@@ -55,6 +55,13 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
 
     verify(:component) do
       error_condition do
+        !(register.array? || array_index_fields.empty?)
+      end
+      message { 'array indices are given to non-array register' }
+    end
+
+    verify(:component) do
+      error_condition do
         register.array? &&
           register.array_size.length < array_index_fields.length
       end
