@@ -5,7 +5,7 @@ RgGen.define_simple_feature(:register, :size) do
     property :size
     property :width, initial: -> { calc_width }
     property :byte_width, initial: -> { width / 8 }
-    property :byte_size, initial: -> { calc_byte_size }
+    property :byte_size, forward_to: :calc_byte_size
     property :array?, forward_to: :array_register?
     property :array_size, forward_to: :array_registers
     property :count, forward_to: :calc_count
@@ -72,11 +72,11 @@ RgGen.define_simple_feature(:register, :size) do
         .max
     end
 
-    def calc_byte_size
+    def calc_byte_size(whole_size = true)
       if register.settings[:byte_size]
-        instance_exec(&register.settings[:byte_size])
+        instance_exec(whole_size, &register.settings[:byte_size])
       else
-        Array(@size).reduce(1, :*) * byte_width
+        (whole_size ? Array(@size).reduce(1, :*) : 1) * byte_width
       end
     end
 

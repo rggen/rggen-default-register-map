@@ -120,12 +120,13 @@ RSpec.describe 'register/size' do
       end
 
       it 'ブロックの評価結果をバイトサイズとして返す' do
-        allow(register).to receive(:settings).and_return(byte_size: -> { 2 * byte_width })
+        allow(register).to receive(:settings).and_return(byte_size: ->(whole_size) { (whole_size ? 2 : 1) * byte_width })
         expect(register).to have_property(:byte_size, 8)
+        expect(register).to have_property(:byte_size, [false], 4)
       end
     end
 
-    context ':byte_sizeの設定がない場合' do
+    context ':byte_sizeの設定がなく' do
       let(:registers) do
         create_registers do
           register do
@@ -169,33 +170,38 @@ RSpec.describe 'register/size' do
         end
       end
 
-      it '#byte_widthに#sizeを乗じた値をバイトサイズとして返す' do
-        allow(registers[0]).to receive(:settings).and_return({})
-        expect(registers[0]).to have_property(:byte_size, 4)
+      before do
+        registers.each do |register|
+          allow(register).to receive(:settings).and_return({})
+        end
+      end
 
-        allow(registers[1]).to receive(:settings).and_return({})
-        expect(registers[1]).to have_property(:byte_size, 8)
+      context '無引数の場合' do
+        it '#byte_widthに#sizeを乗じた値をバイトサイズとして返す' do
+          expect(registers[0]).to have_property(:byte_size, 4)
+          expect(registers[1]).to have_property(:byte_size, 8)
+          expect(registers[2]).to have_property(:byte_size, 24)
+          expect(registers[3]).to have_property(:byte_size, 4)
+          expect(registers[4]).to have_property(:byte_size, 8)
+          expect(registers[5]).to have_property(:byte_size, 24)
+          expect(registers[6]).to have_property(:byte_size, 8)
+          expect(registers[7]).to have_property(:byte_size, 16)
+          expect(registers[8]).to have_property(:byte_size, 48)
+        end
+      end
 
-        allow(registers[2]).to receive(:settings).and_return({})
-        expect(registers[2]).to have_property(:byte_size, 24)
-
-        allow(registers[3]).to receive(:settings).and_return({})
-        expect(registers[3]).to have_property(:byte_size, 4)
-
-        allow(registers[4]).to receive(:settings).and_return({})
-        expect(registers[4]).to have_property(:byte_size, 8)
-
-        allow(registers[5]).to receive(:settings).and_return({})
-        expect(registers[5]).to have_property(:byte_size, 24)
-
-        allow(registers[6]).to receive(:settings).and_return({})
-        expect(registers[6]).to have_property(:byte_size, 8)
-
-        allow(registers[7]).to receive(:settings).and_return({})
-        expect(registers[7]).to have_property(:byte_size, 16)
-
-        allow(registers[8]).to receive(:settings).and_return({})
-        expect(registers[8]).to have_property(:byte_size, 48)
+      context 'falseが指定された場合' do
+        it '#byte_widthを返す' do
+          expect(registers[0]).to have_property(:byte_size, [false], 4)
+          expect(registers[1]).to have_property(:byte_size, [false], 4)
+          expect(registers[2]).to have_property(:byte_size, [false], 4)
+          expect(registers[3]).to have_property(:byte_size, [false], 4)
+          expect(registers[4]).to have_property(:byte_size, [false], 4)
+          expect(registers[5]).to have_property(:byte_size, [false], 4)
+          expect(registers[6]).to have_property(:byte_size, [false], 8)
+          expect(registers[7]).to have_property(:byte_size, [false], 8)
+          expect(registers[8]).to have_property(:byte_size, [false], 8)
+        end
       end
     end
   end
