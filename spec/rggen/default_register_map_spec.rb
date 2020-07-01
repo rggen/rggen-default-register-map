@@ -17,6 +17,7 @@ RSpec.describe RgGen::DefaultRegisterMap do
       expect(RgGen::DefaultRegisterMap).to receive(:load_features).and_call_original
       expect(builder).to receive(:enable).with(:global, [:bus_width, :address_width]).and_call_original
       expect(builder).to receive(:enable).with(:register_block, [:name, :byte_size]).and_call_original
+      expect(builder).to receive(:enable).with(:register_file, [:name, :offset_address, :size]).and_call_original
       expect(builder).to receive(:enable).with(:register, [:name, :offset_address, :size, :type]).and_call_original
       expect(builder).to receive(:enable).with(:register, :type, [:external, :indirect]).and_call_original
       expect(builder).to receive(:enable).with(:bit_field, [:name, :bit_assignment, :type, :initial_value, :reference, :comment]).and_call_original
