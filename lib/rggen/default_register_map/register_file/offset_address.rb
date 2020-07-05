@@ -51,8 +51,7 @@ RgGen.define_simple_feature(:register_file, :offset_address) do
     end
 
     printable(:offset_address) do
-      [start_address, end_address]
-        .map(&method(:format_address)).join(' - ')
+      expand_addresses.map(&method(:format_address))
     end
 
     private

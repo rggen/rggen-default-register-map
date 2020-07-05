@@ -54,8 +54,7 @@ RgGen.define_simple_feature(:register, :offset_address) do
     end
 
     printable(:offset_address) do
-      [start_address, end_address]
-        .map(&method(:printable_address)).join(' - ')
+      expand_addresses.map(&method(:format_address))
     end
 
     private
@@ -117,7 +116,7 @@ RgGen.define_simple_feature(:register, :offset_address) do
         !(register.settings[:support_overlapped_address] && register.match_type?(other))
     end
 
-    def printable_address(address)
+    def format_address(address)
       print_width = (register_block.local_address_width + 3) / 4
       format('0x%0*x', print_width, address)
     end

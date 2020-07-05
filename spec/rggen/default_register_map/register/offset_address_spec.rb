@@ -213,16 +213,30 @@ RSpec.describe 'register/offset_address' do
     end
   end
 
-  it 'アドレス範囲を表示可能オブジェクトとして返す' do
+  it '展開済みアドレスの一覧を表示可能オブジェクトとして返す' do
     registers = create_registers(32) do
       register { offset_address 0x00; type :foo }
       register { offset_address 0x10; type :foo; size [2] }
-      register { offset_address 0x80; type :foo; size [32] }
+      register { offset_address 0x20; type :foo; size [2, 2] }
+      register_file do
+        offset_address 0x30
+        register { offset_address 0x00; type :foo }
+      end
+      register_file do
+        offset_address 0x40
+        size [2]
+        register_file do
+          offset_address 0x10
+          register { offset_address 0x04; type :foo; size [2] }
+        end
+      end
     end
 
-    expect(registers[0].printables[:offset_address]).to eq '0x00 - 0x03'
-    expect(registers[1].printables[:offset_address]).to eq '0x10 - 0x17'
-    expect(registers[2].printables[:offset_address]).to eq '0x80 - 0xff'
+    expect(registers[0].printables[:offset_address]).to match(['0x00'])
+    expect(registers[1].printables[:offset_address]).to match(['0x10', '0x14'])
+    expect(registers[2].printables[:offset_address]).to match(['0x20', '0x24', '0x28', '0x2c'])
+    expect(registers[3].printables[:offset_address]).to match(['0x30'])
+    expect(registers[4].printables[:offset_address]).to match(['0x54', '0x58', '0x70', '0x74'])
   end
 
   describe 'エラーチェック' do
