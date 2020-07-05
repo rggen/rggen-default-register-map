@@ -19,5 +19,9 @@ RgGen.define_list_item_feature(:register, :type, :external) do
         'external register type supports single size definition only'
       end
     end
+
+    printable(:byte_size) do
+      "#{register.byte_size} bytes"
+    end
   end
 end

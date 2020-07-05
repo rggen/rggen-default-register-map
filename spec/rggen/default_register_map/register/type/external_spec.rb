@@ -61,6 +61,20 @@ RSpec.describe 'register/type/external' do
     expect(registers[2]).not_to be_array
   end
 
+  describe 'printables[:byte_size]' do
+    it '表示可能オブジェクトとして、バイトサイズを返す' do
+      registers = create_registers do
+        register { name 'register_0'; offset_address 0x00; type :external }
+        register { name 'register_1'; offset_address 0x10; type :external; size [1] }
+        register { name 'register_2'; offset_address 0x20; type :external; size [16] }
+      end
+
+      expect(registers[0].printables[:byte_size]).to eq '4 bytes'
+      expect(registers[1].printables[:byte_size]).to eq '4 bytes'
+      expect(registers[2].printables[:byte_size]).to eq '64 bytes'
+    end
+  end
+
   it 'レジスタファイル内では指定できない' do
     expect {
       create_registers do
