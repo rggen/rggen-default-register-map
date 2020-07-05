@@ -3,7 +3,6 @@
 RgGen.define_simple_feature(:register, :offset_address) do
   register_map do
     property :offset_address, initial: -> { default_offset_address }
-    property :full_offset_address, initial: -> { start_address(true) }
     property :expanded_offset_addresses, forward_to: :expand_addresses
     property :address_range, initial: -> { start_address..end_address }
     property :overlap?, forward_to: :overlap_address_range?
@@ -66,6 +65,14 @@ RgGen.define_simple_feature(:register, :offset_address) do
         (previous_component.offset_address + previous_component.byte_size)
     end
 
+    def start_address(full = false)
+      full && expand_addresses.first || offset_address
+    end
+
+    def end_address(full = false)
+      start_address(full) + register.byte_size - 1
+    end
+
     def expand_addresses
       upper_offsets = register_file&.expanded_offset_addresses || [0]
       upper_offsets.product(expand_local_addresses).map(&:sum)
@@ -73,7 +80,7 @@ RgGen.define_simple_feature(:register, :offset_address) do
 
     def expand_local_addresses
       Array.new(register.array_size&.inject(:*) || 1) do |i|
-        start_address + register.byte_width * i
+        offset_address + register.byte_width * i
       end
     end
 
@@ -88,14 +95,6 @@ RgGen.define_simple_feature(:register, :offset_address) do
 
     def byte_width
       configuration.byte_width
-    end
-
-    def start_address(full = false)
-      (full && register_file&.full_offset_address || 0) + offset_address
-    end
-
-    def end_address(full = false)
-      start_address(full) + register.byte_size - 1
     end
 
     def overlap_address_range?(other)

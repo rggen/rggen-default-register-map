@@ -185,25 +185,6 @@ RSpec.describe 'register/offset_address' do
     end
   end
 
-  describe '#full_offset_address' do
-    it 'レジスタブロック起点のオフセットアドレスを返す' do
-      registers = create_registers(32) do
-        register { offset_address 0x10; type :foo }
-        register_file do
-          offset_address 0x20
-          register { offset_address 0x10; type :foo }
-          register_file do
-            offset_address 0x20
-            register { offset_address 0x10; type :foo }
-          end
-        end
-      end
-      expect(registers[0]).to have_property(:full_offset_address, 0x10)
-      expect(registers[1]).to have_property(:full_offset_address, 0x30)
-      expect(registers[2]).to have_property(:full_offset_address, 0x50)
-    end
-  end
-
   describe '#expanded_offset_addresses' do
     it '展開済みのアドレス一覧を返す' do
       registers = create_registers(32) do

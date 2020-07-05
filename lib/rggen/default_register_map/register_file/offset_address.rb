@@ -3,7 +3,6 @@
 RgGen.define_simple_feature(:register_file, :offset_address) do
   register_map do
     property :offset_address, initial: -> { defalt_offset_address }
-    property :full_offset_address, initial: -> { start_address(true) }
     property :expanded_offset_addresses, forward_to: :expand_addresses
     property :address_range, initial: -> { start_address..end_address }
 
@@ -69,7 +68,7 @@ RgGen.define_simple_feature(:register_file, :offset_address) do
     end
 
     def start_address(full = false)
-      (full && register_file(:upper)&.full_offset_address || 0) + offset_address
+      full && expand_addresses.first || offset_address
     end
 
     def end_address(full = false)
@@ -83,7 +82,7 @@ RgGen.define_simple_feature(:register_file, :offset_address) do
 
     def expand_local_addresses
       Array.new(register_file.array_size&.inject(:*) || 1) do |i|
-        start_address + register_file.byte_size(false) * i
+        offset_address + register_file.byte_size(false) * i
       end
     end
 
