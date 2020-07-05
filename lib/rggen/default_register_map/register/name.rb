@@ -23,7 +23,14 @@ RgGen.define_simple_feature(:register, :name) do
       message { "duplicated register name: #{name}" }
     end
 
-    printable :name
+    printable(:name) do
+      array_name
+    end
+
+    printable(:layer_name) do
+      [register_file&.printables&.fetch(:layer_name), array_name]
+        .compact.join('.')
+    end
 
     private
 
@@ -34,6 +41,11 @@ RgGen.define_simple_feature(:register, :name) do
     def duplicated_name?
       files_and_registers
         .any? { |file_or_register| file_or_register.name == name }
+    end
+
+    def array_name
+      RgGen::Core::Utility::CodeUtility
+        .array_name(name, register.array_size)
     end
   end
 end

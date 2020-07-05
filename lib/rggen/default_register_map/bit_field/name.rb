@@ -18,7 +18,10 @@ RgGen.define_simple_feature(:bit_field, :name) do
       message { "duplicated bit field name: #{name}" }
     end
 
-    printable :name
+    printable(:name) do
+      RgGen::Core::Utility::CodeUtility
+        .array_name(name, Array(bit_field.sequence_size))
+    end
 
     private
 

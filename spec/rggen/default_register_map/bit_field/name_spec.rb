@@ -103,21 +103,44 @@ RSpec.describe 'bit_field/name' do
     end
   end
 
-  it '表示可能オブジェクトとして入力されたビットフィールド名を返す' do
-    register_map = create_register_map do
-      register_block do
-        register do
-          name :register_0
-          bit_field { name :bit_field_0 }
-          bit_field { name 'bit_field_1' }
-          bit_field {}
+  describe 'printables[:name]' do
+    let(:bit_fields) do
+      register_map = create_register_map do
+        register_block do
+          register do
+            name :register_0
+            bit_field { name :bit_field_0 }
+            bit_field { name 'bit_field_1' }
+            bit_field {}
+          end
         end
       end
+      register_map.bit_fields
     end
 
-    expect(register_map.bit_fields[0].printables[:name]).to eq 'bit_field_0'
-    expect(register_map.bit_fields[1].printables[:name]).to eq 'bit_field_1'
-    expect(register_map.bit_fields[2].printables[:name]).to eq 'register_0'
+    it '表示可能オブジェクトとして入力されたビットフィールド名を返す' do
+      allow(bit_fields[0]).to receive(:sequence_size).and_return(nil)
+      expect(bit_fields[0].printables[:name]).to eq 'bit_field_0'
+
+      allow(bit_fields[1]).to receive(:sequence_size).and_return(nil)
+      expect(bit_fields[1].printables[:name]).to eq 'bit_field_1'
+
+      allow(bit_fields[2]).to receive(:sequence_size).and_return(nil)
+      expect(bit_fields[2].printables[:name]).to eq 'register_0'
+    end
+
+    context '繰り返し数が設定されている場合' do
+      it '繰り返し数を含む、ビットフィールド名を表示可能オブジェクトとして返す' do
+        allow(bit_fields[0]).to receive(:sequence_size).and_return(1)
+        expect(bit_fields[0].printables[:name]).to eq 'bit_field_0[1]'
+
+        allow(bit_fields[1]).to receive(:sequence_size).and_return(2)
+        expect(bit_fields[1].printables[:name]).to eq 'bit_field_1[2]'
+
+        allow(bit_fields[2]).to receive(:sequence_size).and_return(3)
+        expect(bit_fields[2].printables[:name]).to eq 'register_0[3]'
+      end
+    end
   end
 
   describe 'エラーチェック' do

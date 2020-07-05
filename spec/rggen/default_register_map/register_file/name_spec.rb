@@ -64,11 +64,54 @@ RSpec.describe 'register_file/name' do
     end
   end
 
-  it '表示可能オブジェクトとして、レジスタファイル名を返す' do
-    register_map = create_register_map do
-      register_block { register_file { name 'foo' } }
+  describe 'printable[:name]' do
+    let(:register_file) do
+      register_map = create_register_map do
+        register_block do
+          register_file do
+            name 'foo'
+          end
+        end
+      end
+      register_map.register_files[0]
     end
-    expect(register_map.register_files[0].printables[:name]).to eq 'foo'
+
+    it '表示可能オブジェクトとしてレジスタファイル名を返す' do
+      allow(register_file).to receive(:array_size).and_return(nil)
+      expect(register_file.printables[:name]).to eq 'foo'
+    end
+
+    context '配列レジスタファイルの場合' do
+      it '表示可能オブジェクトとして、配列の大きさを含むレジスタファイル名を返す' do
+        allow(register_file).to receive(:array_size).and_return([1, 2])
+        expect(register_file.printables[:name]).to eq 'foo[1][2]'
+      end
+    end
+  end
+
+  describe 'printables[:layer_name]' do
+    let(:register_files) do
+      register_map = create_register_map do
+        register_block do
+          register_file do
+            name 'foo'
+            register_file { name 'bar' }
+            register_file { name 'baz' }
+          end
+        end
+      end
+      register_map.register_files
+    end
+
+    it '表示可能オブジェクトとして、上位階層を含むレジスタファイル名を返す' do
+      allow(register_files[0]).to receive(:array_size).and_return([1])
+      allow(register_files[1]).to receive(:array_size).and_return([2, 3])
+      allow(register_files[2]).to receive(:array_size).and_return(nil)
+
+      expect(register_files[0].printables[:layer_name]).to eq 'foo[1]'
+      expect(register_files[1].printables[:layer_name]).to eq 'foo[1].bar[2][3]'
+      expect(register_files[2].printables[:layer_name]).to eq 'foo[1].baz'
+    end
   end
 
   describe 'エラーチェック' do
