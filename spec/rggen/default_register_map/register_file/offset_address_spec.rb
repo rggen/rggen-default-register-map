@@ -262,6 +262,40 @@ RSpec.describe 'register_file/offset_address' do
     end
   end
 
+  describe '#expanded_offset_addresses' do
+    it '展開済みのオフセットアドレスの一覧を返す' do
+      register_files = create_register_files(32) do
+        register_file do
+          offset_address 0x00
+          register { offset_address 0x00; type :foo }
+        end
+        register_file do
+          offset_address 0x10
+          size [2]
+          register { offset_address 0x4; type :foo }
+        end
+        register_file do
+          offset_address 0x20
+          size [2]
+          register_file do
+            offset_address 0x00
+            register_file do
+              offset_address 0x10
+              size [2]
+              register { offset_address 0x04; type :foo }
+            end
+          end
+        end
+      end
+
+      expect(register_files[0]).to have_property(:expanded_offset_addresses, match([0x00]))
+      expect(register_files[1]).to have_property(:expanded_offset_addresses, match([0x10, 0x18]))
+      expect(register_files[2]).to have_property(:expanded_offset_addresses, match([0x20, 0x40]))
+      expect(register_files[3]).to have_property(:expanded_offset_addresses, match([0x20, 0x40]))
+      expect(register_files[4]).to have_property(:expanded_offset_addresses, match([0x30, 0x38, 0x50, 0x58]))
+    end
+  end
+
   it 'アドレス範囲を表示可能オブジェクトとして返す' do
     register_files = create_register_files(32) do
       register_file do
