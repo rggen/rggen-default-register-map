@@ -26,10 +26,6 @@ RgGen.define_simple_feature(:register_file, :size) do
       end
     end
 
-    printable(:array_size) do
-      array? && "[#{size.join(', ')}]" || nil
-    end
-
     private
 
     def parse_string_value(value)

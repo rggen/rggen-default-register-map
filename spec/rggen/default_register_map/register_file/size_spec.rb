@@ -502,28 +502,6 @@ RSpec.describe 'register_file/size' do
     expect(register_file).to have_property(:size, match([1, 2, 3]))
   end
 
-  describe '#printables[:array_size]' do
-    context '配列レジスタファイルの場合' do
-      it '表示可能オブジェクトとして、配列の大きさを返す' do
-        register_files = create_register_files do
-          register_file { offset_address 0x00; size [1]; register { type :foo } }
-          register_file { offset_address 0x04; size [2, 3]; register { type :foo } }
-        end
-        expect(register_files[0].printables[:array_size]).to eq '[1]'
-        expect(register_files[1].printables[:array_size]).to eq '[2, 3]'
-      end
-    end
-
-    context '配列レジスタファイルではない場合' do
-      it 'nilを返す' do
-        register_files = create_register_files do
-          register_file { offset_address 0x00; register { type :foo } }
-        end
-        expect(register_files[0].printables[:array_size]).to be_nil
-      end
-    end
-  end
-
   describe 'エラーチェック' do
     context '入力文字列がパターンに一致しなかった場合' do
       it 'RegisterMapErrorを起こす' do
