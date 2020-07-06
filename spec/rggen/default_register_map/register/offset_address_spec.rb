@@ -124,7 +124,7 @@ RSpec.describe 'register/offset_address' do
         end
         expect(registers[0]).to have_property(:offset_address, 0)
 
-        regiters = create_registers(32) do
+        registers = create_registers(32) do
           register_file do
             offset_address 0x10
             register { type :foo }
