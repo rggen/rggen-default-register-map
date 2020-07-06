@@ -69,10 +69,10 @@ RgGen.define_simple_feature(:register, :size) do
     end
 
     def calc_byte_size(whole_size = true)
-      if register.settings[:byte_size]
-        instance_exec(whole_size, &register.settings[:byte_size])
+      if !whole_size || register.settings[:support_shared_address]
+        byte_width
       else
-        (whole_size ? Array(@size).reduce(1, :*) : 1) * byte_width
+        Array(@size).reduce(1, :*) * byte_width
       end
     end
 

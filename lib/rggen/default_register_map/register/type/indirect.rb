@@ -40,9 +40,8 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
       index_entries.map { |entry| entry.find_index_field(bit_fields) }
     end
 
-    byte_size { byte_width }
+    support_shared_address
     support_array_register
-    support_overlapped_address
 
     input_pattern [
       /(#{variable_name}(?:\.#{variable_name})*)/,

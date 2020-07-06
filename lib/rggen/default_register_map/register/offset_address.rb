@@ -78,7 +78,7 @@ RgGen.define_simple_feature(:register, :offset_address) do
     end
 
     def expand_local_addresses
-      Array.new(register.array_size&.inject(:*) || 1) do |i|
+      Array.new(shared_address? && 1 || register.count) do |i|
         offset_address + register.byte_width * i
       end
     end
@@ -112,8 +112,11 @@ RgGen.define_simple_feature(:register, :offset_address) do
     end
 
     def exclusive_range?(other)
-      other.register_file? ||
-        !(register.settings[:support_overlapped_address] && register.match_type?(other))
+      other.register_file? || !(shared_address? && register.match_type?(other))
+    end
+
+    def shared_address?
+      register.settings[:support_shared_address]
     end
 
     def format_address(address)

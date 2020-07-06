@@ -34,9 +34,8 @@ RSpec.describe 'register/offset_address' do
 
     RgGen.define_list_item_feature(:register, :type, :qux) do
       register_map do
-        no_bit_fields
         support_array_register
-        support_overlapped_address
+        support_shared_address
         writable? { true }
         readable? { true }
       end
@@ -47,6 +46,7 @@ RSpec.describe 'register/offset_address' do
     RgGen.enable(:register_file, [:offset_address, :size])
     RgGen.enable(:register, [:offset_address, :size, :type])
     RgGen.enable(:register, :type, [:foo, :bar, :baz, :qux])
+    RgGen.enable(:bit_field, :bit_assignment)
   end
 
   after(:all) do
@@ -201,6 +201,7 @@ RSpec.describe 'register/offset_address' do
           register_file do
             offset_address 0x10
             register { offset_address 0x04; type :foo; size [2] }
+            register { offset_address 0x0C; type :qux; size [2]; bit_field { bit_assignment lsb: 0, width: 32 } }
           end
         end
       end
@@ -209,7 +210,8 @@ RSpec.describe 'register/offset_address' do
       expect(registers[1]).to have_property(:expanded_offset_addresses, match([0x10, 0x14]))
       expect(registers[2]).to have_property(:expanded_offset_addresses, match([0x20, 0x24, 0x28, 0x2c]))
       expect(registers[3]).to have_property(:expanded_offset_addresses, match([0x30]))
-      expect(registers[4]).to have_property(:expanded_offset_addresses, match([0x54, 0x58, 0x70, 0x74]))
+      expect(registers[4]).to have_property(:expanded_offset_addresses, match([0x54, 0x58, 0x74, 0x78]))
+      expect(registers[5]).to have_property(:expanded_offset_addresses, match([0x5c, 0x7c]))
     end
   end
 
@@ -228,6 +230,7 @@ RSpec.describe 'register/offset_address' do
         register_file do
           offset_address 0x10
           register { offset_address 0x04; type :foo; size [2] }
+          register { offset_address 0x0C; type :qux; size [2]; bit_field { bit_assignment lsb: 0, width: 32 } }
         end
       end
     end
@@ -236,7 +239,8 @@ RSpec.describe 'register/offset_address' do
     expect(registers[1].printables[:offset_address]).to match(['0x10', '0x14'])
     expect(registers[2].printables[:offset_address]).to match(['0x20', '0x24', '0x28', '0x2c'])
     expect(registers[3].printables[:offset_address]).to match(['0x30'])
-    expect(registers[4].printables[:offset_address]).to match(['0x54', '0x58', '0x70', '0x74'])
+    expect(registers[4].printables[:offset_address]).to match(['0x54', '0x58', '0x74', '0x78'])
+    expect(registers[5].printables[:offset_address]).to match(['0x5c', '0x7c'])
   end
 
   describe 'エラーチェック' do
@@ -594,52 +598,52 @@ RSpec.describe 'register/offset_address' do
         end
       end
 
-      context 'レジスタの属性に.support_overlapped_addressが指定されている場合' do
+      context 'レジスタの属性に.support_shared_addressが指定されている場合' do
         specify 'レジスタ型が同じであれば、アドレスが重複していても、エラーは起こらない' do
           expect {
             create_registers(32) do
-              register { offset_address 0x0; type :qux }
-              register { offset_address 0x0; type :qux }
+              register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+              register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
             end
           }.not_to raise_error
 
           expect {
             create_registers(32) do
               register_file do
-                register { offset_address 0x0; type :qux }
-                register { offset_address 0x0; type :qux }
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
               end
             end
           }.not_to raise_error
 
           expect {
             create_registers(32) do
-              register { offset_address 0x0; type :qux; size 3 }
-              register { offset_address 0x4; type :qux }
+              register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
+              register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
             end
           }.not_to raise_error
 
           expect {
             create_registers(32) do
               register_file do
-                register { offset_address 0x0; type :qux; size 3 }
-                register { offset_address 0x4; type :qux }
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
+                register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
               end
             end
           }.not_to raise_error
 
           expect {
             create_registers(32) do
-              register { offset_address 0x4; type :qux }
-              register { offset_address 0x0; type :qux; size 3 }
+              register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+              register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
             end
           }.not_to raise_error
 
           expect {
             create_registers(32) do
               register_file do
-                register { offset_address 0x4; type :qux }
-                register { offset_address 0x0; type :qux; size 3 }
+                register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
               end
             end
           }.not_to raise_error
@@ -649,7 +653,7 @@ RSpec.describe 'register/offset_address' do
           expect {
             create_registers(32) do
               register { offset_address 0x0; type [:foo, :bar, :baz].sample }
-              register { offset_address 0x0; type :qux }
+              register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
             end
           }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0x3'
 
@@ -658,7 +662,7 @@ RSpec.describe 'register/offset_address' do
               register_file do
                 offset_address 0x10
                 register { offset_address 0x0; type [:foo, :bar, :baz].sample }
-                register { offset_address 0x0; type :qux }
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
               end
             end
           }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x10-0x13'
@@ -666,7 +670,7 @@ RSpec.describe 'register/offset_address' do
           expect {
             create_registers(32) do
               register { offset_address 0x0; type [:foo, :bar, :baz].sample; size 3 }
-              register { offset_address 0x4; type :qux }
+              register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
             end
           }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x4-0x7'
 
@@ -675,7 +679,7 @@ RSpec.describe 'register/offset_address' do
               register_file do
                 offset_address 0x10
                 register { offset_address 0x0; type [:foo, :bar, :baz].sample; size 3 }
-                register { offset_address 0x4; type :qux }
+                register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
               end
             end
           }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x14-0x17'
@@ -683,7 +687,7 @@ RSpec.describe 'register/offset_address' do
           expect {
             create_registers(32) do
               register { offset_address 0x4; type [:foo, :bar, :baz].sample }
-              register { offset_address 0x0; type :qux; size 3 }
+              register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
             end
           }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0xb'
 
@@ -692,7 +696,7 @@ RSpec.describe 'register/offset_address' do
               register_file do
                 offset_address 0x10
                 register { offset_address 0x4; type [:foo, :bar, :baz].sample }
-                register { offset_address 0x0; type :qux; size 3 }
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
               end
             end
           }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x10-0x1b'
@@ -705,9 +709,12 @@ RSpec.describe 'register/offset_address' do
             create_registers(32) do
               register_file do
                 offset_address 0x0
-                register { offset_address 0x0; type [:foo, :bar, :baz, :qux].sample }
+                register { offset_address 0x0; type [:foo, :bar, :baz].sample }
               end
-              register { offset_address 0x0; type [:foo, :bar, :baz, :qux].sample }
+              register do
+                offset_address 0x0; type [:foo, :bar, :baz, :qux].sample
+                bit_field { bit_assignment lsb: 0, width: 32 }
+              end
             end
           }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0x3'
 
@@ -717,9 +724,12 @@ RSpec.describe 'register/offset_address' do
                 offset_address 0x10
                 register_file do
                   offset_address 0x0
-                  register { offset_address 0x0; type [:foo, :bar, :baz, :qux].sample }
+                  register { offset_address 0x0; type [:foo, :bar, :baz].sample }
                 end
-                register { offset_address 0x0; type [:foo, :bar, :baz, :qux].sample }
+                register do
+                  offset_address 0x0; type [:foo, :bar, :baz, :qux].sample
+                  bit_field { bit_assignment lsb: 0, width: 32 }
+                end
               end
             end
           }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x10-0x13'
@@ -729,9 +739,12 @@ RSpec.describe 'register/offset_address' do
               register_file do
                 offset_address 0x0
                 size 3
-                register { offset_address 0x0; type [:foo, :bar, :baz, :qux].sample }
+                register { offset_address 0x0; type [:foo, :bar, :baz].sample }
               end
-              register { offset_address 0x4; type [:foo, :bar, :baz, :qux].sample }
+              register do
+                offset_address 0x4; type [:foo, :bar, :baz, :qux].sample
+                bit_field { bit_assignment lsb: 0, width: 32 }
+              end
             end
           }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x4-0x7'
 
@@ -742,9 +755,12 @@ RSpec.describe 'register/offset_address' do
                 register_file do
                   offset_address 0x0
                   size 3
-                  register { offset_address 0x0; type [:foo, :bar, :baz, :qux].sample }
+                  register { offset_address 0x0; type [:foo, :bar, :baz].sample }
                 end
-                register { offset_address 0x4; type [:foo, :bar, :baz, :qux].sample }
+                register do
+                  offset_address 0x4; type [:foo, :bar, :baz, :qux].sample
+                  bit_field { bit_assignment lsb: 0, width: 32 }
+                end
               end
             end
           }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x14-0x17'
@@ -753,9 +769,12 @@ RSpec.describe 'register/offset_address' do
             create_registers(32) do
               register_file do
                 offset_address 0x4
-                register { offset_address 0x0; type [:foo, :bar, :baz, :qux].sample }
+                register { offset_address 0x0; type [:foo, :bar, :baz].sample }
               end
-              register { offset_address 0x0; size 3; type [:foo, :bar, :baz, :qux].sample }
+              register do
+                offset_address 0x0; type [:foo, :bar, :baz, :qux].sample; size [3]
+                bit_field { bit_assignment lsb: 0, width: 96 }
+              end
             end
           }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0xb'
 
@@ -765,9 +784,12 @@ RSpec.describe 'register/offset_address' do
                 offset_address 0x10
                 register_file do
                   offset_address 0x4
-                  register { offset_address 0x0; type [:foo, :bar, :baz, :qux].sample }
+                  register { offset_address 0x0; type [:foo, :bar, :baz].sample }
                 end
-                register { offset_address 0x0; size 3; type [:foo, :bar, :baz, :qux].sample }
+                register do
+                  offset_address 0x0; type [:foo, :bar, :baz, :qux].sample; size [3]
+                  bit_field { bit_assignment lsb: 0, width: 96 }
+                end
               end
             end
           }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x10-0x1b'

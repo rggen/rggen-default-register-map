@@ -112,64 +112,50 @@ RSpec.describe 'register/size' do
   end
 
   describe '#byte_size' do
-    context ':byte_sizeにブロックが設定されている場合' do
-      let(:register) do
-        create_register do
-          register {}
+    let(:registers) do
+      create_registers do
+        register do
         end
-      end
 
-      it 'ブロックの評価結果をバイトサイズとして返す' do
-        allow(register).to receive(:settings).and_return(byte_size: ->(whole_size) { (whole_size ? 2 : 1) * byte_width })
-        expect(register).to have_property(:byte_size, 8)
-        expect(register).to have_property(:byte_size, [false], 4)
+        register do
+          size [2]
+        end
+
+        register do
+          size [2, 3]
+        end
+
+        register do
+          bit_field { bit_assignment lsb: 0 }
+        end
+
+        register do
+          size [2]
+          bit_field { bit_assignment lsb: 0 }
+        end
+
+        register do
+          size [2, 3]
+          bit_field { bit_assignment lsb: 0 }
+        end
+
+        register do
+          bit_field { bit_assignment lsb: 32 }
+        end
+
+        register do
+          size [2]
+          bit_field { bit_assignment lsb: 32 }
+        end
+
+        register do
+          size [2, 3]
+          bit_field { bit_assignment lsb: 32 }
+        end
       end
     end
 
-    context ':byte_sizeの設定がなく' do
-      let(:registers) do
-        create_registers do
-          register do
-          end
-
-          register do
-            size [2]
-          end
-
-          register do
-            size [2, 3]
-          end
-
-          register do
-            bit_field { bit_assignment lsb: 0 }
-          end
-
-          register do
-            size [2]
-            bit_field { bit_assignment lsb: 0 }
-          end
-
-          register do
-            size [2, 3]
-            bit_field { bit_assignment lsb: 0 }
-          end
-
-          register do
-            bit_field { bit_assignment lsb: 32 }
-          end
-
-          register do
-            size [2]
-            bit_field { bit_assignment lsb: 32 }
-          end
-
-          register do
-            size [2, 3]
-            bit_field { bit_assignment lsb: 32 }
-          end
-        end
-      end
-
+    context 'レジスタの属性にsupport_shared_addressの指定がなく' do
       before do
         registers.each do |register|
           allow(register).to receive(:settings).and_return({})
@@ -202,6 +188,43 @@ RSpec.describe 'register/size' do
           expect(registers[7]).to have_property(:byte_size, [false], 8)
           expect(registers[8]).to have_property(:byte_size, [false], 8)
         end
+      end
+    end
+
+    context 'レジスタの属性にsupport_shared_addressの指定がある場合' do
+      before do
+        registers.each do |register|
+          allow(register).to receive(:settings).and_return({ support_shared_address: true })
+        end
+      end
+
+      it '引数に関わらず、#byte_widthを返す' do
+        expect(registers[0]).to have_property(:byte_size, 4)
+        expect(registers[0]).to have_property(:byte_size, [false], 4)
+
+        expect(registers[1]).to have_property(:byte_size, 4)
+        expect(registers[1]).to have_property(:byte_size, [false], 4)
+
+        expect(registers[2]).to have_property(:byte_size, 4)
+        expect(registers[2]).to have_property(:byte_size, [false], 4)
+
+        expect(registers[3]).to have_property(:byte_size, 4)
+        expect(registers[3]).to have_property(:byte_size, [false], 4)
+
+        expect(registers[4]).to have_property(:byte_size, 4)
+        expect(registers[4]).to have_property(:byte_size, [false], 4)
+
+        expect(registers[5]).to have_property(:byte_size, 4)
+        expect(registers[5]).to have_property(:byte_size, [false], 4)
+
+        expect(registers[6]).to have_property(:byte_size, 8)
+        expect(registers[6]).to have_property(:byte_size, [false], 8)
+
+        expect(registers[7]).to have_property(:byte_size, 8)
+        expect(registers[7]).to have_property(:byte_size, [false], 8)
+
+        expect(registers[8]).to have_property(:byte_size, 8)
+        expect(registers[8]).to have_property(:byte_size, [false], 8)
       end
     end
   end

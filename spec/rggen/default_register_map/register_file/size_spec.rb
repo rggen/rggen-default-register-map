@@ -9,7 +9,6 @@ RSpec.describe 'register_file/size' do
       register_map do
         no_bit_fields
         support_array_register
-        byte_size { 4 }
       end
     end
 
