@@ -5,10 +5,10 @@ RgGen.define_simple_feature(:register, :size) do
     property :size
     property :width, initial: -> { calc_width }
     property :byte_width, initial: -> { width / 8 }
-    property :byte_size, initial: -> { calc_byte_size }
+    property :byte_size, forward_to: :calc_byte_size
     property :array?, forward_to: :array_register?
     property :array_size, forward_to: :array_registers
-    property :count, initial: -> { calc_count }
+    property :count, forward_to: :calc_count
 
     input_pattern [
       /(#{integer}(:?,#{integer})*)/,
@@ -24,10 +24,6 @@ RgGen.define_simple_feature(:register, :size) do
       message do
         "non positive value(s) are not allowed for register size: #{size}"
       end
-    end
-
-    printable(:array_size) do
-      (array_register? || nil) && "[#{array_registers.join(', ')}]"
     end
 
     private
@@ -72,9 +68,9 @@ RgGen.define_simple_feature(:register, :size) do
         .max
     end
 
-    def calc_byte_size
-      if register.settings[:byte_size]
-        instance_exec(&register.settings[:byte_size])
+    def calc_byte_size(whole_size = true)
+      if !whole_size || register.settings[:support_shared_address]
+        byte_width
       else
         Array(@size).reduce(1, :*) * byte_width
       end
@@ -88,8 +84,8 @@ RgGen.define_simple_feature(:register, :size) do
       array_register? && @size || nil
     end
 
-    def calc_count
-      Array(array_registers).reduce(1, :*)
+    def calc_count(whole_count = true)
+      whole_count ? (@count ||= Array(array_registers).reduce(1, :*)) : 1
     end
   end
 end

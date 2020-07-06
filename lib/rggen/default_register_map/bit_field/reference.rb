@@ -7,18 +7,12 @@ RgGen.define_simple_feature(:bit_field, :reference) do
     property :reference_width, forward_to: :required_width
     property :find_reference, forward_to: :find_reference_bit_field
 
-    input_pattern [
-      /(#{variable_name})\.(#{variable_name})/,
-      /(#{variable_name})/
-    ]
+    input_pattern /(#{variable_name}(?:\.#{variable_name})*)/
 
     build do |value|
-      @input_reference =
-        if pattern_matched?
-          match_data[1..2].compact.join('.')
-        else
-          error "illegal input value for reference: #{value.inspect}"
-        end
+      pattern_matched? ||
+        (error "illegal input value for reference: #{value.inspect}")
+      @input_reference = match_data.to_s
     end
 
     verify(:component) do
@@ -38,20 +32,46 @@ RgGen.define_simple_feature(:bit_field, :reference) do
 
     verify(:all) do
       error_condition do
-        reference? && !register.array? && reference_bit_field.register.array?
+        reference? && within_array?(reference_bit_field) &&
+          (bit_field.depth != reference_bit_field.depth)
       end
       message do
-        'bit field of array register is not allowed for ' \
-        "reference bit field: #{@input_reference}"
+        'depth of layer is not matched: ' \
+        "own #{bit_field.depth} " \
+        "reference #{reference_bit_field.depth}"
+      end
+    end
+
+    define_helpers do
+      def verify_array(&block)
+        array_verifiers << create_verifier(&block)
+      end
+
+      def array_verifiers
+        @array_verifiers ||= []
       end
     end
 
     verify(:all) do
-      error_condition { reference? && !match_array_size? }
-      message do
+      check_error do
+        reference? && within_array?(reference_bit_field) &&
+          helper.array_verifiers.each(&method(:verify_array))
+      end
+    end
+
+    verify_array do
+      error_condition { |own, ref| !own.array? && ref.array? }
+      message do |*_, layer|
+        "bit field within array #{layer.to_s.tr('_', ' ')} is not allowed for " \
+        "reference bit field: #{@input_reference}"
+      end
+    end
+
+    verify_array do
+      error_condition { |own, ref| unmatch_array_size?(own, ref) }
+      message do |own, ref|
         'array size is not matched: ' \
-        "own #{register.array_size} " \
-        "reference #{reference_bit_field.register.array_size}"
+        "own #{own.array_size} reference #{ref.array_size}"
       end
     end
 
@@ -66,7 +86,7 @@ RgGen.define_simple_feature(:bit_field, :reference) do
     end
 
     verify(:all) do
-      error_condition { reference? && !match_sequence_size? }
+      error_condition { reference? && unmatch_sequence_size? }
       message do
         'sequence size is not matched: ' \
         "own #{bit_field.sequence_size} " \
@@ -125,14 +145,23 @@ RgGen.define_simple_feature(:bit_field, :reference) do
       find_reference_bit_field(register_block.bit_fields)
     end
 
-    def match_array_size?
-      !(register.array? && reference_bit_field.register.array?) ||
-        register.array_size == reference_bit_field.register.array_size
+    def within_array?(bit_field)
+      bit_field.register_files.any?(&:array?) || bit_field.register.array?
     end
 
-    def match_sequence_size?
-      !(bit_field.sequential? && reference_bit_field.sequential?) ||
-        bit_field.sequence_size == reference_bit_field.sequence_size
+    def verify_array(verifier)
+      [*register_files, register]
+        .zip([*reference_bit_field.register_files, reference_bit_field.register])
+        .each { |own, ref| verifier.verify(self, own, ref, own.layer) }
+    end
+
+    def unmatch_array_size?(own, ref)
+      own.array? && ref.array? && own.array_size != ref.array_size
+    end
+
+    def unmatch_sequence_size?
+      bit_field.sequential? && reference_bit_field.sequential? &&
+        (bit_field.sequence_size != reference_bit_field.sequence_size)
     end
 
     def required_width

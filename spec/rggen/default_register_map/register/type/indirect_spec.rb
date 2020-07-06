@@ -7,6 +7,7 @@ RSpec.describe 'register/type/indirect' do
   before(:all) do
     RgGen.enable(:global, [:bus_width, :address_width, :array_port_format])
     RgGen.enable(:register_block, [:byte_size])
+    RgGen.enable(:register_file, [:name, :offset_address, :size])
     RgGen.enable(:register, [:name, :offset_address, :size, :type])
     RgGen.enable(:register, :type, [:indirect])
     RgGen.enable(:bit_field, [:name, :bit_assignment, :initial_value, :reference, :type])
@@ -142,24 +143,37 @@ RSpec.describe 'register/type/indirect' do
           name :qux
           offset_address 0x04
           size [2]
-          type [:indirect, 'buzz', ['fizz_buzz', 0]]
+          type [:indirect, 'buzz.buzz_0.buzz_0', ['buzz.buzz_1.buzz_1.buzz_1', 0], ['fizz_buzz', 1]]
           bit_field { name :qux_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
         end
         register do
           name :fizz
-          offset_address 0x08
+          offset_address 0x20
           bit_field { name :fizz_0; bit_assignment lsb: 0, width: 2; type :rw; initial_value 0 }
           bit_field { name :fizz_1; bit_assignment lsb: 2, width: 2; type :rw; initial_value 0 }
           bit_field { name :fizz_2; bit_assignment lsb: 4, width: 2; type :rw; initial_value 0 }
         end
-        register do
+        register_file do
           name :buzz
-          offset_address 0x0C
-          bit_field { bit_assignment lsb: 0, with: 2; type :rw; initial_value 0 }
+          offset_address 0x30
+          register do
+            name :buzz_0
+            offset_address 0x00
+            bit_field { name :buzz_0; bit_assignment lsb: 0, with: 2; type :rw; initial_value 0 }
+          end
+          register_file do
+            name :buzz_1
+            offset_address 0x04
+            register do
+              name :buzz_1
+              offset_address 0x00
+              bit_field { name :buzz_1; bit_assignment lsb: 0, with: 2; type :rw; initial_value 0 }
+            end
+          end
         end
         register do
           name :fizz_buzz
-          offset_address 0x10
+          offset_address 0x40
           bit_field { bit_assignment lsb: 0, with: 2; type :rw; initial_value 0 }
         end
       end
@@ -177,53 +191,96 @@ RSpec.describe 'register/type/indirect' do
         { name: 'fizz.fizz_2', value: 2 }
       ])
       expect(registers[3].index_entries.map(&:to_h)).to match([
-        { name: 'buzz', value: nil },
-        { name: 'fizz_buzz', value: 0 }
+        { name: 'buzz.buzz_0.buzz_0', value: nil },
+        { name: 'buzz.buzz_1.buzz_1.buzz_1', value: 0 },
+        { name: 'fizz_buzz', value: 1 }
       ])
     end
 
     specify '文字列でインデックスを指定することができる' do
       registers = create_registers do
         register do
-          name :foo
+          name :foo_0
           offset_address 0x0
-          type 'indirect: qux.qux_2:0'
+          type 'indirect: fizz.fizz_2:0'
           bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
         end
         register do
-          name :bar
+          name :foo_1
           offset_address 0x0
           size [2]
-          type 'indirect: qux.qux_1, qux.qux_2:1'
+          type 'indirect: fizz.fizz_1, fizz.fizz_2:1'
+          bit_field { name :foo_1; bit_assignment lsb: 0; type :rw; initial_value 0 }
+        end
+        register do
+          name :foo_2
+          offset_address 0x0
+          size [2, 3]
+          type 'indirect: fizz.fizz_0, fizz.fizz_1, fizz.fizz_2: 2'
+          bit_field { name :foo_2; bit_assignment lsb: 0; type :rw; initial_value 0 }
+        end
+        register do
+          name :bar_0
+          offset_address 0x4
+          type 'indirect: buzz.buzz.buzz_2:0'
           bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
         end
         register do
-          name :baz
-          offset_address 0x0
-          size [2, 3]
-          type 'indirect: qux.qux_0, qux.qux_1, qux.qux_2: 2'
-          bit_field { name :baz_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+          name :bar_1
+          offset_address 0x4
+          size [2]
+          type 'indirect: buzz.buzz.buzz_1, buzz.buzz.buzz_2:1'
+          bit_field { name :bar_1; bit_assignment lsb: 0; type :rw; initial_value 0 }
         end
         register do
-          name :qux
+          name :bar_2
           offset_address 0x4
-          bit_field { name :qux_0; bit_assignment lsb: 0, width: 2; type :rw; initial_value 0 }
-          bit_field { name :qux_1; bit_assignment lsb: 2, width: 2; type :rw; initial_value 0 }
-          bit_field { name :qux_2; bit_assignment lsb: 4, width: 2; type :rw; initial_value 0 }
+          size [2, 3]
+          type 'indirect: buzz.buzz.buzz_0, buzz.buzz.buzz_1, buzz.buzz.buzz_2: 2'
+          bit_field { name :bar_2; bit_assignment lsb: 0; type :rw; initial_value 0 }
+        end
+        register do
+          name :fizz
+          offset_address 0x10
+          bit_field { name :fizz_0; bit_assignment lsb: 0, width: 2; type :rw; initial_value 0 }
+          bit_field { name :fizz_1; bit_assignment lsb: 2, width: 2; type :rw; initial_value 0 }
+          bit_field { name :fizz_2; bit_assignment lsb: 4, width: 2; type :rw; initial_value 0 }
+        end
+        register_file do
+          name :buzz
+          offset_address 0x14
+          register do
+            name :buzz
+            bit_field { name :buzz_0; bit_assignment lsb: 0, width: 2; type :rw; initial_value 0 }
+            bit_field { name :buzz_1; bit_assignment lsb: 2, width: 2; type :rw; initial_value 0 }
+            bit_field { name :buzz_2; bit_assignment lsb: 4, width: 2; type :rw; initial_value 0 }
+          end
         end
       end
 
       expect(registers[0].index_entries.map(&:to_h)).to match([
-        { name: 'qux.qux_2', value: 0 }
+        { name: 'fizz.fizz_2', value: 0 }
       ])
       expect(registers[1].index_entries.map(&:to_h)).to match([
-        { name: 'qux.qux_1', value: nil },
-        { name: 'qux.qux_2', value: 1 }
+        { name: 'fizz.fizz_1', value: nil },
+        { name: 'fizz.fizz_2', value: 1 }
       ])
       expect(registers[2].index_entries.map(&:to_h)).to match([
-        { name: 'qux.qux_0', value: nil },
-        { name: 'qux.qux_1', value: nil },
-        { name: 'qux.qux_2', value: 2 }
+        { name: 'fizz.fizz_0', value: nil },
+        { name: 'fizz.fizz_1', value: nil },
+        { name: 'fizz.fizz_2', value: 2 }
+      ])
+      expect(registers[3].index_entries.map(&:to_h)).to match([
+        { name: 'buzz.buzz.buzz_2', value: 0 }
+      ])
+      expect(registers[4].index_entries.map(&:to_h)).to match([
+        { name: 'buzz.buzz.buzz_1', value: nil },
+        { name: 'buzz.buzz.buzz_2', value: 1 }
+      ])
+      expect(registers[5].index_entries.map(&:to_h)).to match([
+        { name: 'buzz.buzz.buzz_0', value: nil },
+        { name: 'buzz.buzz.buzz_1', value: nil },
+        { name: 'buzz.buzz.buzz_2', value: 2 }
       ])
     end
   end
@@ -419,6 +476,66 @@ RSpec.describe 'register/type/indirect' do
             end
           end
         }.to raise_register_map_error 'no such bit field for indirect index is found: baz.bar_0'
+
+        expect {
+          create_registers do
+            register do
+              name :foo
+              offset_address 0x0
+              type [:indirect, ['baz.bar.bar_0', 0]]
+              bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+            end
+            register_file do
+              name :bar
+              offset_address 0x4
+              register do
+                name :bar
+                offset_address 0x0
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+              end
+            end
+          end
+        }.to raise_register_map_error 'no such bit field for indirect index is found: baz.bar.bar_0'
+
+        expect {
+          create_registers do
+            register do
+              name :foo
+              offset_address 0x0
+              type [:indirect, ['bar.baz.bar_0', 0]]
+              bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+            end
+            register_file do
+              name :bar
+              offset_address 0x4
+              register do
+                name :bar
+                offset_address 0x0
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+              end
+            end
+          end
+        }.to raise_register_map_error 'no such bit field for indirect index is found: bar.baz.bar_0'
+
+        expect {
+          create_registers do
+            register do
+              name :foo
+              offset_address 0x0
+              type [:indirect, ['bar.bar.baz_0', 0]]
+              bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+            end
+            register_file do
+              name :bar
+              offset_address 0x4
+              register do
+                name :bar
+                offset_address 0x0
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+              end
+            end
+          end
+        }.to raise_register_map_error 'no such bit field for indirect index is found: bar.bar.baz_0'
       end
     end
 
@@ -435,6 +552,115 @@ RSpec.describe 'register/type/indirect' do
             end
           end
         }.to raise_register_map_error 'own bit field is not allowed for indirect index: foo.foo_1'
+
+        expect {
+          create_registers do
+            register_file do
+              name :foo
+              offset_address 0x0
+              register do
+                name :foo
+                offset_address 0x0
+                type [:indirect, ['foo.foo.foo_1', 0]]
+                bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+                bit_field { name :foo_1; bit_assignment lsb: 1; type :rw; initial_value 0 }
+              end
+            end
+          end
+        }.to raise_register_map_error 'own bit field is not allowed for indirect index: foo.foo.foo_1'
+
+        expect {
+          create_registers do
+            register_file do
+              name :foo
+              offset_address 0x0
+              register do
+                name :bar
+                offset_address 0x0
+                type [:indirect, ['bar.baz', 0]]
+                bit_field { name :baz; bit_assignment lsb: 0; type :rw; initial_value 0 }
+              end
+            end
+
+            register do
+              name :bar
+              offset_address 0x4
+              bit_field { name :baz; bit_assignment lsb: 0; type :rw; initial_value 0 }
+            end
+          end
+        }.not_to raise_error
+      end
+    end
+
+    context 'インデックスフィードが配列レジスタファイルに属している場合' do
+      it 'RegisterMapErrorを起こす' do
+        expect {
+          create_registers do
+            register do
+              name :foo
+              type [:indirect, ['bar.bar.bar_0', 0]]
+              bit_field { name :foo; bit_assignment lsb: 0; type :rw; initial_value 0 }
+            end
+            register_file do
+              name :bar
+              offset_address 0x4
+              size [2]
+              register do
+                name :bar
+                offset_address 0x0
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+              end
+            end
+          end
+        }.to raise_register_map_error 'bit field within array register file is not allowed for indirect index: bar.bar.bar_0'
+
+        expect {
+          create_registers do
+            register do
+              name :foo
+              type [:indirect, ['bar.bar.bar.bar_0', 0]]
+              bit_field { name :foo; bit_assignment lsb: 0; type :rw; initial_value 0 }
+            end
+            register_file do
+              name :bar
+              offset_address 0x4
+              size [2]
+              register_file do
+                name :bar
+                offset_address 0x0
+                register do
+                  name :bar
+                  offset_address 0x0
+                  bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+                end
+              end
+            end
+          end
+        }.to raise_register_map_error 'bit field within array register file is not allowed for indirect index: bar.bar.bar.bar_0'
+
+        expect {
+          create_registers do
+            register do
+              name :foo
+              type [:indirect, ['bar.bar.bar.bar_0', 0]]
+              bit_field { name :foo; bit_assignment lsb: 0; type :rw; initial_value 0 }
+            end
+            register_file do
+              name :bar
+              offset_address 0x4
+              register_file do
+                name :bar
+                offset_address 0x0
+                size [2]
+                register do
+                  name :bar
+                  offset_address 0x0
+                  bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+                end
+              end
+            end
+          end
+        }.to raise_register_map_error 'bit field within array register file is not allowed for indirect index: bar.bar.bar.bar_0'
       end
     end
 
@@ -455,7 +681,28 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'bit field of array register is not allowed for indirect index: bar.bar_0'
+        }.to raise_register_map_error 'bit field within array register is not allowed for indirect index: bar.bar_0'
+
+        expect {
+          create_registers do
+            register do
+              name :foo
+              offset_address 0x0
+              type [:indirect, ['bar.bar.bar_0', 0]]
+              bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+            end
+            register_file do
+              name :bar
+              offset_address 0x4
+              register do
+                name :bar
+                offset_address 0x0
+                size [2]
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+              end
+            end
+          end
+        }.to raise_register_map_error 'bit field within array register is not allowed for indirect index: bar.bar.bar_0'
       end
     end
 
@@ -519,6 +766,27 @@ RSpec.describe 'register/type/indirect' do
       end
     end
 
+    context '非配列レジスタに配列インデックスが指定された場合' do
+      it 'RegisterMapErrorを起こす' do
+        expect {
+          create_registers do
+            register do
+              name :foo
+              offset_address 0x00
+              type [:indirect, 'bar.bar_0', ['bar.bar_1', 0]]
+              bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+            end
+            register do
+              name :bar
+              offset_address 0x4
+              bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
+              bit_field { name :bar_1; bit_assignment lsb: 1; type :rw; initial_value 0 }
+            end
+          end
+        }.to raise_register_map_error 'array indices are given to non-array register'
+      end
+    end
+
     context '配列インデックスに過不足がある場合' do
       it 'RegisterMapErrorを起こす' do
         expect {
@@ -527,7 +795,7 @@ RSpec.describe 'register/type/indirect' do
               name :foo
               offset_address 0x0
               size [1]
-              type [:indirect, 'bar.bar_0', 'bar.bar_1']
+              type [:indirect, 'bar.bar_0', 'bar.bar_1', ['bar.bar_2', 0]]
               bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
             end
             register do
@@ -535,6 +803,7 @@ RSpec.describe 'register/type/indirect' do
               offset_address 0x4
               bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               bit_field { name :bar_1; bit_assignment lsb: 1; type :rw; initial_value 0 }
+              bit_field { name :bar_2; bit_assignment lsb: 2; type :rw; initial_value 0 }
             end
           end
         }.to raise_register_map_error 'too many array indices are given'
@@ -545,7 +814,7 @@ RSpec.describe 'register/type/indirect' do
               name :foo
               offset_address 0x0
               size [1, 2, 3]
-              type [:indirect, 'bar.bar_0', 'bar.bar_1']
+              type [:indirect, 'bar.bar_0', 'bar.bar_1', ['bar.bar_2', 0]]
               bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
             end
             register do
@@ -553,6 +822,7 @@ RSpec.describe 'register/type/indirect' do
               offset_address 0x4
               bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               bit_field { name :bar_1; bit_assignment lsb: 1; type :rw; initial_value 0 }
+              bit_field { name :bar_2; bit_assignment lsb: 2; type :rw; initial_value 0 }
             end
           end
         }.to raise_register_map_error 'few array indices are given'
@@ -730,7 +1000,7 @@ RSpec.describe 'register/type/indirect' do
       end
 
       context 'インデックスが他のレジスタと区別できない場合' do
-        it 'エラーを起こさない' do
+        it 'RegisterMapErrorを起こす' do
           expect {
             create_registers do
               register do

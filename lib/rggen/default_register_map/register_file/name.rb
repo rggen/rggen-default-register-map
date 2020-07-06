@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RgGen.define_simple_feature(:register, :name) do
+RgGen.define_simple_feature(:register_file, :name) do
   register_map do
     property :name
     property :full_name, forward_to: :get_full_name
@@ -9,18 +9,18 @@ RgGen.define_simple_feature(:register, :name) do
 
     build do |value|
       pattern_matched? ||
-        (error "illegal input value for register name: #{value.inspect}")
+        (error "illegal input value for register file name: #{value.inspect}")
       @name = match_data.to_s
     end
 
     verify(:feature) do
       error_condition { !name }
-      message { 'no register name is given' }
+      message { 'no register file name is given' }
     end
 
     verify(:feature) do
       error_condition { duplicated_name? }
-      message { "duplicated register name: #{name}" }
+      message { "duplicated register file name: #{name}" }
     end
 
     printable(:name) do
@@ -28,14 +28,16 @@ RgGen.define_simple_feature(:register, :name) do
     end
 
     printable(:layer_name) do
-      [register_file&.printables&.fetch(:layer_name), array_name]
-        .compact.join('.')
+      [
+        register_file(:upper)&.printables&.fetch(:layer_name),
+        array_name
+      ].compact.join('.')
     end
 
     private
 
     def get_full_name(separator = '.')
-      [*register_file&.full_name(separator), name].join(separator)
+      [*register_file(:upper)&.full_name(separator), name].join(separator)
     end
 
     def duplicated_name?
@@ -45,7 +47,7 @@ RgGen.define_simple_feature(:register, :name) do
 
     def array_name
       RgGen::Core::Utility::CodeUtility
-        .array_name(name, register.array_size)
+        .array_name(name, register_file.array_size)
     end
   end
 end

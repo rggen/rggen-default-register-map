@@ -100,7 +100,7 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
 
     def previous_bit_field
       index = bit_field.component_index - 1
-      register.bit_fields[index]
+      bit_fields[index]
     end
 
     def calc_next_lsb(bit_field)
@@ -138,9 +138,7 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     end
 
     def overlap?
-      register
-        .bit_fields
-        .any? { |bit_field| (bit_field.bit_map & bit_map).nonzero? }
+      bit_fields.any? { |bit_field| (bit_field.bit_map & bit_map).nonzero? }
     end
   end
 end

@@ -112,90 +112,119 @@ RSpec.describe 'register/size' do
   end
 
   describe '#byte_size' do
-    context ':byte_sizeにブロックが設定されている場合' do
-      let(:register) do
-        create_register do
-          register {}
+    let(:registers) do
+      create_registers do
+        register do
         end
-      end
 
-      it 'ブロックの評価結果をバイトサイズとして返す' do
-        allow(register).to receive(:settings).and_return(byte_size: -> { 2 * byte_width })
-        expect(register).to have_property(:byte_size, 8)
+        register do
+          size [2]
+        end
+
+        register do
+          size [2, 3]
+        end
+
+        register do
+          bit_field { bit_assignment lsb: 0 }
+        end
+
+        register do
+          size [2]
+          bit_field { bit_assignment lsb: 0 }
+        end
+
+        register do
+          size [2, 3]
+          bit_field { bit_assignment lsb: 0 }
+        end
+
+        register do
+          bit_field { bit_assignment lsb: 32 }
+        end
+
+        register do
+          size [2]
+          bit_field { bit_assignment lsb: 32 }
+        end
+
+        register do
+          size [2, 3]
+          bit_field { bit_assignment lsb: 32 }
+        end
       end
     end
 
-    context ':byte_sizeの設定がない場合' do
-      let(:registers) do
-        create_registers do
-          register do
-          end
-
-          register do
-            size [2]
-          end
-
-          register do
-            size [2, 3]
-          end
-
-          register do
-            bit_field { bit_assignment lsb: 0 }
-          end
-
-          register do
-            size [2]
-            bit_field { bit_assignment lsb: 0 }
-          end
-
-          register do
-            size [2, 3]
-            bit_field { bit_assignment lsb: 0 }
-          end
-
-          register do
-            bit_field { bit_assignment lsb: 32 }
-          end
-
-          register do
-            size [2]
-            bit_field { bit_assignment lsb: 32 }
-          end
-
-          register do
-            size [2, 3]
-            bit_field { bit_assignment lsb: 32 }
-          end
+    context 'レジスタの属性にsupport_shared_addressの指定がなく' do
+      before do
+        registers.each do |register|
+          allow(register).to receive(:settings).and_return({})
         end
       end
 
-      it '#byte_widthに#sizeを乗じた値をバイトサイズとして返す' do
-        allow(registers[0]).to receive(:settings).and_return({})
+      context '無引数の場合' do
+        it '#byte_widthに#sizeを乗じた値をバイトサイズとして返す' do
+          expect(registers[0]).to have_property(:byte_size, 4)
+          expect(registers[1]).to have_property(:byte_size, 8)
+          expect(registers[2]).to have_property(:byte_size, 24)
+          expect(registers[3]).to have_property(:byte_size, 4)
+          expect(registers[4]).to have_property(:byte_size, 8)
+          expect(registers[5]).to have_property(:byte_size, 24)
+          expect(registers[6]).to have_property(:byte_size, 8)
+          expect(registers[7]).to have_property(:byte_size, 16)
+          expect(registers[8]).to have_property(:byte_size, 48)
+        end
+      end
+
+      context 'falseが指定された場合' do
+        it '#byte_widthを返す' do
+          expect(registers[0]).to have_property(:byte_size, [false], 4)
+          expect(registers[1]).to have_property(:byte_size, [false], 4)
+          expect(registers[2]).to have_property(:byte_size, [false], 4)
+          expect(registers[3]).to have_property(:byte_size, [false], 4)
+          expect(registers[4]).to have_property(:byte_size, [false], 4)
+          expect(registers[5]).to have_property(:byte_size, [false], 4)
+          expect(registers[6]).to have_property(:byte_size, [false], 8)
+          expect(registers[7]).to have_property(:byte_size, [false], 8)
+          expect(registers[8]).to have_property(:byte_size, [false], 8)
+        end
+      end
+    end
+
+    context 'レジスタの属性にsupport_shared_addressの指定がある場合' do
+      before do
+        registers.each do |register|
+          allow(register).to receive(:settings).and_return({ support_shared_address: true })
+        end
+      end
+
+      it '引数に関わらず、#byte_widthを返す' do
         expect(registers[0]).to have_property(:byte_size, 4)
+        expect(registers[0]).to have_property(:byte_size, [false], 4)
 
-        allow(registers[1]).to receive(:settings).and_return({})
-        expect(registers[1]).to have_property(:byte_size, 8)
+        expect(registers[1]).to have_property(:byte_size, 4)
+        expect(registers[1]).to have_property(:byte_size, [false], 4)
 
-        allow(registers[2]).to receive(:settings).and_return({})
-        expect(registers[2]).to have_property(:byte_size, 24)
+        expect(registers[2]).to have_property(:byte_size, 4)
+        expect(registers[2]).to have_property(:byte_size, [false], 4)
 
-        allow(registers[3]).to receive(:settings).and_return({})
         expect(registers[3]).to have_property(:byte_size, 4)
+        expect(registers[3]).to have_property(:byte_size, [false], 4)
 
-        allow(registers[4]).to receive(:settings).and_return({})
-        expect(registers[4]).to have_property(:byte_size, 8)
+        expect(registers[4]).to have_property(:byte_size, 4)
+        expect(registers[4]).to have_property(:byte_size, [false], 4)
 
-        allow(registers[5]).to receive(:settings).and_return({})
-        expect(registers[5]).to have_property(:byte_size, 24)
+        expect(registers[5]).to have_property(:byte_size, 4)
+        expect(registers[5]).to have_property(:byte_size, [false], 4)
 
-        allow(registers[6]).to receive(:settings).and_return({})
         expect(registers[6]).to have_property(:byte_size, 8)
+        expect(registers[6]).to have_property(:byte_size, [false], 8)
 
-        allow(registers[7]).to receive(:settings).and_return({})
-        expect(registers[7]).to have_property(:byte_size, 16)
+        expect(registers[7]).to have_property(:byte_size, 8)
+        expect(registers[7]).to have_property(:byte_size, [false], 8)
 
-        allow(registers[8]).to receive(:settings).and_return({})
-        expect(registers[8]).to have_property(:byte_size, 48)
+        expect(registers[8]).to have_property(:byte_size, 8)
+        expect(registers[8]).to have_property(:byte_size, [false], 8)
       end
     end
   end
@@ -284,21 +313,42 @@ RSpec.describe 'register/size' do
       end
     end
 
-    it 'レジスタの総要素数を返す' do
-      allow(registers[0]).to receive(:settings).and_return(support_array: true)
-      expect(registers[0]).to have_property(:count, 1)
+    context '無引数の場合' do
+      it 'レジスタの総要素数を返す' do
+        allow(registers[0]).to receive(:settings).and_return(support_array: true)
+        expect(registers[0]).to have_property(:count, 1)
 
-      allow(registers[1]).to receive(:settings).and_return(support_array: true)
-      expect(registers[1]).to have_property(:count, 2)
+        allow(registers[1]).to receive(:settings).and_return(support_array: true)
+        expect(registers[1]).to have_property(:count, 2)
 
-      allow(registers[2]).to receive(:settings).and_return({})
-      expect(registers[2]).to have_property(:count, 1)
+        allow(registers[2]).to receive(:settings).and_return({})
+        expect(registers[2]).to have_property(:count, 1)
 
-      allow(registers[3]).to receive(:settings).and_return(support_array: true)
-      expect(registers[3]).to have_property(:count, 6)
+        allow(registers[3]).to receive(:settings).and_return(support_array: true)
+        expect(registers[3]).to have_property(:count, 6)
 
-      allow(registers[4]).to receive(:settings).and_return({})
-      expect(registers[4]).to have_property(:count, 1)
+        allow(registers[4]).to receive(:settings).and_return({})
+        expect(registers[4]).to have_property(:count, 1)
+      end
+    end
+
+    context '引数にfalseが与えられた場合' do
+      it '1を返す' do
+        allow(registers[0]).to receive(:settings).and_return(support_array: true)
+        expect(registers[0]).to have_property(:count, [false], 1)
+
+        allow(registers[1]).to receive(:settings).and_return(support_array: true)
+        expect(registers[1]).to have_property(:count, [false], 1)
+
+        allow(registers[2]).to receive(:settings).and_return({})
+        expect(registers[2]).to have_property(:count, [false], 1)
+
+        allow(registers[3]).to receive(:settings).and_return(support_array: true)
+        expect(registers[3]).to have_property(:count, [false], 1)
+
+        allow(registers[4]).to receive(:settings).and_return({})
+        expect(registers[4]).to have_property(:count, [false], 1)
+      end
     end
   end
 
@@ -320,39 +370,6 @@ RSpec.describe 'register/size' do
 
     register = create_register { register { size '[1, 2, 3]' } }
     expect(register).to have_property(:size, match([1, 2, 3]))
-  end
-
-  describe '#printables[:array_size]' do
-    let(:registers) do
-      create_registers do
-        register {}
-        register { size [2] }
-        register { size [2, 3] }
-      end
-    end
-
-    context 'レジスタが配列の場合' do
-      it '表示可能オブジェクトとして、配列の大きさを返す' do
-        allow(registers[1]).to receive(:settings).and_return(support_array: true)
-        expect(registers[1].printables[:array_size]).to eq '[2]'
-
-        allow(registers[2]).to receive(:settings).and_return(support_array: true)
-        expect(registers[2].printables[:array_size]).to eq '[2, 3]'
-      end
-    end
-
-    context 'レジスタが配列ではない場合' do
-      it 'nilを返す' do
-        allow(registers[0]).to receive(:settings).and_return(support_array: true)
-        expect(registers[0].printables[:array_size]).to be_nil
-
-        allow(registers[1]).to receive(:settings).and_return({})
-        expect(registers[1].printables[:array_size]).to be_nil
-
-        allow(registers[2]).to receive(:settings).and_return({})
-        expect(registers[2].printables[:array_size]).to be_nil
-      end
-    end
   end
 
   describe 'エラーチェック' do

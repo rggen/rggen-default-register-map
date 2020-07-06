@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
-RgGen.define_simple_feature(:register, :offset_address) do
+RgGen.define_simple_feature(:register_file, :offset_address) do
   register_map do
-    property :offset_address, initial: -> { default_offset_address }
+    property :offset_address, initial: -> { defalt_offset_address }
     property :expanded_offset_addresses, forward_to: :expand_addresses
     property :address_range, initial: -> { start_address..end_address }
-    property :overlap?, forward_to: :overlap_address_range?
 
     build do |value|
       @offset_address =
@@ -24,14 +23,14 @@ RgGen.define_simple_feature(:register, :offset_address) do
     verify(:feature) do
       error_condition { (offset_address % byte_width).nonzero? }
       message do
-        "offset address is not aligned with bus width(#{bus_width}): "\
+        "offset address is not aligned with bus width(#{bus_width}): " \
         "0x#{offset_address.to_s(16)}"
       end
     end
 
     verify(:component) do
       error_condition do
-        register.parent.register_block? &&
+        register_file.parent.register_block? &&
           end_address > register_block.byte_size
       end
       message do
@@ -43,9 +42,7 @@ RgGen.define_simple_feature(:register, :offset_address) do
 
     verify(:component) do
       error_condition do
-        files_and_registers.any? do |other|
-          overlap_address_range?(other) && exclusive_range?(other)
-        end
+        files_and_registers.any?(&method(:overlap_address_range?))
       end
       message do
         'offset address range overlaps with other offset address range: ' \
@@ -59,9 +56,14 @@ RgGen.define_simple_feature(:register, :offset_address) do
 
     private
 
-    def default_offset_address
-      register.component_index.zero? && 0 ||
+    def defalt_offset_address
+      register_file.component_index.zero? && 0 ||
         (previous_component.offset_address + previous_component.byte_size)
+    end
+
+    def previous_component
+      index = register_file.component_index - 1
+      block_or_file.files_and_registers[index]
     end
 
     def start_address(full = false)
@@ -69,23 +71,24 @@ RgGen.define_simple_feature(:register, :offset_address) do
     end
 
     def end_address(full = false)
-      start_address(full) + register.byte_size - 1
+      start_address(full) + register_file.byte_size - 1
     end
 
     def expand_addresses
-      upper_offsets = register_file&.expanded_offset_addresses || [0]
-      upper_offsets.product(expand_local_addresses).map(&:sum)
+      uppser_addresses = register_file(:upper)&.expanded_offset_addresses || [0]
+      uppser_addresses.product(expand_local_addresses).map(&:sum)
     end
 
     def expand_local_addresses
-      Array.new(shared_address? && 1 || register.count) do |i|
-        offset_address + register.byte_width * i
+      Array.new(register_file.array_size&.inject(:*) || 1) do |i|
+        offset_address + register_file.byte_size(false) * i
       end
     end
 
-    def previous_component
-      index = register.component_index - 1
-      files_and_registers[index]
+    def overlap_address_range?(other)
+      self_range = address_range
+      other_range = other.address_range
+      self_range.include?(other_range.first) || other_range.include?(self_range.first)
     end
 
     def bus_width
@@ -96,31 +99,8 @@ RgGen.define_simple_feature(:register, :offset_address) do
       configuration.byte_width
     end
 
-    def overlap_address_range?(other)
-      overlap_range?(other) && competitive_access?(other)
-    end
-
-    def overlap_range?(other)
-      self_range = address_range
-      othre_range = other.address_range
-      self_range.include?(othre_range.first) || othre_range.include?(self_range.first)
-    end
-
-    def competitive_access?(other)
-      other.register_file? ||
-        [:writable?, :readable?].any? { |access| [register, other].all?(&access) }
-    end
-
-    def exclusive_range?(other)
-      other.register_file? || !(shared_address? && register.match_type?(other))
-    end
-
-    def shared_address?
-      register.settings[:support_shared_address]
-    end
-
     def format_address(address)
-      print_width = (register_block.local_address_width + 3) / 4
+      print_width = (register_block.local_address_width.to_f / 4.0).ceil
       format('0x%0*x', print_width, address)
     end
   end

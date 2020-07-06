@@ -5,6 +5,13 @@ RSpec.describe 'bit_field/reference' do
   include_context 'register map common'
 
   before(:all) do
+    RgGen.define_simple_feature(:register_file, :array) do
+      register_map do
+        property :array?, default: false
+        property :array_size, default: nil
+        build { |value| @array, @array_size = value }
+      end
+    end
     RgGen.define_simple_feature(:register, :array) do
       register_map do
         property :array?, default: false
@@ -40,12 +47,14 @@ RSpec.describe 'bit_field/reference' do
   end
 
   before(:all) do
+    RgGen.enable(:register_file, [:name, :array])
     RgGen.enable(:register, [:name, :array])
     RgGen.enable(:bit_field, [:name, :reference, :settings, :width, :sequential, :reserved])
   end
 
   after(:all) do
-    RgGen.delete(:bit_field, :array)
+    RgGen.delete(:register_file, :array)
+    RgGen.delete(:register, :array)
     RgGen.delete(:bit_field, [:settings, :width, :sequential, :reserved])
   end
 
@@ -109,6 +118,51 @@ RSpec.describe 'bit_field/reference' do
         register do
           name 'foo_1'
           bit_field {}
+        end
+      end
+      expect(bit_fields[0]).to have_property(:reference, equal(bit_fields[1]))
+
+      bit_fields = create_bit_fields do
+        register_file do
+          name 'foo_0'
+          register do
+            name 'foo_0_0'
+            bit_field { name 'foo_0_0_0'; reference 'foo_0.foo_0_1.foo_0_1_0'; settings default_settings }
+          end
+          register do
+            name 'foo_0_1'
+            bit_field { name 'foo_0_1_0' }
+          end
+        end
+      end
+      expect(bit_fields[0]).to have_property(:reference, equal(bit_fields[1]))
+
+      bit_fields = create_bit_fields do
+        register do
+          name 'foo_0'
+          bit_field { name 'foo_0_0'; reference 'foo_1.foo_1_0.foo_1_0_0'; settings default_settings }
+        end
+        register_file do
+          name 'foo_1'
+          register do
+            name 'foo_1_0'
+            bit_field { name 'foo_1_0_0' }
+          end
+        end
+      end
+      expect(bit_fields[0]).to have_property(:reference, equal(bit_fields[1]))
+
+      bit_fields = create_bit_fields do
+        register_file do
+          name 'foo_0'
+          register do
+            name 'foo_0_0'
+            bit_field { name 'foo_0_0_0'; reference 'foo_1.foo_1_0'; settings default_settings }
+          end
+        end
+        register do
+          name 'foo_1'
+          bit_field { name 'foo_1_0' }
         end
       end
       expect(bit_fields[0]).to have_property(:reference, equal(bit_fields[1]))
@@ -267,6 +321,82 @@ RSpec.describe 'bit_field/reference' do
             end
           end
         }.to raise_register_map_error 'no such bit field found: foo_2'
+
+        expect {
+          create_bit_fields do
+            register do
+              name 'foo_0'
+              bit_field { name 'foo_0_0'; reference 'bar_1.foo_1_0.foo_1_0_0.foo_1_0_0_0'; settings default_settings }
+            end
+            register_file do
+              name 'foo_1'
+              register_file do
+                name 'foo_1_0'
+                register do
+                  name 'foo_1_0_0'
+                  bit_field { name 'foo_1_0_0_0' }
+                end
+              end
+            end
+          end
+        }.to raise_register_map_error 'no such bit field found: bar_1.foo_1_0.foo_1_0_0.foo_1_0_0_0'
+
+        expect {
+          create_bit_fields do
+            register do
+              name 'foo_0'
+              bit_field { name 'foo_0_0'; reference 'foo_1.bar_1_0.foo_1_0_0.foo_1_0_0_0'; settings default_settings }
+            end
+            register_file do
+              name 'foo_1'
+              register_file do
+                name 'foo_1_0'
+                register do
+                  name 'foo_1_0_0'
+                  bit_field { name 'foo_1_0_0_0' }
+                end
+              end
+            end
+          end
+        }.to raise_register_map_error 'no such bit field found: foo_1.bar_1_0.foo_1_0_0.foo_1_0_0_0'
+
+        expect {
+          create_bit_fields do
+            register do
+              name 'foo_0'
+              bit_field { name 'foo_0_0'; reference 'foo_1.foo_1_0.bar_1_0_0.foo_1_0_0_0'; settings default_settings }
+            end
+            register_file do
+              name 'foo_1'
+              register_file do
+                name 'foo_1_0'
+                register do
+                  name 'foo_1_0_0'
+                  bit_field { name 'foo_1_0_0_0' }
+                end
+              end
+            end
+          end
+        }.to raise_register_map_error 'no such bit field found: foo_1.foo_1_0.bar_1_0_0.foo_1_0_0_0'
+
+        expect {
+          create_bit_fields do
+            register do
+              name 'foo_0'
+              bit_field { name 'foo_0_0'; reference 'foo_1.foo_1_0.foo_1_0_0.bar_1_0_0_0'; settings default_settings }
+            end
+            register_file do
+              name 'foo_1'
+              register_file do
+                name 'foo_1_0'
+                register do
+                  name 'foo_1_0_0'
+                  bit_field { name 'foo_1_0_0_0' }
+                end
+              end
+            end
+          end
+        }.to raise_register_map_error 'no such bit field found: foo_1.foo_1_0.foo_1_0_0.bar_1_0_0_0'
       end
     end
 
@@ -296,7 +426,108 @@ RSpec.describe 'bit_field/reference' do
       end
     end
 
-    context '自身は単体レジスタで、配列レジスタを参照している場合' do
+    context '配列レジスタファイル/レジスタ中のビットフィールドを参照していて、自身と階層の深さが合わない場合' do
+      it 'RegisterMapErrorを起こす' do
+        expect {
+          create_bit_fields do
+            register do
+              name 'foo'
+              bit_field { name 'foo'; reference 'bar.bar.bar'; settings default_settings }
+            end
+            register_file do
+              name 'bar'
+              array [true, [1]]
+              register do
+                name 'bar'
+                bit_field { name 'bar' }
+              end
+            end
+          end
+        }.to raise_register_map_error 'depth of layer is not matched: own 4 reference 5'
+
+        expect {
+          create_bit_fields do
+            register do
+              name 'foo'
+              bit_field { name 'foo'; reference 'bar.bar.bar'; settings default_settings }
+            end
+            register_file do
+              name 'bar'
+              register do
+                name 'bar'
+                array [true, [1]]
+                bit_field { name 'bar' }
+              end
+            end
+          end
+        }.to raise_register_map_error 'depth of layer is not matched: own 4 reference 5'
+
+        expect {
+          create_bit_fields do
+            register_file do
+              name 'foo'
+              register do
+                name 'foo'
+                bit_field { name 'foo'; reference 'bar.bar'; settings default_settings }
+              end
+            end
+            register do
+              name 'bar'
+              array [true, [1]]
+              bit_field { name 'bar' }
+            end
+          end
+        }.to raise_register_map_error 'depth of layer is not matched: own 5 reference 4'
+
+        expect {
+          create_bit_fields do
+            register_file do
+              name 'foo'
+              register_file do
+                name 'foo'
+                register do
+                  name 'foo'
+                  bit_field { name 'foo'; reference 'bar.bar.bar'; settings default_settings }
+                end
+              end
+            end
+            register_file do
+              name 'bar'
+              array [true, [1]]
+              register do
+                name 'bar'
+                bit_field { name 'bar' }
+              end
+            end
+          end
+        }.to raise_register_map_error 'depth of layer is not matched: own 6 reference 5'
+
+        expect {
+          create_bit_fields do
+            register_file do
+              name 'foo'
+              register_file do
+                name 'foo'
+                register do
+                  name 'foo'
+                  bit_field { name 'foo'; reference 'bar.bar.bar'; settings default_settings }
+                end
+              end
+            end
+            register_file do
+              name 'bar'
+              register do
+                name 'bar'
+                array [true, [1]]
+                bit_field { name 'bar' }
+              end
+            end
+          end
+        }.to raise_register_map_error 'depth of layer is not matched: own 6 reference 5'
+      end
+    end
+
+    context '自身は単体レジスタファイル/レジスタで、配列レジスタファイル/レジスタを参照している場合' do
       it 'RegisterMapErrorを起こす' do
         expect {
           create_bit_fields do
@@ -310,11 +541,31 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_1_0' }
             end
           end
-        }.to raise_register_map_error 'bit field of array register is not allowed for reference bit field: foo_1.foo_1_0'
+        }.to raise_register_map_error 'bit field within array register is not allowed for reference bit field: foo_1.foo_1_0'
+
+        expect {
+          create_bit_fields do
+            register_file do
+              name 'foo_0'
+              register do
+                name 'foo_0_0'
+                bit_field { name 'foo_0_0_0'; reference 'foo_1.foo_1_0.foo_1_0_0'; settings default_settings }
+              end
+            end
+            register_file do
+              name 'foo_1'
+              array [true, [2]]
+              register do
+                name 'foo_1_0'
+                bit_field { name 'foo_1_0_0' }
+              end
+            end
+          end
+        }.to raise_register_map_error 'bit field within array register file is not allowed for reference bit field: foo_1.foo_1_0.foo_1_0_0'
       end
     end
 
-    context '自身は配列レジスタで、単体レジスタを参照している場合' do
+    context '自身は配列レジスタファイル/レジスタで、単体レジスタファイル/レジスタを参照している場合' do
       it 'RegisterMapErrorを起こさない' do
         expect {
           create_bit_fields do
@@ -329,10 +580,30 @@ RSpec.describe 'bit_field/reference' do
             end
           end
         }.not_to raise_error
+
+        expect {
+          create_bit_fields do
+            register_file do
+              name 'foo_0'
+              array [true, [2]]
+              register do
+                name 'foo_0_0'
+                bit_field { name 'foo_0_0_0'; reference 'foo_1.foo_1_0.foo_1_0_0'; settings default_settings }
+              end
+            end
+            register_file do
+              name 'foo_1'
+              register do
+                name 'foo_1_0'
+                bit_field { name 'foo_1_0_0' }
+              end
+            end
+          end
+        }.not_to raise_error
       end
     end
 
-    context '自身、参照レジスタともに配列レジスタで、配列のサイズが一致する場合' do
+    context '自身、参照レジスタともに配列レジスタファイル/レジスタで、配列のサイズが一致する場合' do
       it 'RegisterMapErrorを起こさない' do
         expect {
           create_bit_fields do
@@ -357,12 +628,48 @@ RSpec.describe 'bit_field/reference' do
               array [true, [2, 3]]
               bit_field { name 'foo_3_0' }
             end
+
+            register_file do
+              name 'foo_4'
+              array [true, [2]]
+              register do
+                name 'foo_4_0'
+                bit_field { name 'foo_4_0_0'; reference 'foo_5.foo_5_0.foo_5_0_0'; settings default_settings }
+              end
+            end
+
+            register_file do
+              name 'foo_5'
+              array [true, [2]]
+              register do
+                name 'foo_5_0'
+                bit_field { name 'foo_5_0_0' }
+              end
+            end
+
+            register_file do
+              name 'foo_6'
+              array [true, [2, 1]]
+              register do
+                name 'foo_6_0'
+                bit_field { name 'foo_6_0_0'; reference 'foo_7.foo_7_0.foo_7_0_0'; settings default_settings }
+              end
+            end
+
+            register_file do
+              name 'foo_7'
+              array [true, [2, 1]]
+              register do
+                name 'foo_7_0'
+                bit_field { name 'foo_7_0_0' }
+              end
+            end
           end
         }.not_to raise_error
       end
     end
 
-    context '自身、参照レジスタともに配列レジスタで、配列のサイズが一致しない場合' do
+    context '自身、参照レジスタともに配列レジスタフィアル/レジスタで、配列のサイズが一致しない場合' do
       it 'RegisterMapErrorを起こす' do
         expect {
           create_bit_fields do
@@ -408,6 +715,69 @@ RSpec.describe 'bit_field/reference' do
             end
           end
         }.to raise_register_map_error 'array size is not matched: own [2, 1] reference [2]'
+
+        expect {
+          create_bit_fields do
+            register_file do
+              name 'foo_0'
+              array [true, [2]]
+              register do
+                name 'foo_0_0'
+                bit_field { name 'foo_0_0_0'; reference 'foo_1.foo_1_0.foo_1_0_0'; settings default_settings }
+              end
+            end
+            register_file do
+              name 'foo_1'
+              array [true, [1]]
+              register do
+                name 'foo_1_0'
+                bit_field { name 'foo_1_0_0' }
+              end
+            end
+          end
+        }.to raise_register_map_error 'array size is not matched: own [2] reference [1]'
+
+        expect {
+          create_bit_fields do
+            register_file do
+              name 'foo_0'
+              array [true, [2, 1]]
+              register do
+                name 'foo_0_0'
+                bit_field { name 'foo_0_0_0'; reference 'foo_1.foo_1_0.foo_1_0_0'; settings default_settings }
+              end
+            end
+            register_file do
+              name 'foo_1'
+              array [true, [2]]
+              register do
+                name 'foo_1_0'
+                bit_field { name 'foo_1_0_0' }
+              end
+            end
+          end
+        }.to raise_register_map_error 'array size is not matched: own [2, 1] reference [2]'
+
+        expect {
+          create_bit_fields do
+            register_file do
+              name 'foo_0'
+              array [true, [2]]
+              register do
+                name 'foo_0_0'
+                bit_field { name 'foo_0_0_0'; reference 'foo_1.foo_1_0.foo_1_0_0'; settings default_settings }
+              end
+            end
+            register_file do
+              name 'foo_1'
+              array [true, [2, 1]]
+              register do
+                name 'foo_1_0'
+                bit_field { name 'foo_1_0_0' }
+              end
+            end
+          end
+        }.to raise_register_map_error 'array size is not matched: own [2] reference [2, 1]'
       end
     end
 

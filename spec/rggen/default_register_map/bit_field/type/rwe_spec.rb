@@ -41,7 +41,10 @@ RSpec.describe 'bit_field/type/rwe' do
       bit_fields = create_bit_fields do
         register do
           name :foo
-          bit_field { name :foo_0; bit_assignment lsb: 0; type :rwe; initial_value 0; reference 'foo.foo_1' }
+          bit_field { name :foo_0; bit_assignment lsb: 0; type :rwe; initial_value 0; reference 'foo_1.foo_1' }
+        end
+        register do
+          name :foo_1
           bit_field { name :foo_1; bit_assignment lsb: 1; type :rw; initial_value 0 }
         end
       end
@@ -75,18 +78,38 @@ RSpec.describe 'bit_field/type/rwe' do
       expect {
         create_bit_fields do
           register do
-            name :foo
-            bit_field { name :foo_0; bit_assignment lsb: 0, width: 2; type :rwe; initial_value 0; reference 'foo.foo_1' }
-            bit_field { name :foo_1; bit_assignment lsb: 8, width: 1; type :rw; initial_value 0 }
+            name :foo_0
+            bit_field { name :foo_0; bit_assignment lsb: 0, width: 2; type :rwe; initial_value 0; reference 'foo_1.foo_1' }
+          end
+          register do
+            name :foo_1
+            bit_field { name :foo_1; bit_assignment lsb: 0, width: 1; type :rw; initial_value 0 }
           end
 
           register do
-            name :bar
-            bit_field { name :bar_0; bit_assignment lsb: 0, width: 1; type :rwe; initial_value 0; reference 'bar.bar_1' }
-            bit_field { name :bar_1; bit_assignment lsb: 8, width: 2; type :rw; initial_value 0 }
+            name :bar_0
+            bit_field { name :bar_0; bit_assignment lsb: 0, width: 1; type :rwe; initial_value 0; reference 'bar_1.bar_1' }
+          end
+          register do
+            name :bar_1
+            bit_field { name :bar_1; bit_assignment lsb: 0, width: 2; type :rw; initial_value 0 }
           end
         end
       }.not_to raise_error
+    end
+  end
+
+  context '参照ビットフィールドに同一レジスタ内のビットフィールドを指定した場合' do
+    it 'RegisterMapErrorを起こす' do
+      expect {
+        create_bit_fields do
+          register do
+            name :foo
+            bit_field { name :foo_0; bit_assignment lsb: 0, width: 1; type :rwe; initial_value 0; reference 'foo.foo_1' }
+            bit_field { name :foo_1; bit_assignment lsb: 1, width: 1; type :rw; initial_value 0 }
+          end
+        end
+      }.to raise_register_map_error 'bit field within the same register is not allowed for reference bit field: foo.foo_1'
     end
   end
 end

@@ -31,12 +31,8 @@ RgGen.define_list_feature(:register, :type) do
           settings[:support_array] = true
         end
 
-        def byte_size(&block)
-          settings[:byte_size] = block
-        end
-
-        def support_overlapped_address
-          settings[:support_overlapped_address] = true
+        def support_shared_address
+          settings[:support_shared_address] = true
         end
       end
 

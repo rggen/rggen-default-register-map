@@ -5,6 +5,7 @@ require 'rggen/default_register_map'
 RgGen.setup :'rggen-defualt-register-map', RgGen::DefaultRegisterMap do |builder|
   builder.enable :global, [:bus_width, :address_width]
   builder.enable :register_block, [:name, :byte_size]
+  builder.enable :register_file, [:name, :offset_address, :size]
   builder.enable :register, [:name, :offset_address, :size, :type]
   builder.enable :register, :type, [:external, :indirect]
   builder.enable :bit_field, [

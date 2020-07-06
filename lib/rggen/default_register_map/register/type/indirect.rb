@@ -40,19 +40,23 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
       index_entries.map { |entry| entry.find_index_field(bit_fields) }
     end
 
-    byte_size { byte_width }
+    support_shared_address
     support_array_register
-    support_overlapped_address
 
     input_pattern [
-      /(#{variable_name}\.#{variable_name})/,
-      /(#{variable_name}\.#{variable_name}):(#{integer})?/,
-      /(#{variable_name})/,
-      /(#{variable_name}):(#{integer})?/
+      /(#{variable_name}(?:\.#{variable_name})*)/,
+      /(#{variable_name}(?:\.#{variable_name})*):(#{integer})/
     ], match_automatically: false
 
     build do
       @index_entries = parse_index_entries
+    end
+
+    verify(:component) do
+      error_condition do
+        !(register.array? || array_index_fields.empty?)
+      end
+      message { 'array indices are given to non-array register' }
     end
 
     verify(:component) do
@@ -95,7 +99,7 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
 
     verify_index do
       error_condition do |index|
-        index_field(index).register.name == register.name
+        index_field(index).register.full_name == register.full_name
       end
       message do |index|
         "own bit field is not allowed for indirect index: #{index.name}"
@@ -103,9 +107,19 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
     end
 
     verify_index do
+      error_condition do |index|
+        index_field(index).register_files.any?(&:array?)
+      end
+      message do |index|
+        'bit field within array register file is not allowed ' \
+        "for indirect index: #{index.name}"
+      end
+    end
+
+    verify_index do
       error_condition { |index| index_field(index).register.array? }
       message do |index|
-        'bit field of array register is not allowed ' \
+        'bit field within array register is not allowed ' \
         "for indirect index: #{index.name}"
       end
     end
@@ -219,8 +233,8 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
     end
 
     def distinguishable?
-      register_block
-        .registers.select { |other| share_same_range?(other) }
+      files_and_registers
+        .select { |other| other.register? && share_same_range?(other) }
         .all? { |other| distinguishable_indices?(other.index_entries) }
     end
 
