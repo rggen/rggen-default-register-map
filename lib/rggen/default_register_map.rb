@@ -6,7 +6,6 @@ module RgGen
   module DefaultRegisterMap
     FEATURES = [
       'default_register_map/bit_field/bit_assignment',
-      'default_register_map/bit_field/comment',
       'default_register_map/bit_field/initial_value',
       'default_register_map/bit_field/name',
       'default_register_map/bit_field/reference',
@@ -24,6 +23,7 @@ module RgGen
       'default_register_map/bit_field/type/w0s_w1s',
       'default_register_map/bit_field/type/w0trg_w1trg',
       'default_register_map/bit_field/type/wo_wo1',
+      'default_register_map/common/comment',
       'default_register_map/global/address_width',
       'default_register_map/global/bus_width',
       'default_register_map/register/name',
