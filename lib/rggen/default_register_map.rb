@@ -4,6 +4,8 @@ require_relative 'default_register_map/version'
 
 module RgGen
   module DefaultRegisterMap
+    PLUGIN_NAME = :'rggen-default-register-map'
+
     FEATURES = [
       'default_register_map/bit_field/bit_assignment',
       'default_register_map/bit_field/initial_value',
