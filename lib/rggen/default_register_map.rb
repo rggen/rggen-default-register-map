@@ -24,7 +24,7 @@ module RgGen
       'default_register_map/bit_field/type/w0crs_w1crs_w0src_w1src_w0t_w1t',
       'default_register_map/bit_field/type/w0s_w1s',
       'default_register_map/bit_field/type/w0trg_w1trg',
-      'default_register_map/bit_field/type/wo_wo1',
+      'default_register_map/bit_field/type/wo_wo1_woc_wos',
       'default_register_map/common/comment',
       'default_register_map/global/address_width',
       'default_register_map/global/bus_width',
