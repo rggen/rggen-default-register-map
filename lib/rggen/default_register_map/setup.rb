@@ -2,7 +2,7 @@
 
 require 'rggen/default_register_map'
 
-RgGen.setup RgGen::DefaultRegisterMap do |builder|
+RgGen.register_plugin RgGen::DefaultRegisterMap do |builder|
   builder.enable :global, [:bus_width, :address_width]
   builder.enable :register_block, [
     :name, :byte_size, :comment
