@@ -5,16 +5,9 @@ RSpec.describe RgGen::DefaultRegisterMap do
 
   let(:builder) { RgGen.builder }
 
-  describe '.default_setup' do
-    it '.load_featuresを呼び出す' do
-      expect(RgGen::DefaultRegisterMap).to receive(:load_features).and_call_original
-      RgGen::DefaultRegisterMap.default_setup(builder)
-    end
-  end
-
   describe '既定セットアップ' do
     it 'フィーチャーの読み出しと有効化を行う' do
-      expect(RgGen::DefaultRegisterMap).to receive(:load_features).and_call_original
+      expect(RgGen::DefaultRegisterMap.plugin_spec).to receive(:activate).with(equal(builder)).and_call_original
       expect(builder).to receive(:enable).with(:global, [:bus_width, :address_width]).and_call_original
       expect(builder).to receive(:enable).with(:register_block, [:name, :byte_size, :comment]).and_call_original
       expect(builder).to receive(:enable).with(:register_file, [:name, :offset_address, :size, :comment]).and_call_original
