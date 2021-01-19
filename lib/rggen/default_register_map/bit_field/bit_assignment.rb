@@ -15,7 +15,7 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
 
     build do |value|
       input_value = preprocess(value)
-      KEYS.each { |key| parse_value(input_value, key) }
+      helper.variable_keys.each { |key| parse_value(input_value, key) }
     end
 
     verify(:feature) do
@@ -61,11 +61,17 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
 
     private
 
-    VARIABLE_NAMES = {
-      lsb: :@lsb_base, width: :@width, sequence_size: :@sequence_size, step: :@step
-    }.freeze
+    define_helpers do
+      def variable_names
+        @variable_names ||= {
+          lsb: :@lsb_base, width: :@width, sequence_size: :@sequence_size, step: :@step
+        }.freeze
+      end
 
-    KEYS = VARIABLE_NAMES.keys.freeze
+      def variable_keys
+        @variable_keys ||= variable_names.keys
+      end
+    end
 
     def preprocess(value)
       if value.is_a?(Hash)
@@ -81,13 +87,13 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
       match_data
         .to_s
         .split(':')
-        .map.with_index { |value, i| [KEYS[i], value] }
+        .map.with_index { |value, i| [helper.variable_keys[i], value] }
         .to_h
     end
 
     def parse_value(input_value, key)
       input_value.key?(key) &&
-        instance_variable_set(VARIABLE_NAMES[key], Integer(input_value[key]))
+        instance_variable_set(helper.variable_names[key], Integer(input_value[key]))
     rescue ArgumentError, TypeError
       error "cannot convert #{input_value[key].inspect} into " \
             "bit assignment(#{key.to_s.tr('_', ' ')})"

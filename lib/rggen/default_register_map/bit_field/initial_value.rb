@@ -121,9 +121,10 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
     end
 
     def parse_initial_value(input_value)
-      if @input_format == :parameterized
+      case @input_format
+      when :parameterized
         [parse_parameterized_initial_value(input_value), nil]
-      elsif @input_format == :array
+      when :array
         [nil, parse_arrayed_initial_value(input_value)]
       else
         [parse_value(input_value), nil]
