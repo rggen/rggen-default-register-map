@@ -180,13 +180,13 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
 
     def create_index_entry(value)
       input_values = split_value(value)
-      if input_values.size == 2
+      case input_values.size
+      when 2
         index_entry.new(input_values[0], convert_index_value(input_values[1]))
-      elsif input_values.size == 1
+      when 1
         index_entry.new(input_values[0])
       else
-        error 'too many arguments for indirect index ' \
-              "are given: #{value.inspect}"
+        error "too many arguments for indirect index are given: #{value.inspect}"
       end
     end
 
