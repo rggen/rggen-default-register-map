@@ -6,13 +6,10 @@ RgGen.define_simple_feature(:register_block, :byte_size) do
     property :local_address_width
 
     build do |value|
-      @byte_size =
-        begin
-          Integer(value)
-        rescue ArgumentError, TypeError
-          error "cannot convert #{value.inspect} into byte size"
-        end
+      @byte_size = Integer(value)
       @local_address_width = (@byte_size - 1).bit_length
+    rescue ArgumentError, TypeError
+      error "cannot convert #{value.inspect} into byte size"
     end
 
     verify(:feature) do
