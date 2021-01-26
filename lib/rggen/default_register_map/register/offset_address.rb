@@ -8,12 +8,9 @@ RgGen.define_simple_feature(:register, :offset_address) do
     property :overlap?, forward_to: :overlap_address_range?
 
     build do |value|
-      @offset_address =
-        begin
-          Integer(value)
-        rescue ArgumentError, TypeError
-          error "cannot convert #{value.inspect} into offset address"
-        end
+      @offset_address = Integer(value)
+    rescue ArgumentError, TypeError
+      error "cannot convert #{value.inspect} into offset address"
     end
 
     verify(:feature) do

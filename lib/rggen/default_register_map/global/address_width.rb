@@ -5,12 +5,9 @@ RgGen.define_simple_feature(:global, :address_width) do
     property :address_width, default: 32
 
     build do |value|
-      @address_width =
-        begin
-          Integer(value)
-        rescue ArgumentError, TypeError
-          error "cannot convert #{value.inspect} into address width"
-        end
+      @address_width = Integer(value)
+    rescue ArgumentError, TypeError
+      error "cannot convert #{value.inspect} into address width"
     end
 
     verify(:component) do

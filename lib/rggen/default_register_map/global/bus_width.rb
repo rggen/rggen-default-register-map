@@ -6,12 +6,9 @@ RgGen.define_simple_feature(:global, :bus_width) do
     property :byte_width, initial: -> { bus_width / 8 }
 
     build do |value|
-      @bus_width =
-        begin
-          Integer(value)
-        rescue ArgumentError, TypeError
-          error "cannot convert #{value.inspect} into bus width"
-        end
+      @bus_width = Integer(value)
+    rescue ArgumentError, TypeError
+      error "cannot convert #{value.inspect} into bus width"
     end
 
     verify(:feature) do
