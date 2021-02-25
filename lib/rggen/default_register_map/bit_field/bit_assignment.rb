@@ -1,6 +1,19 @@
 # frozen_string_literal: true
 
 RgGen.define_simple_feature(:bit_field, :bit_assignment) do
+  configuration do
+    property :bit_assignment, default: :width_first
+
+    input_pattern [width_first: /width_first/i, lsb_first: /lsb_first/i]
+    ignore_empty_value false
+
+    build do |value|
+      pattern_matched? ||
+        (error "illegal input value for bit assignment: #{value.inspect}")
+      @bit_assignment = match_index
+    end
+  end
+
   register_map do
     property :lsb, forward_to: :lsb_bit
     property :msb, forward_to: :msb_bit
@@ -15,7 +28,9 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
 
     build do |value|
       input_value = preprocess(value)
-      helper.variable_keys.each { |key| parse_value(input_value, key) }
+      helper.variable_names.each do |key, variable_name|
+        parse_value(input_value, key, variable_name)
+      end
     end
 
     verify(:feature) do
@@ -64,12 +79,8 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     define_helpers do
       def variable_names
         @variable_names ||= {
-          lsb: :@lsb_base, width: :@width, sequence_size: :@sequence_size, step: :@step
+          width: :@width, lsb: :@lsb_base, sequence_size: :@sequence_size, step: :@step
         }.freeze
-      end
-
-      def variable_keys
-        @variable_keys ||= variable_names.keys
       end
     end
 
@@ -87,13 +98,24 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
       match_data
         .to_s
         .split(':')
-        .map.with_index { |value, i| [helper.variable_keys[i], value] }
+        .map.with_index { |value, i| [variable_key(i), value] }
         .to_h
     end
 
-    def parse_value(input_value, key)
+    def variable_key(index)
+      @keys ||=
+        if configuration.bit_assignment == :width_first
+          helper.variable_names.keys
+        else
+          keys = helper.variable_names.keys
+          [keys[1], keys[0], *keys[2..-1]]
+        end
+      @keys[index]
+    end
+
+    def parse_value(input_value, key, variable_name)
       input_value.key?(key) &&
-        instance_variable_set(helper.variable_names[key], Integer(input_value[key]))
+        instance_variable_set(variable_name, Integer(input_value[key]))
     rescue ArgumentError, TypeError
       error "cannot convert #{input_value[key].inspect} into " \
             "bit assignment(#{key.to_s.tr('_', ' ')})"
