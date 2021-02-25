@@ -8,8 +8,9 @@ RSpec.describe 'bit_field/bit_assignment' do
     RgGen.enable(:bit_field, :bit_assignment)
   end
 
-  def create_bit_fields(*input_values)
-    register_map = create_register_map do
+  def create_bit_fields(*input_values, format: :width_first)
+    configuration = create_configuration(bit_assignment: format)
+    register_map = create_register_map(configuration) do
       register_block do
         register do
           if input_values.size.zero?
@@ -28,11 +29,45 @@ RSpec.describe 'bit_field/bit_assignment' do
   end
 
   def create_bit_field(*input_values)
-    create_bit_fields(*input_values).first
+    create_bit_fields(*input_values, format: :width_first).first
   end
 
   def random_value(min, max)
     rand(min..max)
+  end
+
+  describe 'configuration' do
+    describe '#bit_assignment' do
+      specify '規定値は:width_first' do
+        configuration = create_configuration
+        expect(configuration).to have_property(:bit_assignment, :width_first)
+      end
+
+      it '指定されたフォーマットを返す' do
+        {
+          width_first: ['width_first', 'WIDTH_FIRST', random_string(/width_first/i)],
+          lsb_first: ['lsb_first', 'LSB_FIRST', random_string(/lsb_first/i)]
+        }.each do |format, values|
+          values.each do |value|
+            configuration = create_configuration(bit_assignment: value)
+            expect(configuration).to have_property(:bit_assignment, format)
+
+            configuration = create_configuration(bit_assignment: value.to_sym)
+            expect(configuration).to have_property(:bit_assignment, format)
+          end
+        end
+      end
+
+      context '入力がwidth_first/lsb_first以外の場合' do
+        it 'ConfigurationErrorを起こす' do
+          ['foo_first', 'width_foo', 'lsb_foo', 'width_lsb', true, false, nil, 1, Object.new].each do |value|
+            expect {
+              create_configuration(bit_assignment: value)
+            }.to raise_configuration_error "illegal input value for bit assignment: #{value.inspect}"
+          end
+        end
+      end
+    end
   end
 
   describe '#lsb' do
@@ -282,20 +317,38 @@ RSpec.describe 'bit_field/bit_assignment' do
 
     let(:step) { random_value(width, 8) }
 
-    specify ':区切りで、LSB/ビットフィールド幅/繰り返し数/繰り返す幅を入力できる' do
-      bit_field = create_bit_field("#{lsb}")
-      expect(bit_field).to have_properties([[:lsb, lsb], [:width, 1]])
+    specify ':区切りで、ビットフィールド幅/LSB/繰り返し数/繰り返す幅を入力できる' do
+      bit_field = create_bit_field("#{width}")
+      expect(bit_field).to have_properties([[:width, width], [:lsb, 0]])
       expect(bit_field).not_to be_sequential
 
-      bit_field = create_bit_field("#{lsb}:#{width}")
-      expect(bit_field).to have_properties([[:lsb, lsb], [:width, width]])
+      bit_field = create_bit_field("#{width}:#{lsb}")
+      expect(bit_field).to have_properties([[:width, width], [:lsb, lsb]])
       expect(bit_field).not_to be_sequential
 
-      bit_field = create_bit_field("#{lsb}:#{width}:#{sequence_size}")
-      expect(bit_field).to have_properties([[:lsb, lsb], [:width, width], [:sequence_size, sequence_size], [:step, width]])
+      bit_field = create_bit_field("#{width}:#{lsb}:#{sequence_size}")
+      expect(bit_field).to have_properties([[:width, width], [:lsb, lsb], [:sequence_size, sequence_size], [:step, width]])
 
-      bit_field = create_bit_field("#{lsb}:#{width}:#{sequence_size}:#{step}")
-      expect(bit_field).to have_properties([[:lsb, lsb], [:width, width], [:sequence_size, sequence_size], [:step, step]])
+      bit_field = create_bit_field("#{width}:#{lsb}:#{sequence_size}:#{step}")
+      expect(bit_field).to have_properties([[:width, width], [:lsb, lsb], [:sequence_size, sequence_size], [:step, step]])
+    end
+
+    context '入力フォーマット設定が:lsb_firstの場合' do
+      specify 'LSBが第一要素となる' do
+        bit_field = create_bit_fields("#{lsb}", format: :lsb_first).first
+        expect(bit_field).to have_properties([[:lsb, lsb], [:width, 1]])
+        expect(bit_field).not_to be_sequential
+
+        bit_field = create_bit_fields("#{lsb}:#{width}", format: :lsb_first).first
+        expect(bit_field).to have_properties([[:lsb, lsb], [:width, width]])
+        expect(bit_field).not_to be_sequential
+
+        bit_field = create_bit_fields("#{lsb}:#{width}:#{sequence_size}", format: :lsb_first).first
+        expect(bit_field).to have_properties([[:lsb, lsb], [:width, width], [:sequence_size, sequence_size], [:step, width]])
+
+        bit_field = create_bit_fields("#{lsb}:#{width}:#{sequence_size}:#{step}", format: :lsb_first).first
+        expect(bit_field).to have_properties([[:lsb, lsb], [:width, width], [:sequence_size, sequence_size], [:step, step]])
+      end
     end
   end
 
