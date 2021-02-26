@@ -82,6 +82,11 @@ RgGen.define_list_feature(:bit_field, :type) do
 
       build { |value| @type = value }
 
+      build do |value|
+        @type = value
+        helper.reserved? && bit_field.document_only
+      end
+
       printable :type
 
       private

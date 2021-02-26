@@ -156,6 +156,20 @@ RSpec.describe 'bit_field/type' do
       bit_field = create_bit_field {}
       expect(bit_field).to match_access(:read_write)
     end
+
+    specify '予約済み属性の場合はドキュメント専用' do
+      bit_field = create_bit_field { read_write }
+      expect(bit_field).not_to be_document_only
+
+      bit_field = create_bit_field { read_only }
+      expect(bit_field).not_to be_document_only
+
+      bit_field = create_bit_field { write_only }
+      expect(bit_field).not_to be_document_only
+
+      bit_field = create_bit_field { reserved }
+      expect(bit_field).to be_document_only
+    end
   end
 
   describe '揮発性' do

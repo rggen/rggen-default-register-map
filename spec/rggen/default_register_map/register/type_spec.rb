@@ -177,11 +177,17 @@ RSpec.describe 'register/type' do
           readable? { true }
         end
       end
+      RgGen.define_list_item_feature(:register, :type, :baz) do
+        register_map do
+          writable? { false }
+          readable? { false }
+        end
+      end
     end
 
     after(:all) do
       delete_register_map_factory
-      RgGen.delete(:register, :type, [:foo, :bar])
+      RgGen.delete(:register, :type, [:foo, :bar, :baz])
     end
 
     context '.writable?/.readable?の指定がない場合' do
@@ -216,11 +222,11 @@ RSpec.describe 'register/type' do
         expect(registers[3]).to have_property(:writable?, false)
       end
 
-      specify '読み込み可能、または、予約済みビットフィードがあれば、読み込み可能レジスタ' do
+      specify '読み込み可能があれば、読み込み可能レジスタ' do
         expect(registers[0]).to have_property(:readable?, true)
         expect(registers[1]).to have_property(:readable?, true)
         expect(registers[2]).to have_property(:readable?, false)
-        expect(registers[3]).to have_property(:readable?, true)
+        expect(registers[3]).to have_property(:readable?, false)
       end
     end
 
@@ -239,10 +245,64 @@ RSpec.describe 'register/type' do
             type :bar
             bit_field { bit_assignment lsb: 0; type :qux }
           end
+
+          register do
+            type :baz
+            bit_field { bit_assignment lsb: 0; type :bar }
+          end
+          register do
+            type :baz
+            bit_field { bit_assignment lsb: 0; type :baz }
+          end
+          register do
+            type :baz
+            bit_field { bit_assignment lsb: 0; type :qux }
+          end
         end
+
         expect(registers[0]).to have_properties [[:writable?, true], [:readable?, true]]
         expect(registers[1]).to have_properties [[:writable?, true], [:readable?, true]]
         expect(registers[2]).to have_properties [[:writable?, true], [:readable?, true]]
+        expect(registers[3]).to have_properties [[:writable?, false], [:readable?, false]]
+        expect(registers[4]).to have_properties [[:writable?, false], [:readable?, false]]
+        expect(registers[5]).to have_properties [[:writable?, false], [:readable?, false]]
+      end
+    end
+
+    context '読み書きともに不可の場合' do
+      let(:registers) do
+        create_registers do
+          register do
+            type :foo
+            bit_field { type :foo; bit_assignment lsb: 0 }
+          end
+          register do
+            type :foo
+            bit_field { type :qux; bit_assignment lsb: 0 }
+          end
+          register do
+            type :bar
+            bit_field { bit_assignment lsb: 0; type :bar }
+          end
+          register do
+            type :baz
+            bit_field { bit_assignment lsb: 0; type :bar }
+          end
+        end
+      end
+
+      specify '属性は予約済み' do
+        expect(registers[0]).to have_property(:reserved?, false)
+        expect(registers[1]).to have_property(:reserved?, true)
+        expect(registers[2]).to have_property(:reserved?, false)
+        expect(registers[3]).to have_property(:reserved?, true)
+      end
+
+      specify 'ドキュメント専用コンポーネントになる' do
+        expect(registers[0]).not_to be_document_only
+        expect(registers[1]).to be_document_only
+        expect(registers[2]).not_to be_document_only
+        expect(registers[3]).to be_document_only
       end
     end
   end
