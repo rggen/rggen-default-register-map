@@ -12,7 +12,7 @@ RSpec.describe RgGen::DefaultRegisterMap do
       expect(builder).to receive(:enable).with(:register_block, [:name, :byte_size, :comment]).and_call_original
       expect(builder).to receive(:enable).with(:register_file, [:name, :offset_address, :size, :comment]).and_call_original
       expect(builder).to receive(:enable).with(:register, [:name, :offset_address, :size, :type, :comment]).and_call_original
-      expect(builder).to receive(:enable).with(:register, :type, [:external, :indirect]).and_call_original
+      expect(builder).to receive(:enable).with(:register, :type, [:external, :indirect, :reserved]).and_call_original
       expect(builder).to receive(:enable).with(:bit_field, [:name, :bit_assignment, :type, :initial_value, :reference, :comment]).and_call_original
       expect(builder).to receive(:enable).with(:bit_field, :type, [
         :rc, :reserved, :ro, :rof, :rs, :rw, :rwc, :rwe, :rwl, :rws,

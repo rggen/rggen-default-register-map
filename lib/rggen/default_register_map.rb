@@ -39,6 +39,7 @@ module RgGen
         'default_register_map/register/type',
         'default_register_map/register/type/external',
         'default_register_map/register/type/indirect',
+        'default_register_map/register/type/reserved',
         'default_register_map/register_block/byte_size',
         'default_register_map/register_block/name',
         'default_register_map/register_file/name',
