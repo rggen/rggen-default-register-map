@@ -40,12 +40,17 @@ RgGen.define_list_feature(:register, :type) do
       property :match_type?, body: ->(register) { register.type == type }
       property :writable?, initial: -> { writability }
       property :readable?, initial: -> { readability }
+      property :reserved?, initial: -> { !(writable? || readable?) }
       property :settings, forward_to_helper: true
 
       build do |value|
         @type = value[:type]
         @options = value[:options]
         helper.need_bit_fields? || register.need_no_children
+      end
+
+      post_build do
+        reserved? && register.document_only
       end
 
       verify(:component) do
@@ -62,22 +67,13 @@ RgGen.define_list_feature(:register, :type) do
       attr_reader :options
 
       def writability
-        instance_exec(&(helper.writability || default_writability))
-      end
-
-      def default_writability
-        -> { register.bit_fields.any?(&:writable?) }
+        block = helper.writability || -> { register.bit_fields.any?(&:writable?) }
+        instance_exec(&block)
       end
 
       def readability
-        instance_exec(&(helper.readability || default_readability))
-      end
-
-      def default_readability
-        lambda do
-          block = ->(bit_field) { bit_field.readable? || bit_field.reserved? }
-          register.bit_fields.any?(&block)
-        end
+        block = helper.readability || -> { register.bit_fields.any?(&:readable?) }
+        instance_exec(&block)
       end
     end
 

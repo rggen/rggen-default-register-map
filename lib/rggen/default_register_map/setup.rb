@@ -13,7 +13,7 @@ RgGen.register_plugin RgGen::DefaultRegisterMap do |builder|
   builder.enable :register, [
     :name, :offset_address, :size, :type, :comment
   ]
-  builder.enable :register, :type, [:external, :indirect]
+  builder.enable :register, :type, [:external, :indirect, :reserved]
   builder.enable :bit_field, [
     :name, :bit_assignment, :type, :initial_value, :reference, :comment
   ]
