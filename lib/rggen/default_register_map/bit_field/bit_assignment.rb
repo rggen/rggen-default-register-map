@@ -59,8 +59,8 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     end
 
     verify(:feature) do
-      error_condition { sequential? && step < 1 }
-      message { "step is less than 1: #{step}" }
+      error_condition { sequential? && step < width }
+      message { "step is less than width: step #{step} width #{width}" }
     end
 
     verify(:feature) do

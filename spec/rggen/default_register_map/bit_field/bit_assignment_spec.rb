@@ -493,12 +493,30 @@ RSpec.describe 'bit_field/bit_assignment' do
       end
     end
 
-    context '入力繰り返し幅が 1 未満の場合' do
+    context '入力繰り返し幅がビット幅より小さい場合' do
       it 'RegisterMapErrorを起こす' do
-        [random_value(-8, -2), -1, 0].each do |invalid_value|
+        [1, 2, random_value(3, 8)].each do |step|
           expect {
-            create_bit_field(lsb: 0, sequence_size: 1, step: invalid_value)
-          }.to raise_register_map_error "step is less than 1: #{invalid_value}"
+            create_bit_field(lsb: 0, sequence_size: 1, step: step)
+          }.not_to raise_error
+        end
+
+        [0, -1, random_value(-8, -3)].each do |step|
+          expect {
+            create_bit_field(lsb: 0, sequence_size: 1, step: step)
+          }.to raise_register_map_error "step is less than width: step #{step} width 1"
+        end
+
+        [2, 3, random_value(4, 8)].each do |step|
+          expect {
+            create_bit_field(width: 2, sequence_size: 1, step: step)
+          }.not_to raise_error
+        end
+
+        [1, 0, -1, random_value(-8, -2)].each do |step|
+          expect {
+            create_bit_field(width: 2, sequence_size: 1, step: step)
+          }.to raise_register_map_error "step is less than width: step #{step} width 2"
         end
       end
     end
