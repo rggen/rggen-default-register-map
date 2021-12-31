@@ -108,7 +108,7 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
           helper.variable_names.keys
         else
           keys = helper.variable_names.keys
-          [keys[1], keys[0], *keys[2..-1]]
+          [keys[1], keys[0], *keys[2..]]
         end
       @keys[index]
     end
