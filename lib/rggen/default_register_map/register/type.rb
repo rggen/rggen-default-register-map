@@ -103,7 +103,7 @@ RgGen.define_list_feature(:register, :type) do
           split_string_value(value)
         else
           input_value = Array(value)
-          [input_value[0], input_value[1..-1]]
+          [input_value[0], input_value[1..]]
         end
       end
 

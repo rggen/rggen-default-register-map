@@ -194,7 +194,7 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
       input_value = Array(value)
       field_name = input_value.first
       if sting_or_symbol?(field_name) && match_pattern(field_name)
-        [*match_data.captures, *input_value[1..-1]]
+        [*match_data.captures, *input_value[1..]]
       else
         error "illegal input value for indirect index: #{value.inspect}"
       end
