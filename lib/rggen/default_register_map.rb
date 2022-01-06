@@ -17,6 +17,7 @@ module RgGen
         'default_register_map/bit_field/type/reserved',
         'default_register_map/bit_field/type/ro',
         'default_register_map/bit_field/type/rof',
+        'default_register_map/bit_field/type/rowo',
         'default_register_map/bit_field/type/rs',
         'default_register_map/bit_field/type/rw_w1_wrc_wrs',
         'default_register_map/bit_field/type/rwc_rws',

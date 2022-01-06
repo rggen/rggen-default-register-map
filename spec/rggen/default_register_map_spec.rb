@@ -15,7 +15,7 @@ RSpec.describe RgGen::DefaultRegisterMap do
       expect(builder).to receive(:enable).with(:register, :type, [:external, :indirect, :reserved]).and_call_original
       expect(builder).to receive(:enable).with(:bit_field, [:name, :bit_assignment, :type, :initial_value, :reference, :comment]).and_call_original
       expect(builder).to receive(:enable).with(:bit_field, :type, [
-        :rc, :reserved, :ro, :rof, :rs, :rw, :rwc, :rwe, :rwl, :rws,
+        :rc, :reserved, :ro, :rof, :rowo, :rs, :rw, :rwc, :rwe, :rwl, :rws,
         :w0c, :w0crs, :w0s, :w0src, :w0t, :w0trg, :w1, :w1c, :w1crs, :w1s, :w1src, :w1t, :w1trg,
         :wo, :wo1, :woc, :wos, :wc, :wcrs, :wrc, :wrs, :ws, :wsrc]
       ).and_call_original
