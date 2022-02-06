@@ -18,10 +18,10 @@ RgGen.register_plugin RgGen::DefaultRegisterMap do |builder|
     :name, :bit_assignment, :type, :initial_value, :reference, :comment
   ]
   builder.enable :bit_field, :type, [
-    :rc, :reserved, :ro, :rof, :rowo, :rs,
-    :rw, :rwc, :rwe, :rwl, :rws,
+    :rc, :reserved, :ro, :rotrg, :rof, :rowo, :rowotrg, :rs,
+    :rw, :rwc, :rwe, :rwl, :rws, :rwtrg,
     :w0c, :w0crs, :w0s, :w0src, :w0t, :w0trg,
     :w1, :w1c, :w1crs, :w1s, :w1src, :w1t, :w1trg, :wo, :wo1,
-    :woc, :wos, :wc, :wcrs, :wrc, :wrs, :ws, :wsrc
+    :woc, :wos, :wotrg, :wc, :wcrs, :wrc, :wrs, :ws, :wsrc
   ]
 end
