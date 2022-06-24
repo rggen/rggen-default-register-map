@@ -13,4 +13,4 @@ RSpec.configure do |config|
 end
 
 require 'rggen/default_register_map'
-RgGen::DefaultRegisterMap.plugin_spec.activate(builder)
+builder.plugin_manager.activate_plugin_by_name(:'rggen-default-register-map')
