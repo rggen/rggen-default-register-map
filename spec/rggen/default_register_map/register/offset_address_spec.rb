@@ -50,7 +50,7 @@ RSpec.describe 'register/offset_address' do
       end
     end
 
-    RgGen.enable(:global, [:bus_width, :address_width])
+    RgGen.enable(:global, [:bus_width, :address_width, :enable_wide_register])
     RgGen.enable(:register_block, :byte_size)
     RgGen.enable(:register_file, [:offset_address, :size])
     RgGen.enable(:register, [:offset_address, :size, :type])
@@ -64,11 +64,16 @@ RSpec.describe 'register/offset_address' do
 
   let(:address_width) { 16 }
 
+  let(:enable_wide_register) { true }
+
   let(:block_byte_size) { 256 }
 
   def create_registers(bus_width, &block)
     configuration =
-      create_configuration(bus_width: bus_width, address_width: address_width)
+      create_configuration(
+        bus_width: bus_width, address_width: address_width,
+        enable_wide_register: enable_wide_register
+      )
     register_map = create_register_map(configuration) do
       register_block do
         byte_size block_byte_size
