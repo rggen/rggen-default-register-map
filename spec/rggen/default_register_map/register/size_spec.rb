@@ -5,17 +5,18 @@ RSpec.describe 'register/size' do
   include_context 'register map common'
 
   before(:all) do
-    RgGen.enable(:global, :bus_width)
+    RgGen.enable(:global, [:bus_width, :enable_wide_register])
     RgGen.enable(:register, :size)
     RgGen.enable(:bit_field, :bit_assignment)
   end
 
-  def create_registers(&block)
-    create_register_map { register_block(&block) }.registers
+  def create_registers(**config_values, &block)
+    configuraiton = create_configuration(**config_values)
+    create_register_map(configuraiton) { register_block(&block) }.registers
   end
 
-  def create_register(&block)
-    create_registers(&block).first
+  def create_register(**config_values, &block)
+    create_registers(**config_values, &block).first
   end
 
   describe '#size' do
@@ -464,6 +465,44 @@ RSpec.describe 'register/size' do
             create_register { register { size [value, value, value] } }
           }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}, #{value}, #{value}]"
         end
+      end
+    end
+
+    context '幅広レジスタが許可されておらず、幅が8バイトを超える場合' do
+      it 'RegisterMapErrorを起こす' do
+        expect {
+          create_register(enable_wide_register: false) do
+            register { bit_field { bit_assignment lsb: 63 } }
+          end
+        }.not_to raise_error
+
+        expect {
+          create_register(enable_wide_register: false) do
+            register { bit_field { bit_assignment lsb: 64 } }
+          end
+        }.to raise_register_map_error 'register width wider than 8 bytes is not allowed: 12 bytes'
+
+        expect {
+          create_register(enable_wide_register: false) do
+            register { bit_field { bit_assignment lsb: 127 } }
+          end
+        }.to raise_register_map_error 'register width wider than 8 bytes is not allowed: 16 bytes'
+      end
+    end
+
+    context '幅広レジスタが許可されている場合' do
+      specify '幅が8バイトを超えるレジスタを定義できる' do
+        expect {
+          create_register(enable_wide_register: true) do
+            register { bit_field { bit_assignment lsb: 64 } }
+          end
+        }.not_to raise_error
+
+        expect {
+          create_register(enable_wide_register: true) do
+            register { bit_field { bit_assignment lsb: 127 } }
+          end
+        }.not_to raise_error
       end
     end
   end

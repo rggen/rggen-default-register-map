@@ -18,7 +18,7 @@ RSpec.describe 'register/type' do
       register_map { reserved }
     end
 
-    RgGen.enable(:global, [:bus_width, :address_width])
+    RgGen.enable(:global, [:bus_width, :address_width, :enable_wide_register])
     RgGen.enable(:register, [:type, :size])
     RgGen.enable(:register, :type, [:foo, :bar, :baz])
     RgGen.enable(:bit_field, [:bit_assignment, :initial_value, :reference, :type])

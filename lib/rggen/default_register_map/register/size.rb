@@ -26,6 +26,15 @@ RgGen.define_simple_feature(:register, :size) do
       end
     end
 
+    verify(:component) do
+      error_condition do
+        !configuration.enable_wide_register? && byte_width > 8
+      end
+      message do
+        "register width wider than 8 bytes is not allowed: #{byte_width} bytes"
+      end
+    end
+
     private
 
     def parse_values(values)
