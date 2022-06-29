@@ -53,16 +53,16 @@ RSpec.describe 'register/type/indirect' do
         name :bar
         offset_address 0x0
         type [:indirect, ['baz.baz_0', 1]]
-        bit_field { name :bar_0; bit_assignment lsb: 32; type :rw; initial_value 0 }
+        bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
       end
       register do
         name :baz
-        offset_address 0x8
+        offset_address 0x4
         bit_field { name :baz_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
       end
     end
     expect(registers[0]).to have_property(:byte_size, 4)
-    expect(registers[1]).to have_property(:byte_size, 8)
+    expect(registers[1]).to have_property(:byte_size, 4)
 
     registers = create_registers do
       register do
@@ -75,19 +75,19 @@ RSpec.describe 'register/type/indirect' do
       register do
         name :bar
         offset_address 0x0
-        size 3
+        size 2
         type [:indirect, 'baz.baz_0', ['baz.baz_1', 1]]
-        bit_field { name :bar_0; bit_assignment lsb: 32; type :rw; initial_value 0 }
+        bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
       end
       register do
         name :baz
-        offset_address 0x8
+        offset_address 0x4
         bit_field { name :baz_0; bit_assignment lsb: 0, width: 2; type :rw; initial_value 0 }
         bit_field { name :baz_1; bit_assignment lsb: 2, width: 1; type :rw; initial_value 0 }
       end
     end
     expect(registers[0]).to have_property(:byte_size, 4)
-    expect(registers[1]).to have_property(:byte_size, 8)
+    expect(registers[1]).to have_property(:byte_size, 4)
 
     registers = create_registers do
       register do
@@ -102,18 +102,18 @@ RSpec.describe 'register/type/indirect' do
         offset_address 0x0
         size [3, 4]
         type [:indirect, 'baz.baz_0', 'baz.baz_1', ['baz.baz_2', 1]]
-        bit_field { name :bar_0; bit_assignment lsb: 32; type :rw; initial_value 0 }
+        bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
       end
       register do
         name :baz
-        offset_address 0x8
+        offset_address 0x4
         bit_field { name :baz_0; bit_assignment lsb: 0, width: 2; type :rw; initial_value 0 }
         bit_field { name :baz_1; bit_assignment lsb: 2, width: 3; type :rw; initial_value 0 }
         bit_field { name :baz_2; bit_assignment lsb: 5, width: 1; type :rw; initial_value 0 }
       end
     end
     expect(registers[0]).to have_property(:byte_size, 4)
-    expect(registers[1]).to have_property(:byte_size, 8)
+    expect(registers[1]).to have_property(:byte_size, 4)
   end
 
   describe '#index_entries' do
@@ -875,7 +875,7 @@ RSpec.describe 'register/type/indirect' do
             create_registers do
               register do
                 name :foo
-                offset_address 0x4
+                offset_address 0x0
                 type [:indirect, ['baz.baz_0', 0]]
                 bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               end
@@ -883,11 +883,11 @@ RSpec.describe 'register/type/indirect' do
                 name :bar
                 offset_address 0x0
                 type [:indirect, ['baz.baz_0', 1]]
-                bit_field { name :bar_0; bit_assignment lsb: 32; type :rw; initial_value 0 }
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               end
               register do
                 name :baz
-                offset_address 0x8
+                offset_address 0x4
                 bit_field { name :baz_0; bit_assignment lsb: 0, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_1; bit_assignment lsb: 4, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
@@ -923,7 +923,7 @@ RSpec.describe 'register/type/indirect' do
             create_registers do
               register do
                 name :foo
-                offset_address 0x4
+                offset_address 0x0
                 size [2]
                 type [:indirect, 'baz.baz_0', ['baz.baz_2', 0]]
                 bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
@@ -933,11 +933,11 @@ RSpec.describe 'register/type/indirect' do
                 offset_address 0x0
                 size [2]
                 type [:indirect, 'baz.baz_0', ['baz.baz_2', 1]]
-                bit_field { name :bar_0; bit_assignment lsb: 32; type :rw; initial_value 0 }
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               end
               register do
                 name :baz
-                offset_address 0x8
+                offset_address 0x4
                 bit_field { name :baz_0; bit_assignment lsb: 0, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_1; bit_assignment lsb: 4, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
@@ -949,7 +949,7 @@ RSpec.describe 'register/type/indirect' do
             create_registers do
               register do
                 name :foo
-                offset_address 0x4
+                offset_address 0x0
                 size [2]
                 type [:indirect, 'baz.baz_0', ['baz.baz_2', 0]]
                 bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
@@ -959,11 +959,11 @@ RSpec.describe 'register/type/indirect' do
                 offset_address 0x0
                 size [2, 2]
                 type [:indirect, 'baz.baz_0', 'baz.baz_1', ['baz.baz_2', 1]]
-                bit_field { name :bar_0; bit_assignment lsb: 32; type :rw; initial_value 0 }
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               end
               register do
                 name :baz
-                offset_address 0x8
+                offset_address 0x4
                 bit_field { name :baz_0; bit_assignment lsb: 0, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_1; bit_assignment lsb: 4, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
@@ -975,7 +975,7 @@ RSpec.describe 'register/type/indirect' do
             create_registers do
               register do
                 name :foo
-                offset_address 0x4
+                offset_address 0x0
                 size [2, 2]
                 type [:indirect, 'baz.baz_0', 'baz.baz_1', ['baz.baz_2', 0]]
                 bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
@@ -985,11 +985,11 @@ RSpec.describe 'register/type/indirect' do
                 offset_address 0x0
                 size [2, 2]
                 type [:indirect, 'baz.baz_0', 'baz.baz_1', ['baz.baz_2', 1]]
-                bit_field { name :bar_0; bit_assignment lsb: 32; type :rw; initial_value 0 }
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               end
               register do
                 name :baz
-                offset_address 0x8
+                offset_address 0x4
                 bit_field { name :baz_0; bit_assignment lsb: 0, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_1; bit_assignment lsb: 4, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
@@ -1005,7 +1005,7 @@ RSpec.describe 'register/type/indirect' do
             create_registers do
               register do
                 name :foo
-                offset_address 0x4
+                offset_address 0x0
                 type [:indirect, ['baz.baz_0', 0]]
                 bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               end
@@ -1013,11 +1013,11 @@ RSpec.describe 'register/type/indirect' do
                 name :bar
                 offset_address 0x0
                 type [:indirect, ['baz.baz_0', 0]]
-                bit_field { name :bar_0; bit_assignment lsb: 32; type :rw; initial_value 0 }
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               end
               register do
                 name :baz
-                offset_address 0x8
+                offset_address 0x4
                 bit_field { name :baz_0; bit_assignment lsb: 0, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_1; bit_assignment lsb: 4, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
@@ -1029,7 +1029,7 @@ RSpec.describe 'register/type/indirect' do
             create_registers do
               register do
                 name :foo
-                offset_address 0x4
+                offset_address 0x0
                 type [:indirect, ['baz.baz_0', 0]]
                 bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               end
@@ -1037,11 +1037,11 @@ RSpec.describe 'register/type/indirect' do
                 name :bar
                 offset_address 0x0
                 type [:indirect, ['baz.baz_1', 0]]
-                bit_field { name :bar_0; bit_assignment lsb: 32; type :rw; initial_value 0 }
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               end
               register do
                 name :baz
-                offset_address 0x8
+                offset_address 0x4
                 bit_field { name :baz_0; bit_assignment lsb: 0, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_1; bit_assignment lsb: 4, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
@@ -1053,7 +1053,7 @@ RSpec.describe 'register/type/indirect' do
             create_registers do
               register do
                 name :foo
-                offset_address 0x4
+                offset_address 0x0
                 size 2
                 type [:indirect, 'baz.baz_0']
                 bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
@@ -1063,11 +1063,11 @@ RSpec.describe 'register/type/indirect' do
                 offset_address 0x0
                 size 2
                 type [:indirect, 'baz.baz_1']
-                bit_field { name :bar_0; bit_assignment lsb: 32; type :rw; initial_value 0 }
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               end
               register do
                 name :baz
-                offset_address 0x8
+                offset_address 0x4
                 bit_field { name :baz_0; bit_assignment lsb: 0, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_1; bit_assignment lsb: 4, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
@@ -1079,7 +1079,7 @@ RSpec.describe 'register/type/indirect' do
             create_registers do
               register do
                 name :foo
-                offset_address 0x4
+                offset_address 0x0
                 size [2, 2]
                 type [:indirect, 'baz.baz_0', 'baz.baz_1']
                 bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
@@ -1089,11 +1089,11 @@ RSpec.describe 'register/type/indirect' do
                 offset_address 0x0
                 size [2, 2]
                 type [:indirect, 'baz.baz_0', 'baz.baz_2']
-                bit_field { name :bar_0; bit_assignment lsb: 32; type :rw; initial_value 0 }
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               end
               register do
                 name :baz
-                offset_address 0x8
+                offset_address 0x4
                 bit_field { name :baz_0; bit_assignment lsb: 0, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_1; bit_assignment lsb: 4, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
@@ -1105,7 +1105,7 @@ RSpec.describe 'register/type/indirect' do
             create_registers do
               register do
                 name :foo
-                offset_address 0x4
+                offset_address 0x0
                 size [2, 2]
                 type [:indirect, 'baz.baz_0', 'baz.baz_1', ['baz.baz_2', 0]]
                 bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
@@ -1115,11 +1115,11 @@ RSpec.describe 'register/type/indirect' do
                 offset_address 0x0
                 size [2, 2]
                 type [:indirect, 'baz.baz_0', 'baz.baz_2', ['baz.baz_2', 0]]
-                bit_field { name :bar_0; bit_assignment lsb: 32; type :rw; initial_value 0 }
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               end
               register do
                 name :baz
-                offset_address 0x8
+                offset_address 0x4
                 bit_field { name :baz_0; bit_assignment lsb: 0, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_1; bit_assignment lsb: 4, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
@@ -1131,7 +1131,7 @@ RSpec.describe 'register/type/indirect' do
             create_registers do
               register do
                 name :foo
-                offset_address 0x4
+                offset_address 0x0
                 size [2, 2]
                 type [:indirect, 'baz.baz_0', 'baz.baz_1', ['baz.baz_2', 0]]
                 bit_field { name :foo_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
@@ -1141,11 +1141,11 @@ RSpec.describe 'register/type/indirect' do
                 offset_address 0x0
                 size [2, 2]
                 type [:indirect, 'baz.baz_0', 'baz.baz_2', ['baz.baz_0', 1]]
-                bit_field { name :bar_0; bit_assignment lsb: 32; type :rw; initial_value 0 }
+                bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
               end
               register do
                 name :baz
-                offset_address 0x8
+                offset_address 0x4
                 bit_field { name :baz_0; bit_assignment lsb: 0, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_1; bit_assignment lsb: 4, width: 4; type :rw; initial_value 0 }
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
