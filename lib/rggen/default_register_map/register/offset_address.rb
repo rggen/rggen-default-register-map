@@ -93,9 +93,9 @@ RgGen.define_simple_feature(:register, :offset_address) do
       configuration.byte_width
     end
 
-    def overlap_address_range?(other, sharable)
+    def overlap_address_range?(other, shareable)
       overlap_range?(other) &&
-        (exclusive_range?(other) || competitive_access?(other, sharable))
+        (exclusive_range?(other) || !shareable_access?(other, shareable))
     end
 
     def overlap_range?(other)
@@ -108,13 +108,21 @@ RgGen.define_simple_feature(:register, :offset_address) do
       other.register_file? || other.reserved? || register.reserved?
     end
 
-    def competitive_access?(other, sharable)
-      !sharable_range?(other, sharable) &&
-        [:writable?, :readable?].any? { |access| [register, other].all?(&access) }
+    def shareable_access?(other, shareable)
+      match_range?(other) &&
+        (alternate_access?(other) || shareable_range?(other, shareable))
     end
 
-    def sharable_range?(other, sharable)
-      sharable && shared_address? && register.match_type?(other)
+    def match_range?(other)
+      address_range == other.address_range
+    end
+
+    def alternate_access?(other)
+      [:writable?, :readable?].all? { |access| [register, other].one?(&access) }
+    end
+
+    def shareable_range?(other, shareable)
+      shareable && shared_address? && register.match_type?(other)
     end
 
     def shared_address?

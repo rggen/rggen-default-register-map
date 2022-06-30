@@ -491,32 +491,32 @@ RSpec.describe 'register/offset_address' do
 
           expect {
             create_registers(32) do
-              register { offset_address 0x0; type :bar; size 3 }
-              register { offset_address 0x4; type :baz }
+              register { offset_address 0x0; type :bar; size 2 }
+              register { offset_address 0x0; type :baz; size 2 }
+            end
+          }.not_to raise_error
+
+          expect {
+            create_registers(32) do
+              register { offset_address 0x0; type :bar; size [2, 3] }
+              register { offset_address 0x0; type :baz; size 6 }
             end
           }.not_to raise_error
 
           expect {
             create_registers(32) do
               register_file do
-                register { offset_address 0x0; type :bar; size 3 }
-                register { offset_address 0x4; type :baz }
+                register { offset_address 0x0; type :bar; size 2 }
+                register { offset_address 0x0; type :baz; size 2 }
               end
             end
           }.not_to raise_error
 
           expect {
             create_registers(32) do
-              register { offset_address 0x4; type :bar }
-              register { offset_address 0x0; type :baz; size 3 }
-            end
-          }.not_to raise_error
-
-          expect {
-            create_registers(32) do
               register_file do
-                register { offset_address 0x4; type :bar }
-                register { offset_address 0x0; type :baz; size 3 }
+                register { offset_address 0x0; type :bar; size [2, 3] }
+                register { offset_address 0x0; type :baz; size 6 }
               end
             end
           }.not_to raise_error
@@ -640,108 +640,186 @@ RSpec.describe 'register/offset_address' do
         end
       end
 
-      context 'レジスタの属性に.support_shared_addressが指定されている場合' do
-        specify 'レジスタ型が同じであれば、アドレスが重複していても、エラーは起こらない' do
+      context 'アクセス属性は重複しないが、オフセットアドレス/サイズが異なる場合' do
+        it 'RegisterMapErrorを起こす' do
           expect {
             create_registers(32) do
-              register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
-              register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+              register { offset_address 0x0; type :bar; size 2 }
+              register { offset_address 0x4; type :baz; size 2 }
             end
-          }.not_to raise_error
+          }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x4-0xb'
 
           expect {
             create_registers(32) do
-              register_file do
-                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
-                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
-              end
+              register { offset_address 0x4; type :bar; size 2 }
+              register { offset_address 0x0; type :baz; size 2 }
             end
-          }.not_to raise_error
+          }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0x7'
 
           expect {
             create_registers(32) do
-              register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
-              register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+              register { offset_address 0x0; type :bar; size 4 }
+              register { offset_address 0x4; type :baz; size 2 }
             end
-          }.not_to raise_error
+          }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x4-0xb'
 
           expect {
             create_registers(32) do
-              register_file do
-                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
-                register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
-              end
+              register { offset_address 0x4; type :bar; size 2 }
+              register { offset_address 0x0; type :baz; size 4 }
             end
-          }.not_to raise_error
+          }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0xf'
 
           expect {
             create_registers(32) do
-              register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
-              register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
+              register { offset_address 0x0; type :bar }
+              register { offset_address 0x0; type :baz; size 2 }
             end
-          }.not_to raise_error
+          }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0x7'
 
           expect {
             create_registers(32) do
-              register_file do
-                register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
-                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
-              end
-            end
-          }.not_to raise_error
-        end
-
-        it 'レジスタ型が異なり、アドレスが重複していれば、RegisterMapErrorを起こす' do
-          expect {
-            create_registers(32) do
-              register { offset_address 0x0; type [:foo, :bar, :baz, :quux].sample }
-              register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+              register { offset_address 0x0; type :bar; size 2 }
+              register { offset_address 0x0; type :baz }
             end
           }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0x3'
 
           expect {
             create_registers(32) do
-              register_file do
-                offset_address 0x10
+              register { offset_address 0x0; type :bar; size 4 }
+              register { offset_address 0x0; type :baz; size 2 }
+            end
+          }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0x7'
+
+          expect {
+            create_registers(32) do
+              register { offset_address 0x0; type :bar; size 2 }
+              register { offset_address 0x0; type :baz; size 4 }
+            end
+          }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0xf'
+        end
+      end
+
+      context 'レジスタの属性に.support_shared_addressがされていて' do
+        context 'レジスタ型/サイズが同じ場合' do
+          specify 'アドレスが重複していても、エラーは起こらない' do
+            expect {
+              create_registers(32) do
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+              end
+            }.not_to raise_error
+
+            expect {
+              create_registers(32) do
+                register_file do
+                  register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+                  register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+                end
+              end
+            }.not_to raise_error
+          end
+        end
+
+        context 'レジスタ型が同じで、オフセットアドレス/サイズが異なる場合' do
+          it 'RegisterMapErrorを起こす' do
+            expect {
+              create_registers(32) do
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 64 } }
+              end
+            }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0x7'
+
+            expect {
+              create_registers(32) do
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 64 } }
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+              end
+            }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0x3'
+
+            expect {
+              create_registers(32) do
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 64 } }
+                register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 64 } }
+              end
+            }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x4-0xb'
+
+            expect {
+              create_registers(32) do
+                register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 64 } }
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 64 } }
+              end
+            }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0x7'
+
+            expect {
+              create_registers(32) do
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
+                register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+              end
+            }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x4-0x7'
+
+            expect {
+              create_registers(32) do
+                register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+                register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
+              end
+            }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0xb'
+          end
+        end
+
+        context 'レジスタ型が異なり、アドレスが重複する場合' do
+          it 'RegisterMapErrorを起こす' do
+            expect {
+              create_registers(32) do
                 register { offset_address 0x0; type [:foo, :bar, :baz, :quux].sample }
                 register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
               end
-            end
-          }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x10-0x13'
+            }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0x3'
 
-          expect {
-            create_registers(32) do
-              register { offset_address 0x0; type [:foo, :bar, :baz, :quux].sample; size 3 }
-              register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
-            end
-          }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x4-0x7'
+            expect {
+              create_registers(32) do
+                register_file do
+                  offset_address 0x10
+                  register { offset_address 0x0; type [:foo, :bar, :baz, :quux].sample }
+                  register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+                end
+              end
+            }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x10-0x13'
 
-          expect {
-            create_registers(32) do
-              register_file do
-                offset_address 0x10
+            expect {
+              create_registers(32) do
                 register { offset_address 0x0; type [:foo, :bar, :baz, :quux].sample; size 3 }
                 register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
               end
-            end
-          }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x14-0x17'
+            }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x4-0x7'
 
-          expect {
-            create_registers(32) do
-              register { offset_address 0x4; type [:foo, :bar, :baz, :quux].sample }
-              register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
-            end
-          }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0xb'
+            expect {
+              create_registers(32) do
+                register_file do
+                  offset_address 0x10
+                  register { offset_address 0x0; type [:foo, :bar, :baz, :quux].sample; size 3 }
+                  register { offset_address 0x4; type :qux; bit_field { bit_assignment lsb: 0, width: 32 } }
+                end
+              end
+            }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x14-0x17'
 
-          expect {
-            create_registers(32) do
-              register_file do
-                offset_address 0x10
+            expect {
+              create_registers(32) do
                 register { offset_address 0x4; type [:foo, :bar, :baz, :quux].sample }
                 register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
               end
-            end
-          }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x10-0x1b'
+            }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x0-0xb'
+
+            expect {
+              create_registers(32) do
+                register_file do
+                  offset_address 0x10
+                  register { offset_address 0x4; type [:foo, :bar, :baz, :quux].sample }
+                  register { offset_address 0x0; type :qux; bit_field { bit_assignment lsb: 0, width: 96 } }
+                end
+              end
+            }.to raise_register_map_error 'offset address range overlaps with other offset address range: 0x10-0x1b'
+          end
         end
       end
 
