@@ -21,7 +21,7 @@ During RgGen installation, RgGen::DefaultRegisterMap will also be installed auto
 $ gem install rggen
 ```
 
-If you to install RgGen::DefaultRegisterMap only, use the command below:
+If you want to install RgGen::DefaultRegisterMap only, use the command below:
 
 ```
 $ gem install rggen-default-register-map
@@ -31,7 +31,8 @@ $ gem install rggen-default-register-map
 
 Feedbacks, bug reports, questions and etc. are wellcome! You can post them by using following ways:
 
-* [GitHub Issue Tracker](https://github.com/rggen/rggen-default-register-map/issues)
+* [GitHub Issue Tracker](https://github.com/rggen/rggen/issues)
+* [GitHub Discussions](https://github.com/rggen/rggen/discussions)
 * [Chat Room](https://gitter.im/rggen/rggen)
 * [Mailing List](https://groups.google.com/d/forum/rggen)
 * [Mail](mailto:rggen@googlegroups.com)
