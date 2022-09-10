@@ -5,17 +5,17 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
     property :initial_value
     property :initial_values
     property :initial_value?, forward_to: :initial_value_set?
-    property :fixed_initial_value?, forward_to: :fixed?
-    property :initial_value_array?, forward_to: :array?
+    property :fixed_initial_value?, forward_to: :fixed_format?
+    property :initial_value_array?, forward_to: :array_format?
 
     input_pattern [{ parameterized: /default:(#{integer})/,
                      array: /#{integer}(?:[,\n]#{integer})+/ }]
 
     build do |value|
       @input_format =
-        if value.is_a?(Hash) || match_index == :parameterized
+        if hash?(value) || match_index == :parameterized
           :parameterized
-        elsif value.is_a?(Array) || match_index == :array
+        elsif array?(value) || match_index == :array
           :array
         else
           :single
@@ -112,11 +112,11 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
         end
     end
 
-    def array?
+    def array_format?
       initial_value_format == :array
     end
 
-    def fixed?
+    def fixed_format?
       [:array, :single].include?(@input_format)
     end
 

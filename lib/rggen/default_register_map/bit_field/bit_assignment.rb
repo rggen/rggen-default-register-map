@@ -85,7 +85,7 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     end
 
     def preprocess(value)
-      if value.is_a?(Hash)
+      if hash?(value)
         value
       elsif match_pattern(value)
         split_match_data(match_data)
@@ -154,7 +154,7 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     end
 
     def calc_bit_position(index, base)
-      if index.is_a?(Integer)
+      if integer?(index)
         base + step * index
       else
         "#{base}+#{step}*#{index}"

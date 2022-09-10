@@ -115,7 +115,7 @@ RgGen.define_list_feature(:bit_field, :type) do
       end
 
       def target_feature_key(cell)
-        cell.value
+        cell
       end
     end
   end

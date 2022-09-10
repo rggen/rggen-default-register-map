@@ -99,7 +99,7 @@ RgGen.define_list_feature(:register, :type) do
       private
 
       def split_input_value(value)
-        if value.is_a?(String)
+        if string?(value)
           split_string_value(value)
         else
           input_value = Array(value)

@@ -39,7 +39,7 @@ RgGen.define_simple_feature(:register, :size) do
 
     def parse_values(values)
       Array(
-        values.is_a?(String) && parse_string_values(values) || values
+        string?(values) && parse_string_values(values) || values
       ).map(&method(:convert_value))
     end
 
