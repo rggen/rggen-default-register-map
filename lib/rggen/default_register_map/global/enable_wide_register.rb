@@ -11,8 +11,8 @@ RgGen.define_simple_feature(:global, :enable_wide_register) do
 
     build do |value|
       @enable_wide_register =
-        if [true, false].include?(value)
-          value
+        if [true, false].any? { |boolean| value == boolean }
+          value.value
         elsif match_pattern(value)
           [true, false][match_index]
         else

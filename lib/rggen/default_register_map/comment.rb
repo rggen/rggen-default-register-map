@@ -7,7 +7,7 @@ module RgGen
 
       build do |value|
         @comment =
-          (value.is_a?(Array) && value.join("\n") || value.to_s).chomp
+          (array?(value) && value.join("\n") || value.to_s).chomp
       end
 
       printable :comment do

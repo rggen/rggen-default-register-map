@@ -201,7 +201,7 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
     end
 
     def sting_or_symbol?(value)
-      [String, Symbol].any?(&value.method(:is_a?))
+      string?(value) || symbol?(value)
     end
 
     def convert_index_value(value)

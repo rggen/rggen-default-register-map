@@ -15,7 +15,7 @@ RgGen.define_simple_feature(:register_file, :size) do
 
     build do |values|
       @size =
-        (values.is_a?(String) && parse_string_value(values) || Array(values))
+        (string?(values) && parse_string_value(values) || Array(values))
           .map(&method(:convert_value))
     end
 
