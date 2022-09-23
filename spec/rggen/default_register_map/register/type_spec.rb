@@ -327,7 +327,8 @@ RSpec.describe 'register/type' do
     before(:all) do
       RgGen.define_list_item_feature(:register, :type, :foo) do
         register_map do
-          property :input_options, body: -> { options }
+          property :input_options
+          build { |_, options| @input_options = options }
         end
       end
     end
@@ -376,44 +377,13 @@ RSpec.describe 'register/type' do
       expect(registers[1].input_options).to match([:option_1, :option_2])
 
       expect(registers[2].type).to eq :foo
-      expect(registers[2].input_options).to match(['option_1:fizz'])
+      expect(registers[2].input_options).to match([['option_1', 'fizz']])
 
       expect(registers[3].type).to eq :foo
-      expect(registers[3].input_options).to match(['option_1:fizz', 'option_2:buzz'])
+      expect(registers[3].input_options).to match([['option_1', 'fizz'], ['option_2', 'buzz']])
 
       expect(registers[4].type).to eq :foo
-      expect(registers[4].input_options).to match(['option_1:fizz', 'option_2:buzz', 'option_3:fizzbuzz'])
-    end
-
-    context 'オプションが未指定の場合' do
-      specify '空の配列が渡される' do
-        registers = create_registers do
-          register do
-            type :foo
-            bit_field { bit_assignment lsb: 0;type :foo }
-          end
-
-          register do
-            type [:foo]
-            bit_field { bit_assignment lsb: 0;type :foo }
-          end
-
-          register do
-            type 'foo'
-            bit_field { bit_assignment lsb: 0;type :foo }
-          end
-
-          register do
-            type 'foo:'
-            bit_field { bit_assignment lsb: 0;type :foo }
-          end
-        end
-
-        expect(registers[0].input_options).to be_empty
-        expect(registers[1].input_options).to be_empty
-        expect(registers[2].input_options).to be_empty
-        expect(registers[3].input_options).to be_empty
-      end
+      expect(registers[4].input_options).to match([['option_1', 'fizz'], ['option_2', 'buzz'], ['option_3', 'fizzbuzz']])
     end
   end
 
