@@ -335,12 +335,32 @@ RSpec.describe 'register/type/indirect' do
             end
           end
         }.to raise_register_map_error 'no indirect indices are given'
+
+        expect {
+          create_registers do
+            register do
+              name :foo
+              offset_address 0x0
+              type [:indirect]
+            end
+          end
+        }.to raise_register_map_error 'no indirect indices are given'
+
+        expect {
+          create_registers do
+            register do
+              name :foo
+              offset_address 0x0
+              type [:indirect, []]
+            end
+          end
+        }.to raise_register_map_error 'no indirect index is given'
       end
     end
 
     context 'インデックス名が文字列、または、シンボルではない場合' do
       it 'RegisterMapErrorを起こす' do
-        [nil, true, false, Object.new, []].each do |value|
+        [nil, true, false, Object.new].each do |value|
           expect {
             create_registers do
               register do
@@ -356,7 +376,7 @@ RSpec.describe 'register/type/indirect' do
 
     context 'フィールド名が入力パターンに一致しない場合' do
       it 'RegisterMapErrorを起こす' do
-        ['0foo.foo', 'foo.0foo', 'foo.foo.0', 'foo.foo:0xef_gh', '0foo', 'foo:0xef_gh'].each do |value|
+        ['0foo.foo', 'foo.0foo', 'foo.foo.0', '0foo'].each do |value|
           expect {
             create_registers do
               register do
@@ -399,18 +419,7 @@ RSpec.describe 'register/type/indirect' do
           end
         }.to raise_register_map_error "too many arguments for indirect index are given: #{value}"
 
-        value = ['bar.bar_0:0', 1]
-        expect {
-          create_registers do
-            register do
-              name :foo
-              offset_address 0x0
-              type [:indirect, value]
-            end
-          end
-        }.to raise_register_map_error "too many arguments for indirect index are given: #{value}"
-
-        value = ['bar.bar_0:0', nil]
+        value = ['bar.bar_0', 1, 0]
         expect {
           create_registers do
             register do

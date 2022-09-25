@@ -4,7 +4,7 @@ RgGen.define_simple_feature(:global, :enable_wide_register) do
   configuration do
     property :enable_wide_register?, default: false
 
-    input_pattern [/true|on|yes/i, /false|off|no/i],
+    input_pattern [true => truthy_pattern, false => falsey_pattern],
                   match_automatically: false
 
     ignore_empty_value false
@@ -14,7 +14,7 @@ RgGen.define_simple_feature(:global, :enable_wide_register) do
         if [true, false].any? { |boolean| value == boolean }
           value.value
         elsif match_pattern(value)
-          [true, false][match_index]
+          match_index
         else
           error "cannot convert #{value.inspect} into boolean"
         end

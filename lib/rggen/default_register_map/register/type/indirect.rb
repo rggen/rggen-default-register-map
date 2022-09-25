@@ -43,13 +43,11 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
     support_shared_address
     support_array_register
 
-    input_pattern [
-      /(#{variable_name}(?:\.#{variable_name})*)/,
-      /(#{variable_name}(?:\.#{variable_name})*):(#{integer})/
-    ], match_automatically: false
+    input_pattern /(#{variable_name}(?:\.#{variable_name})*)/,
+                  match_automatically: false
 
-    build do
-      @index_entries = parse_index_entries
+    build do |_type, options|
+      @index_entries = parse_index_entries(options)
     end
 
     verify(:component) do
@@ -173,31 +171,32 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
 
     private
 
-    def parse_index_entries
-      (!options.empty? && options.map(&method(:create_index_entry))) ||
-        (error 'no indirect indices are given')
+    def parse_index_entries(options)
+      error 'no indirect indices are given' if options.empty?
+      options.map { |option| create_index_entry(option) }
     end
 
-    def create_index_entry(value)
-      input_values = split_value(value)
-      case input_values.size
-      when 2
-        index_entry.new(input_values[0], convert_index_value(input_values[1]))
-      when 1
-        index_entry.new(input_values[0])
-      else
-        error "too many arguments for indirect index are given: #{value.inspect}"
-      end
+    def create_index_entry(option)
+      entry = array?(option) && option || [option]
+
+      field_name, index_value =
+        case entry.size
+        when 2 then [check_field_name(entry[0]), convert_index_value(entry[1])]
+        when 1 then [check_field_name(entry[0])]
+        when 0 then error 'no indirect index is given'
+        else error "too many arguments for indirect index are given: #{entry.inspect}"
+        end
+
+      index_entry.new(field_name, index_value)
     end
 
-    def split_value(value)
-      input_value = Array(value)
-      field_name = input_value.first
-      if sting_or_symbol?(field_name) && match_pattern(field_name)
-        [*match_data.captures, *input_value[1..]]
-      else
-        error "illegal input value for indirect index: #{value.inspect}"
-      end
+    def check_field_name(field_name)
+      return field_name if match_field_name?(field_name)
+      error "illegal input value for indirect index: #{field_name.inspect}"
+    end
+
+    def match_field_name?(field_name)
+      (string?(field_name) || symbol?(field_name)) && match_pattern(field_name)
     end
 
     def sting_or_symbol?(value)
