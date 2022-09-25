@@ -153,6 +153,38 @@ RSpec.describe 'bit_field/type' do
       end
     end
 
+    describe '.writable?/.readable?' do
+      specify '与えたブロックの評価結果がアクセス属性になる' do
+        bit_field = create_bit_field do
+          writable? { @writable }
+          readable? { @readable }
+          build { @writable, @readable = [true, true] }
+        end
+        expect(bit_field).to match_access(:read_write)
+
+        bit_field = create_bit_field do
+          writable? { @writable }
+          readable? { @readable }
+          build { @writable, @readable = [true, false] }
+        end
+        expect(bit_field).to match_access(:write_only)
+
+        bit_field = create_bit_field do
+          writable? { @writable }
+          readable? { @readable }
+          build { @writable, @readable = [false, true] }
+        end
+        expect(bit_field).to match_access(:read_only)
+
+        bit_field = create_bit_field do
+          writable? { @writable }
+          readable? { @readable }
+          build { @writable, @readable = [false, false] }
+        end
+        expect(bit_field).to match_access(:reserved)
+      end
+    end
+
     specify '規定属性は読み書き属性' do
       bit_field = create_bit_field {}
       expect(bit_field).to match_access(:read_write)
@@ -280,6 +312,46 @@ RSpec.describe 'bit_field/type' do
 
         expect(bit_fields[0]).to have_property(:volatile?, true)
       end
+    end
+  end
+
+  describe 'オプションの指定' do
+    before do
+      RgGen.define_list_item_feature(:bit_field, :type, :foo) do
+        register_map do
+          property :input_options
+          build { |_, options| @input_options = options }
+        end
+      end
+    end
+
+    after do
+      delete_register_map_factory
+      RgGen.delete(:bit_field, :type, :foo)
+    end
+
+    specify 'ビットフィールド型に対するオプションを指定することができる' do
+      bit_fields = create_bit_fields do
+        register do
+          name 'register_0'
+          bit_field { name 'bit_field_0'; bit_assignment width: 1; type [:foo, :option_1] }
+          bit_field { name 'bit_field_1'; bit_assignment width: 1; type [:foo, :option_1, :option_2] }
+          bit_field { name 'bit_field_2'; bit_assignment width: 1; type ' foo : option_1:fizz' }
+          bit_field { name 'bit_field_3'; bit_assignment width: 1; type ' foo : option_1:fizz, option_2:buzz' }
+        end
+      end
+
+      expect(bit_fields[0].type).to eq :foo
+      expect(bit_fields[0].input_options).to match([:option_1])
+
+      expect(bit_fields[1].type).to eq :foo
+      expect(bit_fields[1].input_options).to match([:option_1, :option_2])
+
+      expect(bit_fields[2].type).to eq :foo
+      expect(bit_fields[2].input_options).to match([['option_1', 'fizz']])
+
+      expect(bit_fields[3].type).to eq :foo
+      expect(bit_fields[3].input_options).to match([['option_1', 'fizz'], ['option_2', 'buzz']])
     end
   end
 

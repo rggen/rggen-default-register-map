@@ -5,43 +5,35 @@ RgGen.define_list_feature(:bit_field, :type) do
     base_feature do
       define_helpers do
         def read_write
-          @readable = true
-          @writable = true
+          accessibility[:read] = -> { true }
+          accessibility[:write] = -> { true }
         end
 
         def read_only
-          @readable = true
-          @writable = false
+          accessibility[:read] = -> { true }
+          accessibility[:write] = -> { false }
         end
 
         def write_only
-          @readable = false
-          @writable = true
+          accessibility[:read] = -> { false }
+          accessibility[:write] = -> { true }
         end
 
         def reserved
-          @readable = false
-          @writable = false
+          accessibility[:read] = -> { false }
+          accessibility[:write] = -> { false }
         end
 
-        def readable?
-          @readable.nil? || @readable
+        def readable?(&block)
+          accessibility[:read] = block
         end
 
-        def writable?
-          @writable.nil? || @writable
+        def writable?(&block)
+          accessibility[:write] = block
         end
 
-        def read_only?
-          readable? && !writable?
-        end
-
-        def write_only?
-          writable? && !readable?
-        end
-
-        def reserved?
-          !(readable? || writable?)
+        def accessibility
+          @accessibility ||= {}
         end
 
         def volatile
@@ -73,26 +65,33 @@ RgGen.define_list_feature(:bit_field, :type) do
 
       property :type
       property :settings, forward_to_helper: true
-      property :readable?, forward_to_helper: true
-      property :writable?, forward_to_helper: true
-      property :read_only?, forward_to_helper: true
-      property :write_only?, forward_to_helper: true
-      property :reserved?, forward_to_helper: true
-      property :volatile?, initial: -> { volatility }
-
-      build { |value| @type = value }
+      property :readable?, body: -> { accessibility(:read) }
+      property :writable?, body: -> { accessibility(:write) }
+      property :read_only?, body: -> { readable? && !writable? }
+      property :write_only?, body: -> { !readable? && writable? }
+      property :reserved?, body: -> { !readable? && !writable? }
+      property :volatile?, body: -> { volatility }
 
       build do |value|
         @type = value
-        helper.reserved? && bit_field.document_only
+      end
+
+      post_build do
+        reserved? && bit_field.document_only
       end
 
       printable :type
 
       private
 
+      def accessibility(access)
+        body = helper.accessibility[access]
+        body.nil? || instance_exec(&body)
+      end
+
       def volatility
-        helper.volatility.nil? || instance_exec(&helper.volatility)
+        body = helper.volatility
+        body.nil? || instance_exec(&body)
       end
     end
 
@@ -109,6 +108,8 @@ RgGen.define_list_feature(:bit_field, :type) do
     end
 
     factory do
+      allow_options
+
       convert_value do |value|
         types = target_features.keys
         types.find(&value.to_sym.method(:casecmp?)) || value

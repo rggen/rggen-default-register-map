@@ -342,6 +342,16 @@ RSpec.describe 'bit_field/initial_value' do
         expect {
           create_bit_field(1, 0, { require: true }, '')
         }.to raise_register_map_error 'no initial value is given'
+
+        need_initial_value = true
+        expect {
+          create_bit_field(1, 0, { require: -> { need_initial_value } }, nil)
+        }.to raise_register_map_error 'no initial value is given'
+
+        need_initial_value = false
+        expect {
+          create_bit_field(1, 0, { require: -> { need_initial_value } }, nil)
+        }.not_to raise_error
       end
     end
 
