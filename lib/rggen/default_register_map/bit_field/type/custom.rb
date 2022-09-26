@@ -4,6 +4,7 @@ RgGen.define_list_item_feature(:bit_field, :type, :custom) do
   register_map do
     property :sw_read, body: -> { option_value(:sw_read) }
     property :sw_write, body: -> { option_value(:sw_write) }
+    property :sw_write_once?, body: -> { option_value(:sw_write_once) }
     property :hw_write?, body: -> { option_value(:hw_write) }
     property :hw_set?, body: -> { option_value(:hw_set) }
     property :hw_clear?, body: -> { option_value(:hw_clear) }
@@ -23,11 +24,18 @@ RgGen.define_list_item_feature(:bit_field, :type, :custom) do
       sw_write: /(set_[01]|clear_[01]|toggle_[01])/i
     ], match_automatically: false
 
-    build { |_, options| @options = parse_options(options) }
+    build do |_, options|
+      @options = parse_options(options)
+    end
+
+    verify(:component) do
+      error_condition { sw_write_once? && !writable? }
+      message { 'cannot enable sw_write_once option for unwritable bit field' }
+    end
 
     printable(:type) do
       options =
-        [:sw_read, :sw_write, :hw_write, :hw_set, :hw_clear]
+        [:sw_read, :sw_write, :sw_write_once, :hw_write, :hw_set, :hw_clear]
           .map { |o| "#{o}: #{option_value(o)}" }
       [type, *options]
     end
@@ -103,8 +111,10 @@ RgGen.define_list_item_feature(:bit_field, :type, :custom) do
     end
 
     def boolean_option?(option_name)
-      [:hw_write, :hw_set, :hw_clear, :read_trigger, :write_trigger]
-        .include?(option_name)
+      [
+        :sw_write_once, :hw_write, :hw_set, :hw_clear,
+        :read_trigger, :write_trigger
+      ].include?(option_name)
     end
 
     def parse_boolean_option(option_name, value)
