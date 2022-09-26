@@ -20,10 +20,10 @@ RgGen.define_list_item_feature(:bit_field, :type, :custom) do
     input_pattern [
       true => truthy_pattern, false => falsey_pattern,
       sw_common: /(none|default|set|clear)/i,
-      sw_write: /(set_[01]*|clear_[01]*|toggle_[01]*)/i
+      sw_write: /(set_[01]|clear_[01]|toggle_[01])/i
     ], match_automatically: false
 
-    build { |_, options| parse_options(options) }
+    build { |_, options| @options = parse_options(options) }
 
     printable(:type) do
       options =
@@ -53,18 +53,11 @@ RgGen.define_list_item_feature(:bit_field, :type, :custom) do
     end
 
     def parse_options(options)
-      @options = {}
-      merge_options(options).each do |key, value|
-        if match_option_name?(key, :sw_read)
-          parse_value_option(:sw_read, [:sw_common], value)
-        elsif match_option_name?(key, :sw_write)
-          parse_value_option(:sw_write, [:sw_common, :sw_write], value)
-        elsif (option = boolean_option?(key))
-          parse_boolean_option(option, value)
-        else
-          error "unknown option is given: #{key.inspect}"
+      merge_options(options)
+        .each_with_object({}) do |(key, value), option_hash|
+          option_name = convert_to_option_name(key)
+          option_hash[option_name] = parse_option(option_name, key, value)
         end
-      end
     end
 
     def merge_options(options)
@@ -76,39 +69,62 @@ RgGen.define_list_item_feature(:bit_field, :type, :custom) do
       error "invalid options are given: #{options.inspect}"
     end
 
+    def convert_to_option_name(key)
+      if string?(key)
+        key.to_sym.downcase
+      elsif symbol?(key)
+        key.downcase
+      else
+        key
+      end
+    end
+
+    def parse_option(option_name, key, value)
+      case option_name
+      when :sw_read
+        parse_value_option(:sw_read, [:sw_common], value)
+      when :sw_write
+        parse_value_option(:sw_write, [:sw_common, :sw_write], value)
+      when method(:boolean_option?)
+        parse_boolean_option(option_name, value)
+      else
+        error "unknown option is given: #{key.inspect}"
+      end
+    end
+
     def parse_value_option(option_name, allowed_patterns, value)
       match_data, match_index = match_pattern(value)
 
       if match_data && allowed_patterns.include?(match_index)
-        @options[option_name] = match_data.captures.first.to_sym
+        match_data.captures.first.to_sym
       else
         error "invalid value for #{option_name} option: #{value.inspect}"
       end
     end
 
-    def boolean_option?(key)
+    def boolean_option?(option_name)
       [:hw_write, :hw_set, :hw_clear, :read_trigger, :write_trigger]
-        .find { |option| match_option_name?(key, option) }
+        .include?(option_name)
     end
 
     def parse_boolean_option(option_name, value)
+      boolean_value = convert_to_boolean_value(value)
+
+      if [true, false].include?(boolean_value)
+        boolean_value
+      else
+        error "invalid value for #{option_name} option: #{value.inspect}"
+      end
+    end
+
+    def convert_to_boolean_value(value)
       _, boolean_value =
         case value
         when true then [nil, true]
         when false then [nil, false]
         else match_pattern(value)
         end
-
-      if [true, false].include?(boolean_value)
-        @options[option_name] = boolean_value
-      else
-        error "invalid value for #{option_name} option: #{value.inspect}"
-      end
-    end
-
-    def match_option_name?(lhs, rhs)
-      return false unless string?(lhs) || symbol?(lhs)
-      lhs.to_sym.casecmp?(rhs)
+      boolean_value
     end
   end
 end
