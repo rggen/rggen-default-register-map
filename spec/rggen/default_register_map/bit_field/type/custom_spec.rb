@@ -33,6 +33,17 @@ RSpec.describe 'bit_field/type/custom' do
     (allowed_value - Array(exclude)).sample
   end
 
+  def random_non_reserved_access(exclude: nil)
+    [:none, :default, :set, :clear]
+      .product([:none, :default, :set, :set_0, :set_1, :clear, :clear_0, :clear_1, :toggle_0, :toggle_1])
+      .delete_if { |r_w| [[:none, :none], *Array(exclude)].include?(r_w) }
+      .sample
+  end
+
+  def random_boolean_value
+    [true, false].sample
+  end
+
   specify 'ビットフィールド型は:custom' do
     bit_fields = create_bit_fields do
       bit_field { name 'bit_field'; bit_assignment width: 1; type :custom; initial_value 0 }
@@ -44,13 +55,7 @@ RSpec.describe 'bit_field/type/custom' do
   describe '揮発性' do
     context 'SWによる更新がある場合' do
       specify '不揮発性ビットフィールドである' do
-        sw_read, sw_write =
-          [:none, :default, :set, :clear]
-            .product([:none, :default, :set, :set_0, :set_1, :clear, :clear_0, :clear_1, :toggle_0, :toggle_1])
-            .delete_if { |(r, w)| r == :none && w == :none }
-            .delete_if { |(r, w)| r == :default && w == :none }
-            .sample
-
+        sw_read, sw_write = random_non_reserved_access(exclude: [[:default, :none]])
         bit_fields = create_bit_fields do
           bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_read: sw_read, sw_write: sw_write]; initial_value 0 }
         end
@@ -81,12 +86,7 @@ RSpec.describe 'bit_field/type/custom' do
 
     context 'hw_write/hw_set/hw_clearいずれか指定がある場合' do
       specify '揮発性ビットフィールドである' do
-        sw_read, sw_write =
-          [:none, :default, :set, :clear]
-            .product([:none, :default, :set, :set_0, :set_1, :clear, :clear_0, :clear_1, :toggle_0, :toggle_1])
-            .delete_if { |(r, w)| r == :none && w == :none }
-            .sample
-
+        sw_read, sw_write = random_non_reserved_access
         bit_fields = create_bit_fields do
           bit_field { name 'bit_field_0'; bit_assignment width: 1; type [:custom, sw_read: sw_read, sw_write: sw_write, hw_write: true]; initial_value 0 }
           bit_field { name 'bit_field_1'; bit_assignment width: 1; type [:custom, sw_read: sw_read, sw_write: sw_write, hw_set: true]; initial_value 0 }
@@ -292,6 +292,72 @@ RSpec.describe 'bit_field/type/custom' do
     end
   end
 
+  describe 'sw_write_once' do
+    specify '規定値はfalse' do
+      bit_fields = create_bit_fields do
+        bit_field { name 'bit_field'; bit_assignment width: 1; type :custom; initial_value 0 }
+      end
+
+      expect(bit_fields[0]).to have_property(:sw_write_once?, false)
+    end
+
+    specify 'true/on/yes/false/off/noが指定可能' do
+      bit_fields = create_bit_fields do
+        bit_field { name 'bit_field_0'; bit_assignment width: 1; type [:custom, sw_write_once: true]; initial_value 0}
+        bit_field { name 'bit_field_1'; bit_assignment width: 1; type [:custom, sw_write_once: :true]; initial_value 0}
+        bit_field { name 'bit_field_2'; bit_assignment width: 1; type [:custom, sw_write_once: :yes]; initial_value 0}
+        bit_field { name 'bit_field_3'; bit_assignment width: 1; type [:custom, sw_write_once: :on]; initial_value 0}
+        bit_field { name 'bit_field_4'; bit_assignment width: 1; type [:custom, sw_write_once: false]; initial_value 0}
+        bit_field { name 'bit_field_5'; bit_assignment width: 1; type [:custom, sw_write_once: :false]; initial_value 0}
+        bit_field { name 'bit_field_6'; bit_assignment width: 1; type [:custom, sw_write_once: :no]; initial_value 0}
+        bit_field { name 'bit_field_7'; bit_assignment width: 1; type [:custom, sw_write_once: :off]; initial_value 0}
+      end
+
+      expect(bit_fields[0]).to have_property(:sw_write_once?, true)
+      expect(bit_fields[1]).to have_property(:sw_write_once?, true)
+      expect(bit_fields[2]).to have_property(:sw_write_once?, true)
+      expect(bit_fields[3]).to have_property(:sw_write_once?, true)
+      expect(bit_fields[4]).to have_property(:sw_write_once?, false)
+      expect(bit_fields[5]).to have_property(:sw_write_once?, false)
+      expect(bit_fields[6]).to have_property(:sw_write_once?, false)
+      expect(bit_fields[7]).to have_property(:sw_write_once?, false)
+    end
+
+    context 'true/on/yes/false/off/no以外を指定した場合' do
+      specify 'RegisterMapErrorを起こす' do
+        [:foo, 'foo', '', nil, 1, Object.new].each do |value|
+          expect {
+            create_bit_fields do
+              bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_write_once: value]; initial_value 0 }
+            end
+          }.to raise_register_map_error "invalid value for sw_write_once option: #{value.inspect}"
+        end
+      end
+    end
+
+    context '書き込み不可なビットフィールドに対して有効にされた場合' do
+      specify 'RegisterMapErrorを起こす' do
+        expect {
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_write_once: true, sw_write: :none]; initial_value 0 }
+          end
+        }.to raise_register_map_error 'cannot enable sw_write_once option for unwritable bit field'
+
+        expect {
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_write_once: false, sw_write: :none]; initial_value 0 }
+          end
+        }.not_to raise_error
+
+        expect {
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_write_once: true, sw_write: random_sw_write(exclude: :none)]; initial_value 0 }
+          end
+        }.not_to raise_error
+      end
+    end
+  end
+
   describe 'hw_write' do
     specify '規定値はfalse' do
       bit_fields = create_bit_fields do
@@ -332,6 +398,29 @@ RSpec.describe 'bit_field/type/custom' do
             end
           }.to raise_register_map_error "invalid value for hw_write option: #{value.inspect}"
         end
+      end
+    end
+
+    context '予約済みビットフィールドに対して有効にされた場合' do
+      specify 'RegisterMapErrorを返す' do
+        expect {
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_write: true, sw_read: :none, sw_write: :none]; initial_value 0 }
+          end
+        }.to raise_register_map_error 'cannot enable hw_write option for reserved bit field'
+
+        expect {
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_write: false, sw_read: :none, sw_write: :none]; initial_value 0 }
+          end
+        }.not_to raise_error
+
+        expect {
+          sw_read, sw_write = random_non_reserved_access
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_write: true, sw_read: sw_read, sw_write: sw_write]; initial_value 0 }
+          end
+        }.not_to raise_error
       end
     end
   end
@@ -378,6 +467,29 @@ RSpec.describe 'bit_field/type/custom' do
         end
       end
     end
+
+    context '予約済みビットフィールドに対して有効にされた場合' do
+      specify 'RegisterMapErrorを返す' do
+        expect {
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_set: true, sw_read: :none, sw_write: :none]; initial_value 0 }
+          end
+        }.to raise_register_map_error 'cannot enable hw_set option for reserved bit field'
+
+        expect {
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_set: false, sw_read: :none, sw_write: :none]; initial_value 0 }
+          end
+        }.not_to raise_error
+
+        expect {
+          sw_read, sw_write = random_non_reserved_access
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_set: true, sw_read: sw_read, sw_write: sw_write]; initial_value 0 }
+          end
+        }.not_to raise_error
+      end
+    end
   end
 
   describe 'hw_clear' do
@@ -422,48 +534,27 @@ RSpec.describe 'bit_field/type/custom' do
         end
       end
     end
-  end
 
-  describe 'read_trigger' do
-    specify '規定値はfalse' do
-      bit_fields = create_bit_fields do
-        bit_field { name 'bit_field'; bit_assignment width: 1; type :custom; initial_value 0 }
-      end
+    context '予約済みビットフィールドに対して有効にされた場合' do
+      specify 'RegisterMapErrorを返す' do
+        expect {
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_clear: true, sw_read: :none, sw_write: :none]; initial_value 0 }
+          end
+        }.to raise_register_map_error 'cannot enable hw_clear option for reserved bit field'
 
-      expect(bit_fields[0]).to have_property(:read_trigger?, false)
-    end
+        expect {
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_clear: false, sw_read: :none, sw_write: :none]; initial_value 0 }
+          end
+        }.not_to raise_error
 
-    specify 'true/on/yes/false/off/noが指定可能' do
-      bit_fields = create_bit_fields do
-        bit_field { name 'bit_field_0'; bit_assignment width: 1; type [:custom, read_trigger: true]; initial_value 0}
-        bit_field { name 'bit_field_1'; bit_assignment width: 1; type [:custom, read_trigger: :true]; initial_value 0}
-        bit_field { name 'bit_field_2'; bit_assignment width: 1; type [:custom, read_trigger: :yes]; initial_value 0}
-        bit_field { name 'bit_field_3'; bit_assignment width: 1; type [:custom, read_trigger: :on]; initial_value 0}
-        bit_field { name 'bit_field_4'; bit_assignment width: 1; type [:custom, read_trigger: false]; initial_value 0}
-        bit_field { name 'bit_field_5'; bit_assignment width: 1; type [:custom, read_trigger: :false]; initial_value 0}
-        bit_field { name 'bit_field_6'; bit_assignment width: 1; type [:custom, read_trigger: :no]; initial_value 0}
-        bit_field { name 'bit_field_7'; bit_assignment width: 1; type [:custom, read_trigger: :off]; initial_value 0}
-      end
-
-      expect(bit_fields[0]).to have_property(:read_trigger?, true)
-      expect(bit_fields[1]).to have_property(:read_trigger?, true)
-      expect(bit_fields[2]).to have_property(:read_trigger?, true)
-      expect(bit_fields[3]).to have_property(:read_trigger?, true)
-      expect(bit_fields[4]).to have_property(:read_trigger?, false)
-      expect(bit_fields[5]).to have_property(:read_trigger?, false)
-      expect(bit_fields[6]).to have_property(:read_trigger?, false)
-      expect(bit_fields[7]).to have_property(:read_trigger?, false)
-    end
-
-    context 'true/on/yes/false/off/no以外を指定した場合' do
-      specify 'RegisterMapErrorを起こす' do
-        [:foo, 'foo', '', nil, 1, Object.new].each do |value|
-          expect {
-            create_bit_fields do
-              bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, read_trigger: value]; initial_value 0 }
-            end
-          }.to raise_register_map_error "invalid value for read_trigger option: #{value.inspect}"
-        end
+        expect {
+          sw_read, sw_write = random_non_reserved_access
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_clear: true, sw_read: sw_read, sw_write: sw_write]; initial_value 0 }
+          end
+        }.not_to raise_error
       end
     end
   end
@@ -508,6 +599,29 @@ RSpec.describe 'bit_field/type/custom' do
             end
           }.to raise_register_map_error "invalid value for read_trigger option: #{value.inspect}"
         end
+      end
+    end
+
+    context '読み出し不可なビットフィールドに対して有効にされた場合' do
+      specify 'RegisterMapErrorを返す' do
+        expect {
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, read_trigger: true, sw_read: :none]; initial_value 0 }
+          end
+        }.to raise_register_map_error 'cannot enable read_trigger option for unreadable bit field'
+
+        expect {
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, read_trigger: false, sw_read: :none]; initial_value 0 }
+          end
+        }.not_to raise_error
+
+        expect {
+          sw_read = random_sw_read(exclude: :none)
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, read_trigger: true, sw_read: sw_read]; initial_value 0 }
+          end
+        }.not_to raise_error
       end
     end
   end
@@ -554,17 +668,41 @@ RSpec.describe 'bit_field/type/custom' do
         end
       end
     end
+
+    context '書き込み不可なビットフィールドに対して有効にされた場合' do
+      specify 'RegisterMapErrorを返す' do
+        expect {
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, write_trigger: true, sw_write: :none]; initial_value 0 }
+          end
+        }.to raise_register_map_error 'cannot enable write_trigger option for unwritable bit field'
+
+        expect {
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, write_trigger: false, sw_write: :none]; initial_value 0 }
+          end
+        }.not_to raise_error
+
+        expect {
+          sw_write = random_sw_write(exclude: :none)
+          create_bit_fields do
+            bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, write_trigger: true, sw_write: sw_write]; initial_value 0 }
+          end
+        }.not_to raise_error
+      end
+    end
   end
 
   describe '#printables[:type]' do
     specify '型名とオプションを配列として返す' do
-      sw_read = random_sw_read
-      sw_write = random_sw_write
-      hw_write = [true, false].sample
-      hw_set = [true, false].sample
-      hw_clear = [true, false].sample
-      read_trigger = [true, false].sample
-      write_trigger = [true, false].sample
+      sw_read = random_sw_read(exclude: :none)
+      sw_write = random_sw_write(exclude: :none)
+      sw_write_once = random_boolean_value
+      hw_write = random_boolean_value
+      hw_set = random_boolean_value
+      hw_clear = random_boolean_value
+      read_trigger = random_boolean_value
+      write_trigger = random_boolean_value
 
       bit_fields = create_bit_fields do
         bit_field do
@@ -580,7 +718,7 @@ RSpec.describe 'bit_field/type/custom' do
           initial_value 0
           type [
             :custom,
-            { sw_read: sw_read, sw_write: sw_write },
+            { sw_read: sw_read, sw_write: sw_write, sw_write_once: sw_write_once },
             { hw_write: hw_write, hw_set: hw_set, hw_clear: hw_clear},
             read_trigger: read_trigger, write_trigger: write_trigger
           ]
@@ -588,24 +726,25 @@ RSpec.describe 'bit_field/type/custom' do
       end
 
       expect(bit_fields[0].printables[:type]).to match([
-        eq(:custom), 'sw_read: default', 'sw_write: default',
+        eq(:custom), 'sw_read: default', 'sw_write: default', 'sw_write_once: false',
         'hw_write: false', 'hw_set: false', 'hw_clear: false'
       ])
       expect(bit_fields[1].printables[:type]).to match([
-        eq(:custom), "sw_read: #{sw_read}", "sw_write: #{sw_write}",
+        eq(:custom), "sw_read: #{sw_read}", "sw_write: #{sw_write}", "sw_write_once: #{sw_write_once}",
         "hw_write: #{hw_write}", "hw_set: #{hw_set}", "hw_clear: #{hw_clear}"
       ])
     end
   end
 
   specify '複数個のオプションを指定できる' do
-    sw_read = random_sw_read
-    sw_write = random_sw_write
-    hw_write = [true, false].sample
-    hw_set = [true, false].sample
-    hw_clear = [true, false].sample
-    read_trigger = [true, false].sample
-    write_trigger = [true, false].sample
+    sw_read = random_sw_read(exclude: :none)
+    sw_write = random_sw_write(exclude: :none)
+    sw_write_once = random_boolean_value
+    hw_write = random_boolean_value
+    hw_set = random_boolean_value
+    hw_clear = random_boolean_value
+    read_trigger = random_boolean_value
+    write_trigger = random_boolean_value
 
     bit_fields = create_bit_fields do
       bit_field do
@@ -614,7 +753,7 @@ RSpec.describe 'bit_field/type/custom' do
         initial_value 0
         type [
           :custom,
-          { sw_read: sw_read, sw_write: sw_write },
+          { sw_read: sw_read, sw_write: sw_write, sw_write_once: sw_write_once },
           { hw_write: hw_write, hw_set: hw_set, hw_clear: hw_clear},
           read_trigger: read_trigger, write_trigger: write_trigger
         ]
@@ -624,19 +763,19 @@ RSpec.describe 'bit_field/type/custom' do
         name 'bit_field_1'
         bit_assignment width: 1
         initial_value 0
-        type "custom: sw_read: #{sw_read}, sw_write: #{sw_write}, " \
-             "hw_write: #{hw_write}, hw_set: #{hw_set}, hw_clear: #{hw_clear}, " \
+        type "custom: sw_read: #{sw_read}, sw_write: #{sw_write}, sw_write_once: #{sw_write_once}," \
+             "hw_write: #{hw_write}, hw_set: #{hw_set}, hw_clear: #{hw_clear}," \
              "read_trigger: #{read_trigger}, write_trigger: #{write_trigger}"
       end
     end
 
     expect(bit_fields[0]).to have_properties([
-      [:sw_read, sw_read], [:sw_write, sw_write], [:hw_write?, hw_write],
-      [:hw_set?, hw_set], [:hw_clear?, hw_clear], [:read_trigger?, read_trigger], [:write_trigger?, write_trigger]
+      [:sw_read, sw_read], [:sw_write, sw_write], [:sw_write_once?, sw_write_once],
+      [:hw_write?, hw_write], [:hw_set?, hw_set], [:hw_clear?, hw_clear], [:read_trigger?, read_trigger], [:write_trigger?, write_trigger]
     ])
     expect(bit_fields[1]).to have_properties([
-      [:sw_read, sw_read], [:sw_write, sw_write], [:hw_write?, hw_write],
-      [:hw_set?, hw_set], [:hw_clear?, hw_clear], [:read_trigger?, read_trigger], [:write_trigger?, write_trigger]
+      [:sw_read, sw_read], [:sw_write, sw_write], [:sw_write_once?, sw_write_once],
+      [:hw_write?, hw_write], [:hw_set?, hw_set], [:hw_clear?, hw_clear], [:read_trigger?, read_trigger], [:write_trigger?, write_trigger]
     ])
   end
 
