@@ -33,6 +33,31 @@ RgGen.define_list_item_feature(:bit_field, :type, :custom) do
       message { 'cannot enable sw_write_once option for unwritable bit field' }
     end
 
+    verify(:component) do
+      error_condition { hw_write? && reserved? }
+      message { 'cannot enable hw_write option for reserved bit field' }
+    end
+
+    verify(:component) do
+      error_condition { hw_set? && reserved? }
+      message { 'cannot enable hw_set option for reserved bit field' }
+    end
+
+    verify(:component) do
+      error_condition { hw_clear? && reserved? }
+      message { 'cannot enable hw_clear option for reserved bit field' }
+    end
+
+    verify(:component) do
+      error_condition { read_trigger? && !readable? }
+      message { 'cannot enable read_trigger option for unreadable bit field' }
+    end
+
+    verify(:component) do
+      error_condition { write_trigger? && !writable? }
+      message { 'cannot enable write_trigger option for unwritable bit field' }
+    end
+
     printable(:type) do
       options =
         [:sw_read, :sw_write, :sw_write_once, :hw_write, :hw_set, :hw_clear]
