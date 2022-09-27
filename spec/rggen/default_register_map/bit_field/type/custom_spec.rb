@@ -40,6 +40,10 @@ RSpec.describe 'bit_field/type/custom' do
       .sample
   end
 
+  def mix_case(s)
+    Array.new(s.size) { |i| [true, false].sample && s[i].swapcase || s[i] }.join.to_sym
+  end
+
   def random_boolean_value
     [true, false].sample
   end
@@ -219,10 +223,10 @@ RSpec.describe 'bit_field/type/custom' do
 
     it 'none/default/set/clearが指定可能' do
       bit_fields = create_bit_fields do
-        bit_field { name 'bit_field_0'; bit_assignment width: 1; type [:custom, sw_read: :none]; initial_value 0 }
-        bit_field { name 'bit_field_1'; bit_assignment width: 1; type [:custom, sw_read: :default]; initial_value 0 }
-        bit_field { name 'bit_field_2'; bit_assignment width: 1; type [:custom, sw_read: :set]; initial_value 0 }
-        bit_field { name 'bit_field_3'; bit_assignment width: 1; type [:custom, sw_read: :clear]; initial_value 0 }
+        bit_field { name 'bit_field_0'; bit_assignment width: 1; type [:custom, sw_read: mix_case(:none)]; initial_value 0 }
+        bit_field { name 'bit_field_1'; bit_assignment width: 1; type [:custom, sw_read: mix_case(:default)]; initial_value 0 }
+        bit_field { name 'bit_field_2'; bit_assignment width: 1; type [:custom, sw_read: mix_case(:set)]; initial_value 0 }
+        bit_field { name 'bit_field_3'; bit_assignment width: 1; type [:custom, sw_read: mix_case(:clear)]; initial_value 0 }
       end
 
       expect(bit_fields[0]).to have_property(:sw_read, :none)
@@ -255,16 +259,16 @@ RSpec.describe 'bit_field/type/custom' do
 
     specify 'none/default/set/set_0/set_1/clear/clear_0/clear_1/toggle_0/toggle_1が指定可能' do
       bit_fields = create_bit_fields do
-        bit_field { name 'bit_field_0'; bit_assignment width: 1; type [:custom, sw_write: :none]; initial_value 0 }
-        bit_field { name 'bit_field_1'; bit_assignment width: 1; type [:custom, sw_write: :default]; initial_value 0 }
-        bit_field { name 'bit_field_2'; bit_assignment width: 1; type [:custom, sw_write: :set]; initial_value 0 }
-        bit_field { name 'bit_field_3'; bit_assignment width: 1; type [:custom, sw_write: :set_0]; initial_value 0 }
-        bit_field { name 'bit_field_4'; bit_assignment width: 1; type [:custom, sw_write: :set_1]; initial_value 0 }
-        bit_field { name 'bit_field_5'; bit_assignment width: 1; type [:custom, sw_write: :clear]; initial_value 0 }
-        bit_field { name 'bit_field_6'; bit_assignment width: 1; type [:custom, sw_write: :clear_0]; initial_value 0 }
-        bit_field { name 'bit_field_7'; bit_assignment width: 1; type [:custom, sw_write: :clear_1]; initial_value 0 }
-        bit_field { name 'bit_field_8'; bit_assignment width: 1; type [:custom, sw_write: :toggle_0]; initial_value 0 }
-        bit_field { name 'bit_field_9'; bit_assignment width: 1; type [:custom, sw_write: :toggle_1]; initial_value 0 }
+        bit_field { name 'bit_field_0'; bit_assignment width: 1; type [:custom, sw_write: mix_case(:none)]; initial_value 0 }
+        bit_field { name 'bit_field_1'; bit_assignment width: 1; type [:custom, sw_write: mix_case(:default)]; initial_value 0 }
+        bit_field { name 'bit_field_2'; bit_assignment width: 1; type [:custom, sw_write: mix_case(:set)]; initial_value 0 }
+        bit_field { name 'bit_field_3'; bit_assignment width: 1; type [:custom, sw_write: mix_case(:set_0)]; initial_value 0 }
+        bit_field { name 'bit_field_4'; bit_assignment width: 1; type [:custom, sw_write: mix_case(:set_1)]; initial_value 0 }
+        bit_field { name 'bit_field_5'; bit_assignment width: 1; type [:custom, sw_write: mix_case(:clear)]; initial_value 0 }
+        bit_field { name 'bit_field_6'; bit_assignment width: 1; type [:custom, sw_write: mix_case(:clear_0)]; initial_value 0 }
+        bit_field { name 'bit_field_7'; bit_assignment width: 1; type [:custom, sw_write: mix_case(:clear_1)]; initial_value 0 }
+        bit_field { name 'bit_field_8'; bit_assignment width: 1; type [:custom, sw_write: mix_case(:toggle_0)]; initial_value 0 }
+        bit_field { name 'bit_field_9'; bit_assignment width: 1; type [:custom, sw_write: mix_case(:toggle_1)]; initial_value 0 }
       end
 
       expect(bit_fields[0]).to have_property(:sw_write, :none)
