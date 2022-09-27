@@ -103,13 +103,8 @@ RgGen.define_list_item_feature(:bit_field, :type, :custom) do
     end
 
     def convert_to_option_name(key)
-      if string?(key)
-        key.to_sym.downcase
-      elsif symbol?(key)
-        key.downcase
-      else
-        key
-      end
+      return key unless string?(key) || symbol?(key)
+      key.to_sym.downcase
     end
 
     def parse_option(option_name, key, value)
@@ -129,7 +124,7 @@ RgGen.define_list_item_feature(:bit_field, :type, :custom) do
       match_data, match_index = match_pattern(value)
 
       if match_data && allowed_patterns.include?(match_index)
-        match_data.captures.first.to_sym
+        match_data.captures.first.downcase.to_sym
       else
         error "invalid value for #{option_name} option: #{value.inspect}"
       end
