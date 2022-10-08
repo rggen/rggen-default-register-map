@@ -32,6 +32,7 @@ RgGen.setup_plugin :'rggen-default-register-map' do |plugin|
     'default_register_map/bit_field/type/reserved',
     'default_register_map/bit_field/type/ro_rotrg',
     'default_register_map/bit_field/type/rof',
+    'default_register_map/bit_field/type/rol',
     'default_register_map/bit_field/type/row0trg_row1trg',
     'default_register_map/bit_field/type/rowo_rowotrg',
     'default_register_map/bit_field/type/rs',
