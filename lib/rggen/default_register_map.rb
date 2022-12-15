@@ -50,6 +50,7 @@ RgGen.setup_plugin :'rggen-default-register-map' do |plugin|
     'default_register_map/bit_field/type/wos',
     'default_register_map/bit_field/initial_value',
     'default_register_map/bit_field/reference',
+    'default_register_map/bit_field/labels',
     'default_register_map/bit_field/comment'
   ]
 end
