@@ -108,7 +108,7 @@ RgGen.define_list_feature(:bit_field, :type) do
     end
 
     factory do
-      allow_options
+      value_format :value_with_options
 
       convert_value do |value|
         types = target_features.keys
