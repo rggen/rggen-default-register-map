@@ -75,9 +75,8 @@ RgGen.define_simple_feature(:register, :offset_address) do
     end
 
     def expand_local_addresses
-      Array.new(shared_address? && 1 || register.count) do |i|
-        offset_address + register.byte_width * i
-      end
+      width = shared_address? && 0 || register.byte_width
+      Array.new(register.count) { |i| offset_address + width * i }
     end
 
     def previous_component

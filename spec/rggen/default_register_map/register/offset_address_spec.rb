@@ -225,7 +225,7 @@ RSpec.describe 'register/offset_address' do
       expect(registers[2]).to have_property(:expanded_offset_addresses, match([0x20, 0x24, 0x28, 0x2c]))
       expect(registers[3]).to have_property(:expanded_offset_addresses, match([0x30]))
       expect(registers[4]).to have_property(:expanded_offset_addresses, match([0x54, 0x58, 0x74, 0x78]))
-      expect(registers[5]).to have_property(:expanded_offset_addresses, match([0x5c, 0x7c]))
+      expect(registers[5]).to have_property(:expanded_offset_addresses, match([0x5c, 0x5c, 0x7c, 0x7c]))
     end
   end
 
@@ -254,7 +254,7 @@ RSpec.describe 'register/offset_address' do
     expect(registers[2].printables[:offset_address]).to match(['0x20', '0x24', '0x28', '0x2c'])
     expect(registers[3].printables[:offset_address]).to match(['0x30'])
     expect(registers[4].printables[:offset_address]).to match(['0x54', '0x58', '0x74', '0x78'])
-    expect(registers[5].printables[:offset_address]).to match(['0x5c', '0x7c'])
+    expect(registers[5].printables[:offset_address]).to match(['0x5c', '0x5c', '0x7c', '0x7c'])
   end
 
   describe 'エラーチェック' do
