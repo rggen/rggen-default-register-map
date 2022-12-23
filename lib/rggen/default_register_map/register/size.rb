@@ -77,24 +77,46 @@ RgGen.define_simple_feature(:register, :size) do
         .max
     end
 
-    def calc_byte_size(whole_size = true)
-      if !whole_size || register.settings[:support_shared_address]
-        byte_width
-      else
-        Array(@size).reduce(1, :*) * byte_width
-      end
+    def calc_byte_size(whole_size = true, hierarchical: false)
+      return byte_width unless whole_size
+
+      include_register = !register.settings[:support_shared_address]
+      collect_size(hierarchical, include_register, false).reduce(1, :*) * byte_width
     end
 
-    def array_register?
+    def array_register?(hierarchical: false)
+      return true if hierarchical && register_files.any?(&:array?)
       register.settings[:support_array] && !@size.nil? || false
     end
 
-    def array_registers
-      array_register? && @size || nil
+    def array_registers(hierarchical: false)
+      size = collect_size(hierarchical, true, true)
+      !size.empty? && size || nil
     end
 
     def calc_count(whole_count = true)
-      whole_count ? (@count ||= Array(array_registers).reduce(1, :*)) : 1
+      if whole_count
+        @count ||= collect_size(false, true, true).reduce(1, :*)
+      else
+        1
+      end
+    end
+
+    def collect_size(inculde_register_file, include_register, array_only)
+      size = []
+      collect_register_file_size(size, inculde_register_file)
+      collect_register_size(size, include_register, array_only)
+      size.compact
+    end
+
+    def collect_register_file_size(size, inculde_register_file)
+      inculde_register_file &&
+        size.concat(register_files.flat_map(&:array_size))
+    end
+
+    def collect_register_size(size, include_register, array_only)
+      @size && include_register && (!array_only || array_register?) &&
+        size.concat(@size)
     end
   end
 end
