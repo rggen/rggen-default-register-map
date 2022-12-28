@@ -23,7 +23,7 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     property :sequential?, body: -> { !@sequence_size.nil? }
     property :bit_map, initial: -> { calc_bit_map }
 
-    input_pattern /#{integer}(?::#{integer}){0,3}/,
+    input_pattern /#{integer}(?::#{integer})*/,
                   match_automatically: false
 
     build do |value|
@@ -87,11 +87,19 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     def preprocess(value)
       if hash?(value)
         value
-      elsif match_pattern(value)
+      elsif match_bit_assignment?(value)
         split_match_data(match_data)
       else
         error "illegal input value for bit assignment: #{value.inspect}"
       end
+    end
+
+    # workaround for ruby 3.2 bug
+    # see:
+    # * https://bugs.ruby-lang.org/issues/19273
+    # * https://github.com/rggen/rggen/issues/129#issuecomment-1366666885
+    def match_bit_assignment?(value)
+      match_pattern(value) && value.count(':') <= 3
     end
 
     def split_match_data(match_data)
