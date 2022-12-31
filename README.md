@@ -39,7 +39,7 @@ Feedbacks, bug reports, questions and etc. are wellcome! You can post them by us
 
 ## Copyright & License
 
-Copyright &copy; 2019-2022 Taichi Ishitani. RgGen::DefaultRegisterMap is licensed under the [MIT License](https://opensource.org/licenses/MIT), see [LICENSE](LICENSE) for futher details.
+Copyright &copy; 2019-2023 Taichi Ishitani. RgGen::DefaultRegisterMap is licensed under the [MIT License](https://opensource.org/licenses/MIT), see [LICENSE](LICENSE) for futher details.
 
 ## Code of Conduct
 
