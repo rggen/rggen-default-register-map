@@ -86,20 +86,10 @@ RgGen.define_list_item_feature(:bit_field, :type, :custom) do
     end
 
     def parse_options(options)
-      merge_options(options)
-        .each_with_object({}) do |(key, value), option_hash|
-          option_name = convert_to_option_name(key)
-          option_hash[option_name] = parse_option(option_name, key, value)
-        end
-    end
-
-    def merge_options(options)
-      options.each_with_object({}) do |option, merged_options|
-        option_hash = hash?(option) && option || [option].to_h
-        merged_options.update(option_hash)
+      options.each_with_object({}) do |(key, value), optin_hash|
+        name = convert_to_option_name(key)
+        optin_hash[name] = parse_option(name, key, value)
       end
-    rescue ArgumentError, TypeError
-      error "invalid options are given: #{options.inspect}"
     end
 
     def convert_to_option_name(key)

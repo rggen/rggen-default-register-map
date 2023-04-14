@@ -809,17 +809,24 @@ RSpec.describe 'bit_field/type/custom' do
       [
         nil, true, false, :foo, 'foo', 1, Object.new
       ].each do |option|
+        message =
+          if option.is_a?(String)
+            "unknown option is given: #{option.to_sym.inspect}"
+          else
+            "unknown option is given: #{option.inspect}"
+          end
+
         expect {
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, option => true]; initial_value 0 }
           end
-        }.to raise_register_map_error "unknown option is given: #{option.inspect}"
+        }.to raise_register_map_error message
 
         expect {
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_read: :default, option => true]; initial_value 0 }
           end
-        }.to raise_register_map_error "unknown option is given: #{option.inspect}"
+        }.to raise_register_map_error message
       end
     end
   end
