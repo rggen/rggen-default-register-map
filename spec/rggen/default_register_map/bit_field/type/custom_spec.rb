@@ -786,20 +786,24 @@ RSpec.describe 'bit_field/type/custom' do
   context 'Hashにマージできない値がオプションに指定された場合' do
     specify 'RegisterMapErrorを起こす' do
       [
-        [nil],
-        [:sw_read],
-        [[:sw_read]],
-        [[:sw_read, :default, :none]],
+        [nil, nil],
+        [nil, :sw_read],
+        [nil, [:sw_read]],
+        [nil, [:sw_read, :default, :none]],
         [{sw_write: :default}, nil],
         [{sw_write: :default}, :sw_read],
         [{sw_write: :default}, [:sw_read]],
         [{sw_write: :default}, [:sw_read, :default, :none]]
-      ].each do |options|
+      ].each do |(valid_option, invalid_option)|
+        options = []
+        options << valid_option if valid_option
+        options << invalid_option
+
         expect {
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, *options]}
           end
-        }.to raise_register_map_error "invalid options are given: #{options.inspect}"
+        }.to raise_register_map_error "invalid option is given: #{invalid_option.inspect}"
       end
     end
   end

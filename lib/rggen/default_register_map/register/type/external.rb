@@ -21,7 +21,7 @@ RgGen.define_list_item_feature(:register, :type, :external) do
     end
 
     printable(:byte_size) do
-      "#{register.byte_size} bytes"
+      "#{register.total_byte_size} bytes"
     end
   end
 end

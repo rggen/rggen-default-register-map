@@ -192,6 +192,18 @@ RSpec.describe 'register_file/offset_address' do
         expect(register_files[1]).to have_property(:offset_address, 0x14)
 
         register_files = create_register_files(32) do
+          register { offset_address 4; size [2, step: 8]; type :foo }
+          register_file do
+            register { offset_address 0; type :foo }
+          end
+          register_file do
+            register { offset_address 0; type :foo }
+          end
+        end
+        expect(register_files[0]).to have_property(:offset_address, 0x14)
+        expect(register_files[1]).to have_property(:offset_address, 0x18)
+
+        register_files = create_register_files(32) do
           register_file do
             offset_address 4
             register { offset_address 0; size [3]; type :foo }
@@ -205,6 +217,21 @@ RSpec.describe 'register_file/offset_address' do
         end
         expect(register_files[1]).to have_property(:offset_address, 0x10)
         expect(register_files[2]).to have_property(:offset_address, 0x14)
+
+        register_files = create_register_files(32) do
+          register_file do
+            offset_address 4
+            register { offset_address 0; size [2, step: 8]; type :foo }
+          end
+          register_file do
+            register { offset_address 0; type :foo }
+          end
+          register_file do
+            register { offset_address 0; type :foo }
+          end
+        end
+        expect(register_files[1]).to have_property(:offset_address, 0x14)
+        expect(register_files[2]).to have_property(:offset_address, 0x18)
 
         register_files = create_register_files(32) do
           register_file do
@@ -224,6 +251,21 @@ RSpec.describe 'register_file/offset_address' do
         register_files = create_register_files(32) do
           register_file do
             offset_address 0
+            register { offset_address 4; size [2, step: 8]; type :foo }
+            register_file do
+              register { offset_address 0; type :foo }
+            end
+            register_file do
+              register { offset_address 0; type :foo }
+            end
+          end
+        end
+        expect(register_files[1]).to have_property(:offset_address, 0x14)
+        expect(register_files[2]).to have_property(:offset_address, 0x18)
+
+        register_files = create_register_files(32) do
+          register_file do
+            offset_address 0
             register_file do
               offset_address 4
               register { offset_address 0; size [3]; type :foo }
@@ -238,6 +280,24 @@ RSpec.describe 'register_file/offset_address' do
         end
         expect(register_files[2]).to have_property(:offset_address, 0x10)
         expect(register_files[3]).to have_property(:offset_address, 0x14)
+
+        register_files = create_register_files(32) do
+          register_file do
+            offset_address 0
+            register_file do
+              offset_address 4
+              register { offset_address 0; size [2, step: 8]; type :foo }
+            end
+            register_file do
+              register { offset_address 0; type :foo }
+            end
+            register_file do
+              register { offset_address 0; type :foo }
+            end
+          end
+        end
+        expect(register_files[2]).to have_property(:offset_address, 0x14)
+        expect(register_files[3]).to have_property(:offset_address, 0x18)
       end
     end
   end
@@ -266,6 +326,18 @@ RSpec.describe 'register_file/offset_address' do
             end
           end
         end
+        register_file do
+          offset_address 0x60
+          size [2, step: 64]
+          register_file do
+            offset_address 0x00
+            register_file do
+              offset_address 0x10
+              size [2, step: 8]
+              register { offset_address 0x00; type :foo }
+            end
+          end
+        end
       end
 
       expect(register_files[0]).to have_property(:expanded_offset_addresses, match([0x00]))
@@ -273,6 +345,9 @@ RSpec.describe 'register_file/offset_address' do
       expect(register_files[2]).to have_property(:expanded_offset_addresses, match([0x20, 0x40]))
       expect(register_files[3]).to have_property(:expanded_offset_addresses, match([0x20, 0x40]))
       expect(register_files[4]).to have_property(:expanded_offset_addresses, match([0x30, 0x38, 0x50, 0x58]))
+      expect(register_files[5]).to have_property(:expanded_offset_addresses, match([0x60, 0xA0]))
+      expect(register_files[6]).to have_property(:expanded_offset_addresses, match([0x60, 0xA0]))
+      expect(register_files[7]).to have_property(:expanded_offset_addresses, match([0x70, 0x78, 0xB0, 0xB8]))
     end
   end
 
@@ -299,6 +374,18 @@ RSpec.describe 'register_file/offset_address' do
           end
         end
       end
+      register_file do
+        offset_address 0x60
+        size [2, step: 64]
+        register_file do
+          offset_address 0x00
+          register_file do
+            offset_address 0x10
+            size [2, step: 8]
+            register { offset_address 0x00; type :foo }
+          end
+        end
+      end
     end
 
     expect(register_files[0].printables[:offset_address]).to match(['0x00'])
@@ -306,6 +393,9 @@ RSpec.describe 'register_file/offset_address' do
     expect(register_files[2].printables[:offset_address]).to match(['0x20', '0x40'])
     expect(register_files[3].printables[:offset_address]).to match(['0x20', '0x40'])
     expect(register_files[4].printables[:offset_address]).to match(['0x30', '0x38', '0x50', '0x58'])
+    expect(register_files[5].printables[:offset_address]).to match(['0x60', '0xa0'])
+    expect(register_files[6].printables[:offset_address]).to match(['0x60', '0xa0'])
+    expect(register_files[7].printables[:offset_address]).to match(['0x70', '0x78', '0xb0', '0xb8'])
   end
 
   describe 'エラーチェック' do
@@ -439,6 +529,19 @@ RSpec.describe 'register_file/offset_address' do
             end
           end
         }.to raise_register_map_error 'offset address range exceeds byte size of register block(256): 0xfc-0x103'
+
+        expect {
+          create_register_files(32) do
+            register_file do
+              offset_address 0xf4
+              register_file do
+                offset_address 0x00
+                size [2, step: 8]
+                register { offset_address 0x00; type :foo }
+              end
+            end
+          end
+        }.to raise_register_map_error 'offset address range exceeds byte size of register block(256): 0xf4-0x103'
 
         expect {
           create_register_files(32) do
