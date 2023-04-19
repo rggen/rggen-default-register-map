@@ -153,23 +153,31 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     end
 
     def lsb_bit(index = 0)
-      lsb_msb_bit(index, lsb_base)
+      lsb_msb_bit(index, 0)
     end
 
     def msb_bit(index = 0)
-      lsb_msb_bit(index, lsb_base + width - 1)
+      lsb_msb_bit(index, width - 1)
     end
 
-    def lsb_msb_bit(index, base)
-      calc_bit_position((sequential? && index) || 0, base)
-    end
-
-    def calc_bit_position(index, base)
-      if integer?(index)
-        base + step * index
-      else
+    def lsb_msb_bit(index, offset)
+      base = lsb_base + offset
+      if base_lsb_msb?(index)
+        base
+      elsif !integer?(index)
         "#{base}+#{step}*#{index}"
+      else
+        sequential_lsb_list[index]&.+(offset)
       end
+    end
+
+    def base_lsb_msb?(index)
+      !sequential? || integer?(index) && index.zero?
+    end
+
+    def sequential_lsb_list
+      @sequential_lsb_list ||=
+        Array.new(sequence_size) { |i| lsb_base + step * i }
     end
 
     def calc_bit_map

@@ -80,7 +80,7 @@ RgGen.define_feature(:register, :size) do
       def max_msb
         register
           .bit_fields
-          .map { |bit_field| bit_field.msb((bit_field.sequence_size || 1) - 1) }
+          .map { |bit_field| bit_field.msb(-1) }
           .max
       end
 

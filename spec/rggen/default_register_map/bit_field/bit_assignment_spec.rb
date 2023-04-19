@@ -79,18 +79,61 @@ RSpec.describe 'bit_field/bit_assignment' do
       end
     end
 
-    context '連番になっていて、かつ、インデックスが引数で指定された場合' do
-      it '指定された位置の LSB を返す' do
-        lsb = random_value(0, 31)
-        sequence_size = random_value(1, 8)
-        step = random_value(1, 8)
-        bit_field = create_bit_field(lsb: lsb, sequence_size: sequence_size, step: step)
+    context '連番になっていて' do
+      let(:lsb) do
+        random_value(0, 31)
+      end
 
-        index = random_value(0, sequence_size - 1)
-        expect(bit_field.lsb(index)).to eq(step * index + lsb)
+      let(:sequence_size) do
+        random_value(1, 8)
+      end
 
-        index = 'i'
-        expect(bit_field.lsb(index)).to eq "#{lsb}+#{step}*i"
+      let(:step) do
+        random_value(1, 8)
+      end
+
+      let(:bit_field) do
+        create_bit_field(lsb: lsb, sequence_size: sequence_size, step: step)
+      end
+
+      context '文字列が与えられた場合' do
+        it 'LSB を計算する計算式を返す' do
+          expect(bit_field.lsb('i')).to eq "#{lsb}+#{step}*i"
+        end
+      end
+
+      context '正のインデックスが指定された場合' do
+        it '指定された位置の LSB を返す' do
+          index = 0
+          expect(bit_field.lsb(index)).to eq(lsb)
+
+          index = sequence_size - 1
+          expect(bit_field.lsb(index)).to eq(step * index + lsb)
+
+          index = random_value(0, sequence_size - 1)
+          expect(bit_field.lsb(index)).to eq(step * index + lsb)
+        end
+      end
+
+      context '負のインデックスが指定された場合' do
+        it '末尾からの指定された位置の LSB を返す' do
+          position = sequence_size - 1
+          expect(bit_field.lsb(-1)).to eq(step * position + lsb)
+
+          position = 0
+          expect(bit_field.lsb(-sequence_size)).to eq(lsb)
+
+          position = random_value(0, sequence_size - 1)
+          index = position - sequence_size
+          expect(bit_field.lsb(index)).to eq(step * position + lsb)
+        end
+      end
+
+      context '範囲外のインデックスが指定された場合' do
+        it 'nilを返す' do
+          expect(bit_field.lsb(sequence_size)).to be_nil
+          expect(bit_field.lsb(-(sequence_size + 1))).to be_nil
+        end
       end
     end
 
@@ -101,6 +144,8 @@ RSpec.describe 'bit_field/bit_assignment' do
 
         index = random_value(0, 7)
         expect(bit_field.lsb(index)).to eq lsb
+
+        expect(bit_field.lsb(-1)).to eq lsb
 
         index = 'i'
         expect(bit_field.lsb(index)).to eq lsb
@@ -170,35 +215,83 @@ RSpec.describe 'bit_field/bit_assignment' do
       end
     end
 
-    context '連番になっていて、かつ、インデックスが指定された場合' do
-      it '指定された位置の MSB を返す' do
-        bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size)
+    context '連番になっていて' do
+      context '文字列が与えられた場合' do
+        it 'MSBを計算する計算式を返す' do
+          bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size)
+          expect(bit_field.msb('i')).to eq "#{lsb + width - 1}+#{width}*i"
 
-        index = random_value(0, sequence_size - 1)
-        expect(bit_field.msb(index)).to eq(index * width + lsb + width - 1)
+          bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size, step: step)
+          expect(bit_field.msb('i')).to eq "#{lsb + width - 1}+#{step}*i"
+        end
+      end
 
-        index = 'i'
-        expect(bit_field.msb(index)).to eq "#{lsb + width - 1}+#{width}*i"
+      context '正のインデックスが指定された場合' do
+        it '指定された位置の MSB を返す' do
+          bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size)
+          index = random_value(0, sequence_size - 1)
+          expect(bit_field.msb(index)).to eq(index * width + lsb + width - 1)
 
-        bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size, step: step)
+          bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size, step: step)
+          index = random_value(0, sequence_size - 1)
+          expect(bit_field.msb(index)).to eq(index * step + lsb + width - 1)
+        end
+      end
 
-        index = random_value(0, sequence_size - 1)
-        expect(bit_field.msb(index)).to eq(index * step + lsb + width - 1)
+      context '負のインデックスが指定された場合' do
+        it '末尾からの指定された位置の MSB を返す' do
+          bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size)
 
-        index = 'i'
-        expect(bit_field.msb(index)).to eq "#{lsb + width - 1}+#{step}*i"
+          position = sequence_size - 1
+          expect(bit_field.msb(-1)).to eq(position * width + lsb + width - 1)
+
+          position = 0
+          expect(bit_field.msb(-sequence_size)).to eq(position * width + lsb + width - 1)
+
+          position = random_value(0, sequence_size - 1)
+          index = position - sequence_size
+          expect(bit_field.msb(index)).to eq(position * width + lsb + width - 1)
+
+          bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size, step: step)
+
+          position = sequence_size - 1
+          expect(bit_field.msb(-1)).to eq(position * step + lsb + width - 1)
+
+          position = 0
+          expect(bit_field.msb(-sequence_size)).to eq(position * step + lsb + width - 1)
+
+          position = random_value(0, sequence_size - 1)
+          index = position - sequence_size
+          expect(bit_field.msb(index)).to eq(position * step + lsb + width - 1)
+        end
+      end
+
+      context '範囲外のインデックスが指定された場合' do
+        it 'nilを返す' do
+          bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size)
+          expect(bit_field.msb(sequence_size)).to be_nil
+          expect(bit_field.msb(-(sequence_size + 1))).to be_nil
+
+          bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size, step: step)
+          expect(bit_field.msb(sequence_size)).to be_nil
+          expect(bit_field.msb(-(sequence_size + 1))).to be_nil
+        end
       end
     end
 
     context '連番ではなく、かつ、インデックスが指定された場合' do
       it 'インデックにかかわらず、一番目のフィールドの MSB を返す' do
         bit_field = create_bit_field(lsb: lsb, width: width)
+        msb = lsb + width - 1
 
         index = random_value(0, 7)
-        expect(bit_field.msb(index)).to eq(lsb + width - 1)
+        expect(bit_field.msb(index)).to eq msb
+
+        index = -1
+        expect(bit_field.msb(index)).to eq msb
 
         index = 'i'
-        expect(bit_field.msb(index)).to eq(lsb + width - 1)
+        expect(bit_field.msb(index)).to eq msb
       end
     end
   end
