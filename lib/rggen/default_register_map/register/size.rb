@@ -58,16 +58,14 @@ RgGen.define_feature(:register, :size) do
 
       def parse_register_size(values)
         values.map do |value|
-          Integer(value)
-        rescue ArgumentError, TypeError
-          error "cannot convert #{value.inspect} into register size"
+          to_int(value) { |v| "cannot convert #{v.inspect} into register size" }
         end
       end
 
       def parse_step_size(options)
-        options.key?(:step) && Integer(options[:step]) || nil
-      rescue ArgumentError, TypeError
-        error "cannot convert #{options[:step].inspect} into step size"
+        return unless options.key?(:step)
+
+        to_int(options[:step]) { |v| "cannot convert #{v.inspect} into step size" }
       end
 
       def calc_width

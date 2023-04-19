@@ -40,16 +40,16 @@ RgGen.define_feature(:register_file, :size) do
 
       def parse_register_file_size(values)
         values.map do |value|
-          Integer(value)
-        rescue ArgumentError, TypeError
-          error "cannot convert #{value.inspect} into register file size"
+          to_int(value) do |v|
+            "cannot convert #{v.inspect} into register file size"
+          end
         end
       end
 
       def parse_step_size(options)
-        options.key?(:step) && Integer(options[:step]) || nil
-      rescue ArgumentError, TypeError
-        error "cannot convert #{options[:step]} into step size"
+        return unless options.key?(:step)
+
+        to_int(options[:step]) { |v| "cannot convert #{v.inspect} into step size" }
       end
 
       def calc_entry_byte_size

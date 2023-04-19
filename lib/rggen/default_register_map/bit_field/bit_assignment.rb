@@ -122,11 +122,14 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     end
 
     def parse_value(input_value, key, variable_name)
-      input_value.key?(key) &&
-        instance_variable_set(variable_name, Integer(input_value[key]))
-    rescue ArgumentError, TypeError
-      error "cannot convert #{input_value[key].inspect} into " \
-            "bit assignment(#{key.to_s.tr('_', ' ')})"
+      return unless input_value.key?(key)
+
+      value =
+        to_int(input_value[key]) do
+          "cannot convert #{input_value[key].inspect} into " \
+          "bit assignment(#{key.to_s.tr('_', ' ')})"
+        end
+      instance_variable_set(variable_name, value)
     end
 
     def lsb_base

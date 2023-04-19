@@ -92,9 +92,7 @@ RgGen.define_feature(:bit_field, :labels) do
       end
 
       def convert_label_value(value)
-        Integer(value)
-      rescue ArgumentError, TypeError
-        error "cannot convert #{value.inspect} into label value", value
+        to_int(value) { |v| "cannot convert #{v.inspect} into label value" }
       end
 
       def unique_value?(value)

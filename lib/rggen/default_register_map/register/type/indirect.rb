@@ -204,9 +204,7 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
     end
 
     def convert_index_value(value)
-      Integer(value)
-    rescue ArgumentError, TypeError
-      error "cannot convert #{value.inspect} into indirect index value"
+      to_int(value) { |v| "cannot convert #{v.inspect} into indirect index value" }
     end
 
     def verify_indirect_index(index)

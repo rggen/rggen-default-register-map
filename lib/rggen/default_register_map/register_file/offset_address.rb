@@ -7,9 +7,8 @@ RgGen.define_simple_feature(:register_file, :offset_address) do
     property :address_range, initial: -> { start_address..end_address }
 
     build do |value|
-      @offset_address = Integer(value)
-    rescue ArgumentError, TypeError
-      error "cannot convert #{value.inspect} into offset address"
+      @offset_address =
+        to_int(value) { |v| "cannot convert #{v.inspect} into offset address" }
     end
 
     verify(:feature) do
