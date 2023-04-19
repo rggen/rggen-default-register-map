@@ -62,7 +62,7 @@ RSpec.describe 'register/type/external' do
   end
 
   describe 'printables[:byte_size]' do
-    it '表示可能オブジェクトとして、バイトサイズを返す' do
+    it '表示可能オブジェクトとして、総バイト数を返す' do
       registers = create_registers do
         register { name 'register_0'; offset_address 0x00; type :external }
         register { name 'register_1'; offset_address 0x10; type :external; size [1] }
@@ -101,5 +101,13 @@ RSpec.describe 'register/type/external' do
         register { name 'register_0'; offset_address 0x00; type :external; size [1, 1] }
       end
     }.to raise_register_map_error 'external register type supports single size definition only'
+  end
+
+  specify 'stepの指定には対応しない' do
+    expect {
+      create_registers do
+        register { name 'register_0'; offset_address 0x00; type :external; size [1, step: 8] }
+      end
+    }.to raise_register_map_error
   end
 end

@@ -330,28 +330,28 @@ RSpec.describe 'bit_field/type' do
       RgGen.delete(:bit_field, :type, :foo)
     end
 
-    specify 'ビットフィールド型に対するオプションを指定することができる' do
+    specify 'ビットフィールド型に対するHash型のオプションを指定することができる' do
       bit_fields = create_bit_fields do
         register do
           name 'register_0'
-          bit_field { name 'bit_field_0'; bit_assignment width: 1; type [:foo, :option_1] }
-          bit_field { name 'bit_field_1'; bit_assignment width: 1; type [:foo, :option_1, :option_2] }
-          bit_field { name 'bit_field_2'; bit_assignment width: 1; type ' foo : option_1:fizz' }
-          bit_field { name 'bit_field_3'; bit_assignment width: 1; type ' foo : option_1:fizz, option_2:buzz' }
+          bit_field { name 'bit_field_0'; bit_assignment width: 1; type [:foo, option_1: :bar] }
+          bit_field { name 'bit_field_1'; bit_assignment width: 1; type [:foo, option_1: :bar, option_2: :baz] }
+          bit_field { name 'bit_field_2'; bit_assignment width: 1; type 'foo: option_1: bar' }
+          bit_field { name 'bit_field_3'; bit_assignment width: 1; type 'foo: option_1: bar, option_2: baz' }
         end
       end
 
       expect(bit_fields[0].type).to eq :foo
-      expect(bit_fields[0].input_options).to match([:option_1])
+      expect(bit_fields[0].input_options).to match({ option_1: :bar })
 
       expect(bit_fields[1].type).to eq :foo
-      expect(bit_fields[1].input_options).to match([:option_1, :option_2])
+      expect(bit_fields[1].input_options).to match({ option_1: :bar, option_2: :baz })
 
       expect(bit_fields[2].type).to eq :foo
-      expect(bit_fields[2].input_options).to match([['option_1', 'fizz']])
+      expect(bit_fields[2].input_options).to match({ option_1: 'bar' })
 
       expect(bit_fields[3].type).to eq :foo
-      expect(bit_fields[3].input_options).to match([['option_1', 'fizz'], ['option_2', 'buzz']])
+      expect(bit_fields[3].input_options).to match({ option_1: 'bar', option_2: 'baz' })
     end
   end
 

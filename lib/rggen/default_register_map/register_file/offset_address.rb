@@ -7,9 +7,8 @@ RgGen.define_simple_feature(:register_file, :offset_address) do
     property :address_range, initial: -> { start_address..end_address }
 
     build do |value|
-      @offset_address = Integer(value)
-    rescue ArgumentError, TypeError
-      error "cannot convert #{value.inspect} into offset address"
+      @offset_address =
+        to_int(value) { |v| "cannot convert #{v.inspect} into offset address" }
     end
 
     verify(:feature) do
@@ -55,7 +54,7 @@ RgGen.define_simple_feature(:register_file, :offset_address) do
 
     def defalt_offset_address
       register_file.component_index.zero? && 0 ||
-        (previous_component.offset_address + previous_component.byte_size)
+        (previous_component.offset_address + previous_component.total_byte_size)
     end
 
     def previous_component
@@ -68,17 +67,17 @@ RgGen.define_simple_feature(:register_file, :offset_address) do
     end
 
     def end_address(full = false)
-      start_address(full) + register_file.byte_size - 1
+      start_address(full) + register_file.total_byte_size - 1
     end
 
     def expand_addresses
-      uppser_addresses = register_file(:upper)&.expanded_offset_addresses || [0]
-      uppser_addresses.product(expand_local_addresses).map(&:sum)
+      (register_file(:upper)&.expanded_offset_addresses || [0])
+        .product(expand_local_addresses).map(&:sum)
     end
 
     def expand_local_addresses
       Array.new(register_file.array_size&.inject(:*) || 1) do |i|
-        offset_address + register_file.byte_size(false) * i
+        offset_address + register_file.entry_byte_size * i
       end
     end
 

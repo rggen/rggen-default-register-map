@@ -84,7 +84,7 @@ RgGen.define_list_feature(:register, :type) do
     end
 
     factory do
-      value_format :value_with_options
+      value_format :option_array
 
       convert_value do |value|
         find_type(value)

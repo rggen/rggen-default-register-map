@@ -8,9 +8,8 @@ RgGen.define_simple_feature(:register, :offset_address) do
     property :overlap?, body: ->(other) { overlap_address_range?(other, false) }
 
     build do |value|
-      @offset_address = Integer(value)
-    rescue ArgumentError, TypeError
-      error "cannot convert #{value.inspect} into offset address"
+      @offset_address =
+        to_int(value) { |v| "cannot convert #{v.inspect} into offset address" }
     end
 
     verify(:feature) do
@@ -58,7 +57,7 @@ RgGen.define_simple_feature(:register, :offset_address) do
 
     def default_offset_address
       register.component_index.zero? && 0 ||
-        (previous_component.offset_address + previous_component.byte_size)
+        (previous_component.offset_address + previous_component.total_byte_size)
     end
 
     def start_address(full = false)
@@ -66,16 +65,16 @@ RgGen.define_simple_feature(:register, :offset_address) do
     end
 
     def end_address(full = false)
-      start_address(full) + register.byte_size - 1
+      start_address(full) + register.total_byte_size - 1
     end
 
     def expand_addresses
-      upper_offsets = register_file&.expanded_offset_addresses || [0]
-      upper_offsets.product(expand_local_addresses).map(&:sum)
+      (register_file&.expanded_offset_addresses || [0])
+        .product(expand_local_addresses).map(&:sum)
     end
 
     def expand_local_addresses
-      width = shared_address? && 0 || register.byte_width
+      width = shared_address? && 0 || register.entry_byte_size
       Array.new(register.count) { |i| offset_address + width * i }
     end
 

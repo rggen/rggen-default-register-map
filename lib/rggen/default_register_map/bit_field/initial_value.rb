@@ -153,9 +153,7 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
     end
 
     def parse_value(value)
-      Integer(value)
-    rescue ArgumentError, TypeError
-      error "cannot convert #{value.inspect} into initial value"
+      to_int(value) { |v| "cannot convert #{v.inspect} into initial value" }
     end
 
     def verify_initial_value(value)

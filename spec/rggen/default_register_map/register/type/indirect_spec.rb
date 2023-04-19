@@ -41,7 +41,7 @@ RSpec.describe 'register/type/indirect' do
     expect(registers.first).to have_property(:type, :indirect)
   end
 
-  specify '#sizeに依らず、#byte_sizeは#byte_widthを示す' do
+  specify '#sizeに依らず、#total_byte_sizeは#entry_byte_widthを示す' do
     registers = create_registers do
       register do
         name :foo
@@ -61,8 +61,8 @@ RSpec.describe 'register/type/indirect' do
         bit_field { name :baz_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
       end
     end
-    expect(registers[0]).to have_property(:byte_size, 4)
-    expect(registers[1]).to have_property(:byte_size, 4)
+    expect(registers[0].total_byte_size).to eq registers[0].entry_byte_size
+    expect(registers[1].total_byte_size).to eq registers[1].entry_byte_size
 
     registers = create_registers do
       register do
@@ -86,8 +86,8 @@ RSpec.describe 'register/type/indirect' do
         bit_field { name :baz_1; bit_assignment lsb: 2, width: 1; type :rw; initial_value 0 }
       end
     end
-    expect(registers[0]).to have_property(:byte_size, 4)
-    expect(registers[1]).to have_property(:byte_size, 4)
+    expect(registers[0].total_byte_size).to eq registers[0].entry_byte_size
+    expect(registers[1].total_byte_size).to eq registers[1].entry_byte_size
 
     registers = create_registers do
       register do
@@ -112,8 +112,8 @@ RSpec.describe 'register/type/indirect' do
         bit_field { name :baz_2; bit_assignment lsb: 5, width: 1; type :rw; initial_value 0 }
       end
     end
-    expect(registers[0]).to have_property(:byte_size, 4)
-    expect(registers[1]).to have_property(:byte_size, 4)
+    expect(registers[0].total_byte_size).to eq registers[0].entry_byte_size
+    expect(registers[1].total_byte_size).to eq registers[1].entry_byte_size
   end
 
   describe '#index_entries' do
