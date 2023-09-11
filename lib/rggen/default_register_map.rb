@@ -23,6 +23,7 @@ RgGen.setup_plugin :'rggen-default-register-map' do |plugin|
     'default_register_map/register/type/external',
     'default_register_map/register/type/indirect',
     'default_register_map/register/type/reserved',
+    'default_register_map/register/type/rw',
     'default_register_map/register/comment',
     'default_register_map/bit_field/name',
     'default_register_map/bit_field/bit_assignment',
