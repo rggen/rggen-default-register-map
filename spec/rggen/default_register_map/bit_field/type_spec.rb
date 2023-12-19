@@ -117,12 +117,11 @@ RSpec.describe 'bit_field/type' do
           bit_field { name 'foo'; bit_assignment lsb: 0; type :foo }
         end
       end
-      bit_fields.first
-    end
 
-    after do
       delete_register_map_factory
       RgGen.delete(:bit_field, :type, :foo)
+
+      bit_fields.first
     end
 
     describe '.read_write' do
