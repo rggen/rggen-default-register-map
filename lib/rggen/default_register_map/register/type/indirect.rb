@@ -199,10 +199,6 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
       (string?(field_name) || symbol?(field_name)) && match_pattern(field_name)
     end
 
-    def sting_or_symbol?(value)
-      string?(value) || symbol?(value)
-    end
-
     def convert_index_value(value)
       to_int(value) { |v| "cannot convert #{v.inspect} into indirect index value" }
     end

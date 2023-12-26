@@ -92,14 +92,8 @@ RgGen.define_simple_feature(:register, :offset_address) do
     end
 
     def overlap_address_range?(other, shareable)
-      overlap_range?(other) &&
+      address_range.overlap?(other.address_range) &&
         (exclusive_range?(other) || !shareable_access?(other, shareable))
-    end
-
-    def overlap_range?(other)
-      self_range = address_range
-      othre_range = other.address_range
-      self_range.include?(othre_range.first) || othre_range.include?(self_range.first)
     end
 
     def exclusive_range?(other)

@@ -38,7 +38,7 @@ RgGen.define_simple_feature(:register_file, :offset_address) do
 
     verify(:component) do
       error_condition do
-        files_and_registers.any?(&method(:overlap_address_range?))
+        files_and_registers.any? { |other| address_range.overlap?(other.address_range) }
       end
       message do
         'offset address range overlaps with other offset address range: ' \
@@ -79,12 +79,6 @@ RgGen.define_simple_feature(:register_file, :offset_address) do
       Array.new(register_file.array_size&.inject(:*) || 1) do |i|
         offset_address + register_file.entry_byte_size * i
       end
-    end
-
-    def overlap_address_range?(other)
-      self_range = address_range
-      other_range = other.address_range
-      self_range.include?(other_range.first) || other_range.include?(self_range.first)
     end
 
     def bus_width
