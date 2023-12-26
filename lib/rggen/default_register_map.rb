@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('3.3.0')
+  require 'facets/range/overlap'
+end
+
 require_relative 'default_register_map/version'
 require_relative 'default_register_map/comment'
 
