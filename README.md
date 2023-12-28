@@ -2,7 +2,6 @@
 [![CI](https://github.com/rggen/rggen-default-register-map/workflows/CI/badge.svg)](https://github.com/rggen/rggen-default-register-map/actions?query=workflow%3ACI)
 [![Maintainability](https://api.codeclimate.com/v1/badges/73177494e096af47f09e/maintainability)](https://codeclimate.com/github/rggen/rggen-default-register-map/maintainability)
 [![codecov](https://codecov.io/gh/rggen/rggen-default-register-map/branch/master/graph/badge.svg)](https://codecov.io/gh/rggen/rggen-default-register-map)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=rggen_rggen-default-register-map&metric=alert_status)](https://sonarcloud.io/dashboard?id=rggen_rggen-default-register-map)
 [![Gitter](https://badges.gitter.im/rggen/rggen.svg)](https://gitter.im/rggen/rggen?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 
