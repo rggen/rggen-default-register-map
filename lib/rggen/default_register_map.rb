@@ -42,7 +42,7 @@ RgGen.setup_plugin :'rggen-default-register-map' do |plugin|
     'default_register_map/bit_field/type/rowo_rowotrg',
     'default_register_map/bit_field/type/rs',
     'default_register_map/bit_field/type/rw_rwtrg_w1_wrc_wrs',
-    'default_register_map/bit_field/type/rwc_rwhw',
+    'default_register_map/bit_field/type/rwc_rwhw_rws',
     'default_register_map/bit_field/type/rwe_rwl',
     'default_register_map/bit_field/type/w0c_w1c_wc',
     'default_register_map/bit_field/type/w0crs_w1crs_wcrs',
