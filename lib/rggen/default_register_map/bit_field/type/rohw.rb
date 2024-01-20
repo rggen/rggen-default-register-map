@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RgGen.define_list_item_feature(:bit_field, :type, :rol) do
+RgGen.define_list_item_feature(:bit_field, :type, :rohw) do
   register_map do
     read_only
     initial_value require: true
