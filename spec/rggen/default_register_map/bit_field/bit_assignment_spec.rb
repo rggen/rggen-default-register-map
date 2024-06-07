@@ -300,7 +300,11 @@ RSpec.describe 'bit_field/bit_assignment' do
     it '入力されたビットフィールド幅を返す' do
       lsb = random_value(0, 31)
       width = random_value(1, 32)
+
       bit_field = create_bit_field(lsb: lsb, width: width)
+      expect(bit_field).to have_property(:width, width)
+
+      bit_field = create_bit_field(width)
       expect(bit_field).to have_property(:width, width)
     end
 

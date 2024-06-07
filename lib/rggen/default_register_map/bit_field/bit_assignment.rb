@@ -85,10 +85,10 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     end
 
     def preprocess(value)
-      if hash?(value)
-        value
-      elsif match_bit_assignment?(value)
-        split_match_data(match_data)
+      case value
+      when method(:hash?) then value
+      when method(:integer?) then { variable_key(0) => value }
+      when method(:match_bit_assignment?) then split_match_data(match_data)
       else
         error "illegal input value for bit assignment: #{value.inspect}"
       end
@@ -99,14 +99,14 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     # * https://bugs.ruby-lang.org/issues/19273
     # * https://github.com/rggen/rggen/issues/129#issuecomment-1366666885
     def match_bit_assignment?(value)
-      match_pattern(value) && value.count(':') <= 3
+      string?(value) && match_pattern(value) && value.count(':') <= 3
     end
 
     def split_match_data(match_data)
       match_data
         .to_s
         .split(':')
-        .map.with_index { |value, i| [variable_key(i), value] }
+        .map.with_index { |v, i| [variable_key(i), v] }
         .to_h
     end
 
