@@ -17,7 +17,8 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
   register_map do
     property :lsb, forward_to: :lsb_bit
     property :msb, forward_to: :msb_bit
-    property :width, default: 1
+    property :width, body: -> { @width || @max_width || 1 }
+    property :fixed_width?, body: -> { @max_width.nil? }
     property :sequence_size
     property :step, initial: -> { width }
     property :sequential?, body: -> { !@sequence_size.nil? }
@@ -34,18 +35,23 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     end
 
     verify(:feature) do
-      error_condition { [@lsb_base, @width, @sequence_size, @step].none? }
+      error_condition { [@lsb_base, @width, @max_width, @sequence_size, @step].none? }
       message { 'no bit assignment is given' }
     end
 
     verify(:feature) do
-      error_condition { [@lsb_base, @width].none? }
+      error_condition { [@lsb_base, @width, @max_width].none? }
       message { 'neither lsb nor width is given' }
     end
 
     verify(:feature) do
       error_condition { lsb.negative? }
       message { "lsb is less than 0: #{lsb}" }
+    end
+
+    verify(:feature) do
+      error_condition { @width && @max_width }
+      message { 'cannot specify width and max width at the same time' }
     end
 
     verify(:feature) do
@@ -79,7 +85,8 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     define_helpers do
       def variable_names
         @variable_names ||= {
-          width: :@width, lsb: :@lsb_base, sequence_size: :@sequence_size, step: :@step
+          width: :@width, lsb: :@lsb_base, sequence_size: :@sequence_size,
+          step: :@step, max_width: :@max_width
         }.freeze
       end
     end
@@ -143,9 +150,13 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     end
 
     def calc_next_lsb(bit_field)
-      compact_sequential_bit_field?(bit_field) &&
-        (bit_field.lsb + bit_field.width * bit_field.sequence_size) ||
-        (bit_field.lsb + bit_field.width)
+      sequence_size =
+        if compact_sequential_bit_field?(bit_field)
+          bit_field.sequence_size
+        else
+          1
+        end
+      (bit_field.lsb + bit_field.width) * sequence_size
     end
 
     def compact_sequential_bit_field?(bit_field)
