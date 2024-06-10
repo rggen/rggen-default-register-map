@@ -18,6 +18,7 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
     property :lsb, forward_to: :lsb_bit
     property :msb, forward_to: :msb_bit
     property :width, body: -> { @width || @max_width || 1 }
+    property :max_width, forward_to: :width
     property :fixed_width?, body: -> { @max_width.nil? }
     property :sequence_size
     property :step, initial: -> { width }

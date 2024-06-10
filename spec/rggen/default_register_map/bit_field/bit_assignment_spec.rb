@@ -343,20 +343,20 @@ RSpec.describe 'bit_field/bit_assignment' do
       width = random_value(1, 32)
 
       bit_field = create_bit_field(lsb: lsb, width: width)
-      expect(bit_field).to have_property(:width, width)
+      expect(bit_field).to have_properties([[:width, width], [:max_width, width]])
 
       bit_field = create_bit_field(width)
-      expect(bit_field).to have_property(:width, width)
+      expect(bit_field).to have_properties([[:width, width], [:max_width, width]])
 
       bit_field = create_bit_field(lsb: lsb, max_width: width)
-      expect(bit_field).to have_property(:width, width)
+      expect(bit_field).to have_properties([[:width, width], [:max_width, width]])
     end
 
     context 'ビットフィールド幅が未指定の場合' do
       it '既定値 1 を返す' do
         lsb = random_value(0, 31)
         bit_field = create_bit_field(lsb: lsb)
-        expect(bit_field).to have_property(:width, 1)
+        expect(bit_field).to have_properties([[:width, 1], [:max_width, 1]])
       end
     end
   end
