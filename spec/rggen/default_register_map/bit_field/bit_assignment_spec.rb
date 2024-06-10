@@ -212,6 +212,15 @@ RSpec.describe 'bit_field/bit_assignment' do
 
         bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size, step: step)
         expect(bit_field).to have_property(:msb, lsb + width - 1)
+
+        bit_field = create_bit_field(lsb: lsb, max_width: width)
+        expect(bit_field).to have_property(:msb, lsb + width - 1)
+
+        bit_field = create_bit_field(lsb: lsb, max_width: width, sequence_size: sequence_size)
+        expect(bit_field).to have_property(:msb, lsb + width - 1)
+
+        bit_field = create_bit_field(lsb: lsb, max_width: width, sequence_size: sequence_size, step: step)
+        expect(bit_field).to have_property(:msb, lsb + width - 1)
       end
     end
 
@@ -222,6 +231,12 @@ RSpec.describe 'bit_field/bit_assignment' do
           expect(bit_field.msb('i')).to eq "#{lsb + width - 1}+#{width}*i"
 
           bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size, step: step)
+          expect(bit_field.msb('i')).to eq "#{lsb + width - 1}+#{step}*i"
+
+          bit_field = create_bit_field(lsb: lsb, max_width: width, sequence_size: sequence_size)
+          expect(bit_field.msb('i')).to eq "#{lsb + width - 1}+#{width}*i"
+
+          bit_field = create_bit_field(lsb: lsb, max_width: width, sequence_size: sequence_size, step: step)
           expect(bit_field.msb('i')).to eq "#{lsb + width - 1}+#{step}*i"
         end
       end
@@ -235,34 +250,52 @@ RSpec.describe 'bit_field/bit_assignment' do
           bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size, step: step)
           index = random_value(0, sequence_size - 1)
           expect(bit_field.msb(index)).to eq(index * step + lsb + width - 1)
+
+          bit_field = create_bit_field(lsb: lsb, max_width: width, sequence_size: sequence_size)
+          index = random_value(0, sequence_size - 1)
+          expect(bit_field.msb(index)).to eq(index * width + lsb + width - 1)
+
+          bit_field = create_bit_field(lsb: lsb, max_width: width, sequence_size: sequence_size, step: step)
+          index = random_value(0, sequence_size - 1)
+          expect(bit_field.msb(index)).to eq(index * step + lsb + width - 1)
         end
       end
 
       context '負のインデックスが指定された場合' do
         it '末尾からの指定された位置の MSB を返す' do
-          bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size)
+          bit_fields = []
+          bit_fields << create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size)
+          bit_fields << create_bit_field(lsb: lsb, max_width: width, sequence_size: sequence_size)
 
           position = sequence_size - 1
-          expect(bit_field.msb(-1)).to eq(position * width + lsb + width - 1)
+          expect(bit_fields[0].msb(-1)).to eq(position * width + lsb + width - 1)
+          expect(bit_fields[1].msb(-1)).to eq(position * width + lsb + width - 1)
 
           position = 0
-          expect(bit_field.msb(-sequence_size)).to eq(position * width + lsb + width - 1)
+          expect(bit_fields[0].msb(-sequence_size)).to eq(position * width + lsb + width - 1)
+          expect(bit_fields[1].msb(-sequence_size)).to eq(position * width + lsb + width - 1)
 
           position = random_value(0, sequence_size - 1)
           index = position - sequence_size
-          expect(bit_field.msb(index)).to eq(position * width + lsb + width - 1)
+          expect(bit_fields[0].msb(index)).to eq(position * width + lsb + width - 1)
+          expect(bit_fields[1].msb(index)).to eq(position * width + lsb + width - 1)
 
-          bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size, step: step)
+          bit_fields = []
+          bit_fields << create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size, step: step)
+          bit_fields << create_bit_field(lsb: lsb, max_width: width, sequence_size: sequence_size, step: step)
 
           position = sequence_size - 1
-          expect(bit_field.msb(-1)).to eq(position * step + lsb + width - 1)
+          expect(bit_fields[0].msb(-1)).to eq(position * step + lsb + width - 1)
+          expect(bit_fields[1].msb(-1)).to eq(position * step + lsb + width - 1)
 
           position = 0
-          expect(bit_field.msb(-sequence_size)).to eq(position * step + lsb + width - 1)
+          expect(bit_fields[0].msb(-sequence_size)).to eq(position * step + lsb + width - 1)
+          expect(bit_fields[1].msb(-sequence_size)).to eq(position * step + lsb + width - 1)
 
           position = random_value(0, sequence_size - 1)
           index = position - sequence_size
-          expect(bit_field.msb(index)).to eq(position * step + lsb + width - 1)
+          expect(bit_fields[0].msb(index)).to eq(position * step + lsb + width - 1)
+          expect(bit_fields[1].msb(index)).to eq(position * step + lsb + width - 1)
         end
       end
 
@@ -273,6 +306,14 @@ RSpec.describe 'bit_field/bit_assignment' do
           expect(bit_field.msb(-(sequence_size + 1))).to be_nil
 
           bit_field = create_bit_field(lsb: lsb, width: width, sequence_size: sequence_size, step: step)
+          expect(bit_field.msb(sequence_size)).to be_nil
+          expect(bit_field.msb(-(sequence_size + 1))).to be_nil
+
+          bit_field = create_bit_field(lsb: lsb, max_width: width, sequence_size: sequence_size)
+          expect(bit_field.msb(sequence_size)).to be_nil
+          expect(bit_field.msb(-(sequence_size + 1))).to be_nil
+
+          bit_field = create_bit_field(lsb: lsb, max_width: width, sequence_size: sequence_size, step: step)
           expect(bit_field.msb(sequence_size)).to be_nil
           expect(bit_field.msb(-(sequence_size + 1))).to be_nil
         end
@@ -306,6 +347,9 @@ RSpec.describe 'bit_field/bit_assignment' do
 
       bit_field = create_bit_field(width)
       expect(bit_field).to have_property(:width, width)
+
+      bit_field = create_bit_field(lsb: lsb, max_width: width)
+      expect(bit_field).to have_property(:width, width)
     end
 
     context 'ビットフィールド幅が未指定の場合' do
@@ -314,6 +358,22 @@ RSpec.describe 'bit_field/bit_assignment' do
         bit_field = create_bit_field(lsb: lsb)
         expect(bit_field).to have_property(:width, 1)
       end
+    end
+  end
+
+  describe '#fixed_width?' do
+    it '入力されたビットフィールド幅が固定値かどうかを返す' do
+      lsb = random_value(0, 31)
+      width = random_value(1, 32)
+
+      bit_field = create_bit_field(lsb: lsb)
+      expect(bit_field).to have_property(:fixed_width?, true)
+
+      bit_field = create_bit_field(lsb: lsb, width: width)
+      expect(bit_field).to have_property(:fixed_width?, true)
+
+      bit_field = create_bit_field(lsb: lsb, max_width: width)
+      expect(bit_field).to have_property(:fixed_width?, false)
     end
   end
 
@@ -417,34 +477,42 @@ RSpec.describe 'bit_field/bit_assignment' do
     specify ':区切りで、ビットフィールド幅/LSB/繰り返し数/繰り返す幅を入力できる' do
       bit_field = create_bit_field("#{width}")
       expect(bit_field).to have_properties([[:width, width], [:lsb, 0]])
+      expect(bit_field).to be_fixed_width
       expect(bit_field).not_to be_sequential
 
       bit_field = create_bit_field("#{width}:#{lsb}")
       expect(bit_field).to have_properties([[:width, width], [:lsb, lsb]])
+      expect(bit_field).to be_fixed_width
       expect(bit_field).not_to be_sequential
 
       bit_field = create_bit_field("#{width}:#{lsb}:#{sequence_size}")
       expect(bit_field).to have_properties([[:width, width], [:lsb, lsb], [:sequence_size, sequence_size], [:step, width]])
+      expect(bit_field).to be_fixed_width
 
       bit_field = create_bit_field("#{width}:#{lsb}:#{sequence_size}:#{step}")
       expect(bit_field).to have_properties([[:width, width], [:lsb, lsb], [:sequence_size, sequence_size], [:step, step]])
+      expect(bit_field).to be_fixed_width
     end
 
     context '入力フォーマット設定が:lsb_firstの場合' do
       specify 'LSBが第一要素となる' do
         bit_field = create_bit_fields("#{lsb}", format: :lsb_first).first
         expect(bit_field).to have_properties([[:lsb, lsb], [:width, 1]])
+        expect(bit_field).to be_fixed_width
         expect(bit_field).not_to be_sequential
 
         bit_field = create_bit_fields("#{lsb}:#{width}", format: :lsb_first).first
         expect(bit_field).to have_properties([[:lsb, lsb], [:width, width]])
+        expect(bit_field).to be_fixed_width
         expect(bit_field).not_to be_sequential
 
         bit_field = create_bit_fields("#{lsb}:#{width}:#{sequence_size}", format: :lsb_first).first
         expect(bit_field).to have_properties([[:lsb, lsb], [:width, width], [:sequence_size, sequence_size], [:step, width]])
+        expect(bit_field).to be_fixed_width
 
         bit_field = create_bit_fields("#{lsb}:#{width}:#{sequence_size}:#{step}", format: :lsb_first).first
         expect(bit_field).to have_properties([[:lsb, lsb], [:width, width], [:sequence_size, sequence_size], [:step, step]])
+        expect(bit_field).to be_fixed_width
       end
     end
   end
@@ -460,6 +528,15 @@ RSpec.describe 'bit_field/bit_assignment' do
     expect(bit_field.printables[:bit_assignments]).to match(['[2:1]', '[4:3]', '[6:5]'])
 
     bit_field = create_bit_field(lsb: 1, width: 2, sequence_size: 3, step: 4)
+    expect(bit_field.printables[:bit_assignments]).to match(['[2:1]', '[6:5]', '[10:9]'])
+
+    bit_field = create_bit_field(lsb: 1, max_width: 2)
+    expect(bit_field.printables[:bit_assignments]).to match(['[2:1]'])
+
+    bit_field = create_bit_field(lsb: 1, max_width: 2, sequence_size: 3)
+    expect(bit_field.printables[:bit_assignments]).to match(['[2:1]', '[4:3]', '[6:5]'])
+
+    bit_field = create_bit_field(lsb: 1, max_width: 2, sequence_size: 3, step: 4)
     expect(bit_field.printables[:bit_assignments]).to match(['[2:1]', '[6:5]', '[10:9]'])
   end
 
@@ -546,6 +623,10 @@ RSpec.describe 'bit_field/bit_assignment' do
           expect {
             create_bit_field(lsb: 0, width: invalid_value)
           }.to raise_register_map_error "cannot convert #{invalid_value.inspect} into bit assignment(width)"
+
+          expect {
+            create_bit_field(lsb: 0, max_width: invalid_value)
+          }.to raise_register_map_error "cannot convert #{invalid_value.inspect} into bit assignment(max width)"
         end
       end
     end
@@ -556,7 +637,19 @@ RSpec.describe 'bit_field/bit_assignment' do
           expect {
             create_bit_field(lsb: 0, width: invalid_value)
           }.to raise_register_map_error "width is less than 1: #{invalid_value}"
+
+          expect {
+            create_bit_field(lsb: 0, max_width: invalid_value)
+          }.to raise_register_map_error "width is less than 1: #{invalid_value}"
         end
+      end
+    end
+
+    context 'widthとmax_widthの両方が指定されている場合' do
+      it 'RegisterMapErrorを起こす' do
+        expect {
+          create_bit_field(width: 1, max_width: 2)
+        }.to raise_register_map_error 'cannot specify width and max width at the same time'
       end
     end
 
