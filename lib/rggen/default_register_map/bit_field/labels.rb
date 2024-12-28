@@ -21,8 +21,8 @@ RgGen.define_feature(:bit_field, :labels) do
       end
 
       define_helpers do
-        def verify_label_value(&body)
-          label_value_verifiers << create_verifier(&body)
+        def verify_label_value(&)
+          label_value_verifiers << create_verifier(&)
         end
 
         def label_value_verifiers

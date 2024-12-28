@@ -43,8 +43,8 @@ RgGen.define_simple_feature(:bit_field, :reference) do
     end
 
     define_helpers do
-      def verify_array(&block)
-        array_verifiers << create_verifier(&block)
+      def verify_array(&)
+        array_verifiers << create_verifier(&)
       end
 
       def array_verifiers
