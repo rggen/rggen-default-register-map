@@ -24,8 +24,8 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
     end
 
     define_helpers do
-      def verify_initial_value(&block)
-        initial_value_verifiers << create_verifier(&block)
+      def verify_initial_value(&)
+        initial_value_verifiers << create_verifier(&)
       end
 
       def initial_value_verifiers

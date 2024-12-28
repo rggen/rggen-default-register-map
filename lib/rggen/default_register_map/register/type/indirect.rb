@@ -3,8 +3,8 @@
 RgGen.define_list_item_feature(:register, :type, :indirect) do
   register_map do
     define_helpers do
-      def verify_index(&block)
-        index_verifiers << create_verifier(&block)
+      def verify_index(&)
+        index_verifiers << create_verifier(&)
       end
 
       def index_verifiers
