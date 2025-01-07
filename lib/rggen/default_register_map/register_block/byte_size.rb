@@ -3,12 +3,11 @@
 RgGen.define_simple_feature(:register_block, :byte_size) do
   register_map do
     property :byte_size
-    property :local_address_width
+    property :local_address_width, body: -> { (byte_size - 1).bit_length }
 
     build do |value|
       @byte_size =
         to_int(value) { |v| "cannot convert #{v.inspect} into byte size" }
-      @local_address_width = (@byte_size - 1).bit_length
     end
 
     verify(:feature) do
