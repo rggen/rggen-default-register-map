@@ -134,7 +134,11 @@ RgGen.define_simple_feature(:bit_field, :bit_assignment) do
 
     def lsb_base
       @lsb_base ||=
-        ((bit_field.component_index.zero? && 0) || calc_next_lsb(previous_bit_field))
+        if bit_field.component_index.zero?
+          0
+        else
+          calc_next_lsb(previous_bit_field)
+        end
     end
 
     def previous_bit_field
