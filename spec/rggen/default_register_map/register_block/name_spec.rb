@@ -10,7 +10,7 @@ RSpec.describe 'register_block/name' do
 
   describe '#name' do
     let(:names) do
-      random_strings(/[_a-z][_a-z0-9]*/i, 4)
+      random_strings(/[a-z]\w+/i, 4)
     end
 
     let(:register_map) do

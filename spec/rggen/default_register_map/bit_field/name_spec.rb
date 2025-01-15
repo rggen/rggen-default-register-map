@@ -13,7 +13,7 @@ RSpec.describe 'bit_field/name' do
   describe '#name' do
     context 'ビットフィールド名が入力された場合' do
       let(:names) do
-        random_strings(/[_a-z][_a-z0-9]*/i, 4)
+        random_strings(/[a-z]\w+/i, 4)
       end
 
       let(:register_map) do
