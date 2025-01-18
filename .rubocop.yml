@@ -24,6 +24,8 @@ Metrics/BlockLength:
     - factory
     - register_map
     - setup_plugin
+  Exclude:
+    - lib/rggen/default_register_map/register_block/bus_width.rb
 
 Naming/VariableNumber:
   AllowedIdentifiers:

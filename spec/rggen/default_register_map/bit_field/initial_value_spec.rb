@@ -12,7 +12,8 @@ RSpec.describe 'bit_field/initial_value' do
       end
     end
 
-    RgGen.enable(:global, :bus_width)
+    RgGen.enable(:global, :address_width)
+    RgGen.enable(:register_block, :bus_width)
     RgGen.enable(:bit_field, [:bit_assignment, :settings, :initial_value].shuffle)
   end
 

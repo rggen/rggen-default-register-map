@@ -84,11 +84,11 @@ RgGen.define_simple_feature(:register, :offset_address) do
     end
 
     def bus_width
-      configuration.bus_width
+      register_block.bus_width
     end
 
     def byte_width
-      configuration.byte_width
+      register_block.byte_width
     end
 
     def overlap_address_range?(other, shareable)

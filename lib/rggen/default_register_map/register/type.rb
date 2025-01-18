@@ -90,8 +90,8 @@ RgGen.define_list_feature(:register, :type) do
         find_type(value)
       end
 
-      def target_feature_key(value)
-        (!value.empty_value? && value) || nil
+      def target_feature_key(_configuration, input_value)
+        (!input_value.empty_value? && input_value) || nil
       end
 
       private

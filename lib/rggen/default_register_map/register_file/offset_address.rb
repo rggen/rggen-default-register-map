@@ -82,11 +82,11 @@ RgGen.define_simple_feature(:register_file, :offset_address) do
     end
 
     def bus_width
-      configuration.bus_width
+      register_block.bus_width
     end
 
     def byte_width
-      configuration.byte_width
+      register_block.byte_width
     end
 
     def format_address(address)

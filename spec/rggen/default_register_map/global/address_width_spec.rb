@@ -5,7 +5,8 @@ RSpec.describe 'global/address_width' do
   include_context 'clean-up builder'
 
   before(:all) do
-    RgGen.enable(:global, [:bus_width, :address_width])
+    RgGen.enable(:global, :address_width)
+    RgGen.enable(:register_block, :bus_width)
   end
 
   describe '#address_width' do
@@ -58,21 +59,19 @@ RSpec.describe 'global/address_width' do
       end
     end
 
-    context 'バス幅から求まる最小値に満たない場合' do
+    context '入力値が正数ではない場合' do
       it 'ConfigurationErrorを起こす' do
-        [
-          [8, 1],
-          [16, 1],
-          [32, 2],
-          [64, 3]
-        ].each do |bus_width, min_address_width|
-          [-1, 0, (min_address_width - 1)].each do |address_width|
-            expect {
-              create_configuration(bus_width: bus_width, address_width: address_width)
-            }.to raise_configuration_error 'input address width is less than minimum address width: ' \
-                                           "address width #{address_width} minimum address width #{min_address_width}"
-          end
-        end
+        expect {
+          create_configuration(address_width: -1)
+        }.to raise_configuration_error 'non positive value is not allowed for address width: -1'
+
+        expect {
+          create_configuration(address_width: 0)
+        }.to raise_configuration_error 'non positive value is not allowed for address width: 0'
+
+        expect {
+          create_configuration(address_width: 1, bus_width: 8)
+        }.not_to raise_error
       end
     end
   end

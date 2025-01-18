@@ -5,7 +5,8 @@ RSpec.describe 'register/size' do
   include_context 'register map common'
 
   before(:all) do
-    RgGen.enable(:global, [:bus_width, :enable_wide_register])
+    RgGen.enable(:global, [:address_width, :enable_wide_register])
+    RgGen.enable(:register_block, [:bus_width])
     RgGen.enable(:register_file, :size)
     RgGen.enable(:register, :size)
     RgGen.enable(:bit_field, :bit_assignment)

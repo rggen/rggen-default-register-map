@@ -12,8 +12,8 @@ RSpec.describe 'register_file/size' do
       end
     end
 
-    RgGen.enable(:global, [:bus_width, :address_width, :enable_wide_register])
-    RgGen.enable(:register_block, :byte_size)
+    RgGen.enable(:global, [:address_width, :enable_wide_register])
+    RgGen.enable(:register_block, [:byte_size, :bus_width])
     RgGen.enable(:register_file, [:offset_address, :size])
     RgGen.enable(:register, [:offset_address, :size, :type])
     RgGen.enable(:register, :type, [:foo])
