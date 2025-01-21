@@ -30,7 +30,7 @@ RgGen.define_feature(:register_file, :size) do
       end
 
       verify(:component) do
-        error_condition { @step && (@step % configuration.byte_width).positive? }
+        error_condition { @step && (@step % register_block.byte_width).positive? }
         message do
           "step size is not multiple of bus width: #{@step}"
         end

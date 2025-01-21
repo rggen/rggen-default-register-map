@@ -11,10 +11,10 @@ RgGen.setup_plugin :'rggen-default-register-map' do |plugin|
   plugin.version RgGen::DefaultRegisterMap::VERSION
   plugin.files [
     'default_register_map/global/address_width',
-    'default_register_map/global/bus_width',
     'default_register_map/global/enable_wide_register',
     'default_register_map/register_block/name',
     'default_register_map/register_block/byte_size',
+    'default_register_map/register_block/bus_width',
     'default_register_map/register_block/comment',
     'default_register_map/register_file/name',
     'default_register_map/register_file/offset_address',

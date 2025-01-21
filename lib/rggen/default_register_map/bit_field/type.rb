@@ -115,8 +115,8 @@ RgGen.define_list_feature(:bit_field, :type) do
         types.find(&value.to_sym.method(:casecmp?)) || value
       end
 
-      def target_feature_key(cell)
-        cell
+      def target_feature_key(_configuration, input_value)
+        input_value
       end
     end
   end
