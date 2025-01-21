@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'erubi'
 if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('3.3.0')
   require 'facets/range/overlap'
 end

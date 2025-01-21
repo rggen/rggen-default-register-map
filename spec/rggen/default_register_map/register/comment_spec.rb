@@ -8,8 +8,20 @@ RSpec.describe 'register/comment' do
     RgGen.enable(:register, :comment)
   end
 
-  def create_register(&block)
-    create_register_map { register_block { register(&block) } }.registers.first
+  let(:register_name) do
+    'foo'
+  end
+
+  def create_register(&)
+    register_map = create_register_map do
+      register_block do
+        register(&)
+      end
+    end
+
+    register = register_map.registers.first
+    allow(register).to receive(:name).and_return(register_name)
+    register
   end
 
   describe '#comment' do
@@ -38,6 +50,24 @@ RSpec.describe 'register/comment' do
       expect(register).to have_property(:comment, '')
     end
 
+    it 'ERBテンプレートとして処理された結果を返す' do
+      register = create_register do
+        comment <<~'COMMENT'
+          this register is <%= register.name %>
+          <% 4.times do |i| %>
+          <%= i %>
+          <% end %>
+        COMMENT
+      end
+      expect(register).to have_property(:comment, <<~COMMENT)
+        this register is #{register_name}
+        0
+        1
+        2
+        3
+      COMMENT
+    end
+
     context 'コメントが未入力の場合' do
       it '空文字を返す' do
         register = create_register {}
@@ -54,6 +84,22 @@ RSpec.describe 'register/comment' do
       it '入力されたコメントを表示可能オブジェクトとして返す' do
         register = create_register { comment "foo\nbar\nbaz" }
         expect(register.printables[:comment]).to eq "foo\nbar\nbaz"
+
+        register = create_register do
+          comment <<~'COMMENT'
+            this register is <%= register.name %>
+            <% 4.times do |i| %>
+            <%= i %>
+            <% end %>
+          COMMENT
+        end
+        expect(register.printables[:comment]).to eq <<~COMMENT
+          this register is #{register_name}
+          0
+          1
+          2
+          3
+        COMMENT
       end
     end
 

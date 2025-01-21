@@ -8,8 +8,20 @@ RSpec.describe 'register_file/comment' do
     RgGen.enable(:register_file, :comment)
   end
 
-  def create_register_file(&block)
-    create_register_map { register_block { register_file(&block) } }.register_files.first
+  let(:register_file_name) do
+    'foo'
+  end
+
+  def create_register_file(&)
+    register_map = create_register_map do
+      register_block do
+        register_file(&)
+      end
+    end
+
+    register_file = register_map.register_files.first
+    allow(register_file).to receive(:name).and_return(register_file_name)
+    register_file
   end
 
   describe '#comment' do
@@ -38,6 +50,24 @@ RSpec.describe 'register_file/comment' do
       expect(register_file).to have_property(:comment, '')
     end
 
+    it 'ERBテンプレートとして処理された結果を返す' do
+      register_file = create_register_file do
+        comment <<~'COMMENT'
+          this register file is <%= register_file.name %>
+          <% 4.times do |i| %>
+          <%= i %>
+          <% end %>
+        COMMENT
+      end
+      expect(register_file).to have_property(:comment, <<~COMMENT)
+        this register file is #{register_file_name}
+        0
+        1
+        2
+        3
+      COMMENT
+    end
+
     context 'コメントが未入力の場合' do
       it '空文字を返す' do
         register_file = create_register_file {}
@@ -54,6 +84,22 @@ RSpec.describe 'register_file/comment' do
       it '入力されたコメントを表示可能オブジェクトとして返す' do
         register_file = create_register_file { comment "foo\nbar\nbaz" }
         expect(register_file.printables[:comment]).to eq "foo\nbar\nbaz"
+
+        register_file = create_register_file do
+          comment <<~'COMMENT'
+            this register file is <%= register_file.name %>
+            <% 4.times do |i| %>
+            <%= i %>
+            <% end %>
+          COMMENT
+        end
+        expect(register_file.printables[:comment]).to eq <<~COMMENT
+          this register file is #{register_file_name}
+          0
+          1
+          2
+          3
+        COMMENT
       end
     end
 
