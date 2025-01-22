@@ -154,13 +154,13 @@ RSpec.describe 'bit_field/type/custom' do
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_read: :set, sw_write: random_sw_write] }
           end
-        }.to raise_register_map_error
+        }.to raise_source_error
 
         expect {
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_read: :clear, sw_write: random_sw_write] }
           end
-        }.to raise_register_map_error
+        }.to raise_source_error
       end
     end
 
@@ -170,7 +170,7 @@ RSpec.describe 'bit_field/type/custom' do
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_read: random_sw_read, sw_write: random_sw_write(exclude: :none)] }
           end
-        }.to raise_register_map_error
+        }.to raise_source_error
       end
     end
 
@@ -180,19 +180,19 @@ RSpec.describe 'bit_field/type/custom' do
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 0; type [:custom, sw_read: random_sw_read, sw_write: random_sw_write, hw_write: true] }
           end
-        }.to raise_register_map_error
+        }.to raise_source_error
 
         expect {
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 0; type [:custom, sw_read: random_sw_read, sw_write: random_sw_write, hw_set: true] }
           end
-        }.to raise_register_map_error
+        }.to raise_source_error
 
         expect {
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 0; type [:custom, sw_read: random_sw_read, sw_write: random_sw_write, hw_clear: true] }
           end
-        }.to raise_register_map_error
+        }.to raise_source_error
       end
     end
 
@@ -237,13 +237,13 @@ RSpec.describe 'bit_field/type/custom' do
     end
 
     context 'none/default/set/clear以外を指定した場合' do
-      specify 'RegisterMapErrorを起こす' do
+      specify 'SourceErrorを起こす' do
         [:foo, 'foo', '', nil, true, false, 1, Object.new].each do |value|
           expect {
             create_bit_fields do
               bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_read: value]; initial_value 0 }
             end
-          }.to raise_register_map_error "invalid value for sw_read option: #{value.inspect}"
+          }.to raise_source_error "invalid value for sw_read option: #{value.inspect}"
         end
       end
     end
@@ -285,13 +285,13 @@ RSpec.describe 'bit_field/type/custom' do
     end
 
     context 'none/default/set/set_0/set_1/clear/clear_0/clear_1/toggle_0/toggle_1以外を指定した場合' do
-      specify 'RegisterMapErrorを起こす' do
+      specify 'SourceErrorを起こす' do
         [:foo, 'foo', '', nil, true, false, 1, Object.new].each do |value|
           expect {
             create_bit_fields do
               bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_write: value]; initial_value 0 }
             end
-          }.to raise_register_map_error "invalid value for sw_write option: #{value.inspect}"
+          }.to raise_source_error "invalid value for sw_write option: #{value.inspect}"
         end
       end
     end
@@ -329,24 +329,24 @@ RSpec.describe 'bit_field/type/custom' do
     end
 
     context 'true/on/yes/false/off/no以外を指定した場合' do
-      specify 'RegisterMapErrorを起こす' do
+      specify 'SourceErrorを起こす' do
         [:foo, 'foo', '', nil, 1, Object.new].each do |value|
           expect {
             create_bit_fields do
               bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_write_once: value]; initial_value 0 }
             end
-          }.to raise_register_map_error "invalid value for sw_write_once option: #{value.inspect}"
+          }.to raise_source_error "invalid value for sw_write_once option: #{value.inspect}"
         end
       end
     end
 
     context '書き込み不可なビットフィールドに対して有効にされた場合' do
-      specify 'RegisterMapErrorを起こす' do
+      specify 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_write_once: true, sw_write: :none]; initial_value 0 }
           end
-        }.to raise_register_map_error 'cannot enable sw_write_once option for unwritable bit field'
+        }.to raise_source_error 'cannot enable sw_write_once option for unwritable bit field'
 
         expect {
           create_bit_fields do
@@ -395,24 +395,24 @@ RSpec.describe 'bit_field/type/custom' do
     end
 
     context 'true/on/yes/false/off/no以外を指定した場合' do
-      specify 'RegisterMapErrorを起こす' do
+      specify 'SourceErrorを起こす' do
         [:foo, 'foo', '', nil, 1, Object.new].each do |value|
           expect {
             create_bit_fields do
               bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_write: value]; initial_value 0 }
             end
-          }.to raise_register_map_error "invalid value for hw_write option: #{value.inspect}"
+          }.to raise_source_error "invalid value for hw_write option: #{value.inspect}"
         end
       end
     end
 
     context '予約済みビットフィールドに対して有効にされた場合' do
-      specify 'RegisterMapErrorを返す' do
+      specify 'SourceErrorを返す' do
         expect {
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_write: true, sw_read: :none, sw_write: :none]; initial_value 0 }
           end
-        }.to raise_register_map_error 'cannot enable hw_write option for reserved bit field'
+        }.to raise_source_error 'cannot enable hw_write option for reserved bit field'
 
         expect {
           create_bit_fields do
@@ -462,24 +462,24 @@ RSpec.describe 'bit_field/type/custom' do
     end
 
     context 'true/on/yes/false/off/no以外を指定した場合' do
-      specify 'RegisterMapErrorを起こす' do
+      specify 'SourceErrorを起こす' do
         [:foo, 'foo', '', nil, 1, Object.new].each do |value|
           expect {
             create_bit_fields do
               bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_set: value]; initial_value 0 }
             end
-          }.to raise_register_map_error "invalid value for hw_set option: #{value.inspect}"
+          }.to raise_source_error "invalid value for hw_set option: #{value.inspect}"
         end
       end
     end
 
     context '予約済みビットフィールドに対して有効にされた場合' do
-      specify 'RegisterMapErrorを返す' do
+      specify 'SourceErrorを返す' do
         expect {
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_set: true, sw_read: :none, sw_write: :none]; initial_value 0 }
           end
-        }.to raise_register_map_error 'cannot enable hw_set option for reserved bit field'
+        }.to raise_source_error 'cannot enable hw_set option for reserved bit field'
 
         expect {
           create_bit_fields do
@@ -529,24 +529,24 @@ RSpec.describe 'bit_field/type/custom' do
     end
 
     context 'true/on/yes/false/off/no以外を指定した場合' do
-      specify 'RegisterMapErrorを起こす' do
+      specify 'SourceErrorを起こす' do
         [:foo, 'foo', '', nil, 1, Object.new].each do |value|
           expect {
             create_bit_fields do
               bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_clear: value]; initial_value 0 }
             end
-          }.to raise_register_map_error "invalid value for hw_clear option: #{value.inspect}"
+          }.to raise_source_error "invalid value for hw_clear option: #{value.inspect}"
         end
       end
     end
 
     context '予約済みビットフィールドに対して有効にされた場合' do
-      specify 'RegisterMapErrorを返す' do
+      specify 'SourceErrorを返す' do
         expect {
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, hw_clear: true, sw_read: :none, sw_write: :none]; initial_value 0 }
           end
-        }.to raise_register_map_error 'cannot enable hw_clear option for reserved bit field'
+        }.to raise_source_error 'cannot enable hw_clear option for reserved bit field'
 
         expect {
           create_bit_fields do
@@ -596,24 +596,24 @@ RSpec.describe 'bit_field/type/custom' do
     end
 
     context 'true/on/yes/false/off/no以外を指定した場合' do
-      specify 'RegisterMapErrorを起こす' do
+      specify 'SourceErrorを起こす' do
         [:foo, 'foo', '', nil, 1, Object.new].each do |value|
           expect {
             create_bit_fields do
               bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, read_trigger: value]; initial_value 0 }
             end
-          }.to raise_register_map_error "invalid value for read_trigger option: #{value.inspect}"
+          }.to raise_source_error "invalid value for read_trigger option: #{value.inspect}"
         end
       end
     end
 
     context '読み出し不可なビットフィールドに対して有効にされた場合' do
-      specify 'RegisterMapErrorを返す' do
+      specify 'SourceErrorを返す' do
         expect {
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, read_trigger: true, sw_read: :none]; initial_value 0 }
           end
-        }.to raise_register_map_error 'cannot enable read_trigger option for unreadable bit field'
+        }.to raise_source_error 'cannot enable read_trigger option for unreadable bit field'
 
         expect {
           create_bit_fields do
@@ -663,24 +663,24 @@ RSpec.describe 'bit_field/type/custom' do
     end
 
     context 'true/on/yes/false/off/no以外を指定した場合' do
-      specify 'RegisterMapErrorを起こす' do
+      specify 'SourceErrorを起こす' do
         [:foo, 'foo', '', nil, 1, Object.new].each do |value|
           expect {
             create_bit_fields do
               bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, write_trigger: value]; initial_value 0 }
             end
-          }.to raise_register_map_error "invalid value for write_trigger option: #{value.inspect}"
+          }.to raise_source_error "invalid value for write_trigger option: #{value.inspect}"
         end
       end
     end
 
     context '書き込み不可なビットフィールドに対して有効にされた場合' do
-      specify 'RegisterMapErrorを返す' do
+      specify 'SourceErrorを返す' do
         expect {
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, write_trigger: true, sw_write: :none]; initial_value 0 }
           end
-        }.to raise_register_map_error 'cannot enable write_trigger option for unwritable bit field'
+        }.to raise_source_error 'cannot enable write_trigger option for unwritable bit field'
 
         expect {
           create_bit_fields do
@@ -785,7 +785,7 @@ RSpec.describe 'bit_field/type/custom' do
   end
 
   context 'Hashにマージできない値がオプションに指定された場合' do
-    specify 'RegisterMapErrorを起こす' do
+    specify 'SourceErrorを起こす' do
       [
         [nil, nil],
         [nil, :sw_read],
@@ -804,13 +804,13 @@ RSpec.describe 'bit_field/type/custom' do
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, *options]}
           end
-        }.to raise_register_map_error "invalid option is given: #{invalid_option.inspect}"
+        }.to raise_source_error "invalid option is given: #{invalid_option.inspect}"
       end
     end
   end
 
   context '不明なオプションが指定された場合' do
-    specify 'RegisterMapErrorを起こす' do
+    specify 'SourceErrorを起こす' do
       [
         nil, true, false, :foo, 'foo', 1, Object.new
       ].each do |option|
@@ -825,13 +825,13 @@ RSpec.describe 'bit_field/type/custom' do
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, option => true]; initial_value 0 }
           end
-        }.to raise_register_map_error message
+        }.to raise_source_error message
 
         expect {
           create_bit_fields do
             bit_field { name 'bit_field'; bit_assignment width: 1; type [:custom, sw_read: :default, option => true]; initial_value 0 }
           end
-        }.to raise_register_map_error message
+        }.to raise_source_error message
       end
     end
   end

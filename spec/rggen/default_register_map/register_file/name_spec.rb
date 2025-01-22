@@ -116,29 +116,29 @@ RSpec.describe 'register_file/name' do
 
   describe 'エラーチェック' do
     context 'レジスタファイル名が未入力の場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_register_map do
             register_block { register_file {} }
           end
-        }.to raise_register_map_error 'no register file name is given'
+        }.to raise_source_error 'no register file name is given'
 
         expect {
           create_register_map do
             register_block { register_file { name nil } }
           end
-        }.to raise_register_map_error 'no register file name is given'
+        }.to raise_source_error 'no register file name is given'
 
         expect {
           create_register_map do
             register_block { register_file { name '' } }
           end
-        }.to raise_register_map_error 'no register file name is given'
+        }.to raise_source_error 'no register file name is given'
       end
     end
 
     context 'レジスタファイル名が入力パターンに合致しない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [
           random_string(/[0-9][a-z_]/i),
           random_string(/[a-z_][[:punct:]&&[^_]][0-9a-z_]/i),
@@ -148,13 +148,13 @@ RSpec.describe 'register_file/name' do
             create_register_map do
               register_block { register_file { name illegal_name } }
             end
-          }.to raise_register_map_error "illegal input value for register file name: #{illegal_name.inspect}"
+          }.to raise_source_error "illegal input value for register file name: #{illegal_name.inspect}"
         end
       end
     end
 
     context '同一レジスタブロック内で、レジスタファイル名に重複がある場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_register_map do
             register_block do
@@ -162,7 +162,7 @@ RSpec.describe 'register_file/name' do
               register_file { name :foo }
             end
           end
-        }.to raise_register_map_error 'duplicated register file name: foo'
+        }.to raise_source_error 'duplicated register file name: foo'
 
         expect {
           create_register_map do
@@ -171,12 +171,12 @@ RSpec.describe 'register_file/name' do
               register_file { name :foo }
             end
           end
-        }.to raise_register_map_error 'duplicated register file name: foo'
+        }.to raise_source_error 'duplicated register file name: foo'
       end
     end
 
     context '同一レジスタファイル内で、レジスタファイル名に重複がある場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_register_map do
             register_block do
@@ -187,7 +187,7 @@ RSpec.describe 'register_file/name' do
               end
             end
           end
-        }.to raise_register_map_error 'duplicated register file name: bar'
+        }.to raise_source_error 'duplicated register file name: bar'
 
         expect {
           create_register_map do
@@ -199,12 +199,12 @@ RSpec.describe 'register_file/name' do
               end
             end
           end
-        }.to raise_register_map_error 'duplicated register file name: bar'
+        }.to raise_source_error 'duplicated register file name: bar'
       end
     end
 
     context '異なるレジスタブロック間で、レジスタファイル名に重複がある場合' do
-      it 'RegisterMapErrorを起こさない' do
+      it 'SourceErrorを起こさない' do
         expect {
           create_register_map do
             register_block { register_file { name :foo } }
@@ -222,7 +222,7 @@ RSpec.describe 'register_file/name' do
     end
 
     context '異なるレジスタファイル間で、レジスタファイル名に重複がある場合' do
-      it 'RegisterMapErrorを起こさない' do
+      it 'SourceErrorを起こさない' do
         expect {
           create_register_map do
             register_block do

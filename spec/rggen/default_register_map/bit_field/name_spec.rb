@@ -145,7 +145,7 @@ RSpec.describe 'bit_field/name' do
 
   describe 'エラーチェック' do
     context 'ビットフィールド名が入力パターンに合致しない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [
           random_string(/[0-9][_a-z0-9]*/i),
           random_string(/[_a-z][[:punct:]&&[^_]][_a-z0-9]/i),
@@ -160,13 +160,13 @@ RSpec.describe 'bit_field/name' do
                 end
               end
             end
-          }.to raise_register_map_error("illegal input value for bit field name: #{illegal_name.inspect}")
+          }.to raise_source_error("illegal input value for bit field name: #{illegal_name.inspect}")
         end
       end
     end
 
     context '同一レジスタ内でビットフィールド名の重複がある場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_register_map do
             register_block do
@@ -177,7 +177,7 @@ RSpec.describe 'bit_field/name' do
               end
             end
           end
-        }.to raise_register_map_error('duplicated bit field name: bit_field_0')
+        }.to raise_source_error('duplicated bit field name: bit_field_0')
 
         expect {
           create_register_map do
@@ -189,12 +189,12 @@ RSpec.describe 'bit_field/name' do
               end
             end
           end
-        }.to raise_register_map_error('duplicated bit field name: register_0')
+        }.to raise_source_error('duplicated bit field name: register_0')
       end
     end
 
     context '異なるレジスタ間でビットフィールド名の重複がある場合' do
-      it 'RegisterMapErrorを起こさない' do
+      it 'SourceErrorを起こさない' do
         expect {
           create_register_map do
             register_block do

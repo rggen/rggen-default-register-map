@@ -82,7 +82,7 @@ RSpec.describe 'register/type/external' do
           register { name 'register_0'; offset_address 0x00; type :external }
         end
       end
-    }.to raise_register_map_error 'external register type is not allowed to be put within register file'
+    }.to raise_source_error 'external register type is not allowed to be put within register file'
 
     expect {
       create_registers do
@@ -92,7 +92,7 @@ RSpec.describe 'register/type/external' do
           end
         end
       end
-    }.to raise_register_map_error 'external register type is not allowed to be put within register file'
+    }.to raise_source_error 'external register type is not allowed to be put within register file'
   end
 
   it '単一サイズ定義のみ対応している' do
@@ -100,7 +100,7 @@ RSpec.describe 'register/type/external' do
       create_registers do
         register { name 'register_0'; offset_address 0x00; type :external; size [1, 1] }
       end
-    }.to raise_register_map_error 'external register type supports single size definition only'
+    }.to raise_source_error 'external register type supports single size definition only'
   end
 
   specify 'stepの指定には対応しない' do
@@ -108,6 +108,6 @@ RSpec.describe 'register/type/external' do
       create_registers do
         register { name 'register_0'; offset_address 0x00; type :external; size [1, step: 8] }
       end
-    }.to raise_register_map_error
+    }.to raise_source_error
   end
 end

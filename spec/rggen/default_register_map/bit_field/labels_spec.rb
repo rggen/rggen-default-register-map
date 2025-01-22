@@ -91,7 +91,7 @@ RSpec.describe 'bit_field/labels' do
 
   describe 'エラーチェック' do
     context 'ラベル名の指定がない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_field do
             bit_field do
@@ -99,12 +99,12 @@ RSpec.describe 'bit_field/labels' do
               labels [value: 0]
             end
           end
-        }.to raise_register_map_error 'no label name is given'
+        }.to raise_source_error 'no label name is given'
       end
     end
 
     context 'ラベル名が識別子になっていない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [
           random_string(/[0-9][_a-z0-9]*/i),
           random_string(/[_a-z][[:punct:]&&[^_]][_a-z0-9]/i),
@@ -117,13 +117,13 @@ RSpec.describe 'bit_field/labels' do
                 labels [ name: name, value: 0 ]
               end
             end
-          }.to raise_register_map_error "illegal input value for label name: #{name.inspect}"
+          }.to raise_source_error "illegal input value for label name: #{name.inspect}"
         end
       end
     end
 
     context '同一ビットフィールド内でラベル名の重複がある場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_field do
             bit_field do
@@ -134,7 +134,7 @@ RSpec.describe 'bit_field/labels' do
               ]
             end
           end
-        }.to raise_register_map_error 'duplicated label name: foo'
+        }.to raise_source_error 'duplicated label name: foo'
       end
     end
 
@@ -157,7 +157,7 @@ RSpec.describe 'bit_field/labels' do
     end
 
     context 'ラベル値の指定がない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_field do
             bit_field do
@@ -165,12 +165,12 @@ RSpec.describe 'bit_field/labels' do
               labels [name: :foo]
             end
           end
-        }.to raise_register_map_error 'no label value is given'
+        }.to raise_source_error 'no label value is given'
       end
     end
 
     context 'ラベル値が整数に変換できない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [nil, true, false, 'foo', '0xef,_gh', Object.new].each do |value|
           expect {
             create_bit_field do
@@ -179,13 +179,13 @@ RSpec.describe 'bit_field/labels' do
                 labels [name: :foo, value: value]
               end
             end
-          }.to raise_register_map_error "cannot convert #{value.inspect} into label value"
+          }.to raise_source_error "cannot convert #{value.inspect} into label value"
         end
       end
     end
 
     context 'ラベル値が最小値未満の場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         {
           1 => [0, [-1, -2, rand(-16..-3)]],
           2 => [-2, [-3, -4, rand(-16..-5)]],
@@ -199,7 +199,7 @@ RSpec.describe 'bit_field/labels' do
                   labels [name: 'foo', value: value]
                 end
               end
-            }.to raise_register_map_error 'input label value is less than minimum label value: '\
+            }.to raise_source_error 'input label value is less than minimum label value: '\
                                           "label value #{value} minimum label value #{min_value}"
           end
         end
@@ -207,7 +207,7 @@ RSpec.describe 'bit_field/labels' do
     end
 
     context 'ラベル値が最大値を超える場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         {
           1 => [1, [2, 3, rand(4..16)]],
           2 => [3, [4, 5, rand(6..16)]],
@@ -221,7 +221,7 @@ RSpec.describe 'bit_field/labels' do
                   labels [ name: 'foo', value: value ]
                 end
               end
-            }.to raise_register_map_error 'input label value is greater than maximum label value: ' \
+            }.to raise_source_error 'input label value is greater than maximum label value: ' \
                                           "label value #{value} maximum label value #{max_value}"
           end
         end
@@ -229,7 +229,7 @@ RSpec.describe 'bit_field/labels' do
     end
 
     context 'ラベル値の重複がある場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_field do
             bit_field do
@@ -240,7 +240,7 @@ RSpec.describe 'bit_field/labels' do
               ]
             end
           end
-        }.to raise_register_map_error 'duplicated label value: 0'
+        }.to raise_source_error 'duplicated label value: 0'
       end
     end
   end

@@ -50,24 +50,24 @@ RSpec.describe 'global/address_width' do
 
   describe 'エラーチェック' do
     context '入力値が整数に変換できない場合' do
-      it 'ConfigurationErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [true, false, 'foo', '0x00_gh', Object.new].each do |value|
           expect {
             create_configuration(address_width: value)
-          }.to raise_configuration_error "cannot convert #{value.inspect} into address width"
+          }.to raise_source_error "cannot convert #{value.inspect} into address width"
         end
       end
     end
 
     context '入力値が正数ではない場合' do
-      it 'ConfigurationErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_configuration(address_width: -1)
-        }.to raise_configuration_error 'non positive value is not allowed for address width: -1'
+        }.to raise_source_error 'non positive value is not allowed for address width: -1'
 
         expect {
           create_configuration(address_width: 0)
-        }.to raise_configuration_error 'non positive value is not allowed for address width: 0'
+        }.to raise_source_error 'non positive value is not allowed for address width: 0'
 
         expect {
           create_configuration(address_width: 1, bus_width: 8)

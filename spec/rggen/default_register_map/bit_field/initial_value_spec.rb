@@ -269,85 +269,85 @@ RSpec.describe 'bit_field/initial_value' do
 
   describe 'エラーチェック' do
     context '入力が整数に変換できない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [true, false, 'foo', '0xef_gh', Object.new].each do |value|
           expect {
             create_bit_field(1, 0, default_settings, value)
-          }.to raise_register_map_error "cannot convert #{value.inspect} into initial value"
+          }.to raise_source_error "cannot convert #{value.inspect} into initial value"
 
           expect {
             create_bit_field(1, 0, default_settings, { default: value })
-          }.to raise_register_map_error "cannot convert #{value.inspect} into initial value"
+          }.to raise_source_error "cannot convert #{value.inspect} into initial value"
 
           expect {
             create_bit_field(1, 1, default_settings, [value])
-          }.to raise_register_map_error "cannot convert #{value.inspect} into initial value"
+          }.to raise_source_error "cannot convert #{value.inspect} into initial value"
 
           expect {
             create_bit_field(1, 2, default_settings, [0, value])
-          }.to raise_register_map_error "cannot convert #{value.inspect} into initial value"
+          }.to raise_source_error "cannot convert #{value.inspect} into initial value"
         end
 
         expect {
           create_bit_field(1, 1, default_settings, { default: nil })
-        }.to raise_register_map_error 'cannot convert nil into initial value'
+        }.to raise_source_error 'cannot convert nil into initial value'
 
         expect {
           create_bit_field(1, 1, default_settings, [nil])
-        }.to raise_register_map_error 'cannot convert nil into initial value'
+        }.to raise_source_error 'cannot convert nil into initial value'
 
         expect {
           create_bit_field(1, 1, default_settings, [0, nil])
-        }.to raise_register_map_error 'cannot convert nil into initial value'
+        }.to raise_source_error 'cannot convert nil into initial value'
       end
     end
 
     context '入力がHashでdefaultが指定されていない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_field(1, 0, default_settings, { foo: 0 })
-        }.to raise_register_map_error 'no default value is given'
+        }.to raise_source_error 'no default value is given'
       end
     end
 
     context '連番ではないビットフィールドに対して、配列が入力された場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_field(1, 0, default_settings, [0])
-        }.to raise_register_map_error 'arrayed initial value is not allowed for non sequential bit field'
+        }.to raise_source_error 'arrayed initial value is not allowed for non sequential bit field'
       end
     end
 
     context '連番ビットフィールドと初期値配列の大きさが合わない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_field(1, 1, default_settings, [0, 1])
-        }.to raise_register_map_error 'too many initial values are given'
+        }.to raise_source_error 'too many initial values are given'
 
         expect {
           create_bit_field(1, 2, default_settings, [0])
-        }.to raise_register_map_error 'few initial values are given'
+        }.to raise_source_error 'few initial values are given'
       end
     end
 
     context '初期値の指定が必須の場合で、初期値の指定がない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_field(1, 0, { require: true })
-        }.to raise_register_map_error 'no initial value is given'
+        }.to raise_source_error 'no initial value is given'
 
         expect {
           create_bit_field(1, 0, { require: true }, nil)
-        }.to raise_register_map_error 'no initial value is given'
+        }.to raise_source_error 'no initial value is given'
 
         expect {
           create_bit_field(1, 0, { require: true }, '')
-        }.to raise_register_map_error 'no initial value is given'
+        }.to raise_source_error 'no initial value is given'
 
         need_initial_value = true
         expect {
           create_bit_field(1, 0, { require: -> { need_initial_value } }, nil)
-        }.to raise_register_map_error 'no initial value is given'
+        }.to raise_source_error 'no initial value is given'
 
         need_initial_value = false
         expect {
@@ -357,7 +357,7 @@ RSpec.describe 'bit_field/initial_value' do
     end
 
     context '入力が最小値未満の場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         {
           1 => [0, [-1, -2, rand(-16..-3)]],
           2 => [-2, [-3, -4, rand(-16..-5)]],
@@ -366,22 +366,22 @@ RSpec.describe 'bit_field/initial_value' do
           values.each do |value|
             expect {
               create_bit_field(width, 0, default_settings, value)
-            }.to raise_register_map_error 'input initial value is less than minimum initial value: ' \
+            }.to raise_source_error 'input initial value is less than minimum initial value: ' \
                                           "initial value #{value} minimum initial value #{min_value}"
 
             expect {
               create_bit_field(width, 0, default_settings, { default: value })
-            }.to raise_register_map_error 'input initial value is less than minimum initial value: ' \
+            }.to raise_source_error 'input initial value is less than minimum initial value: ' \
                                           "initial value #{value} minimum initial value #{min_value}"
 
             expect {
               create_bit_field(width, 1, default_settings, [value])
-            }.to raise_register_map_error 'input initial value is less than minimum initial value: ' \
+            }.to raise_source_error 'input initial value is less than minimum initial value: ' \
                                           "initial value #{value} minimum initial value #{min_value}"
 
             expect {
               create_bit_field(width, 2, default_settings, [0, value])
-            }.to raise_register_map_error 'input initial value is less than minimum initial value: ' \
+            }.to raise_source_error 'input initial value is less than minimum initial value: ' \
                                           "initial value #{value} minimum initial value #{min_value}"
           end
         end
@@ -389,7 +389,7 @@ RSpec.describe 'bit_field/initial_value' do
     end
 
     context '入力が最大値を超える場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         {
           1 => [1, [2, 3, rand(4..16)]],
           2 => [3, [4, 5, rand(6..16)]],
@@ -398,22 +398,22 @@ RSpec.describe 'bit_field/initial_value' do
           values.each do |value|
             expect {
               create_bit_field(width, 0, default_settings, value)
-            }.to raise_register_map_error 'input initial value is greater than maximum initial value: ' \
+            }.to raise_source_error 'input initial value is greater than maximum initial value: ' \
                                           "initial value #{value} maximum initial value #{max_value}"
 
             expect {
               create_bit_field(width, 0, default_settings, { default: value })
-            }.to raise_register_map_error 'input initial value is greater than maximum initial value: ' \
+            }.to raise_source_error 'input initial value is greater than maximum initial value: ' \
                                           "initial value #{value} maximum initial value #{max_value}"
 
             expect {
               create_bit_field(width, 1, default_settings, [value])
-            }.to raise_register_map_error 'input initial value is greater than maximum initial value: ' \
+            }.to raise_source_error 'input initial value is greater than maximum initial value: ' \
                                           "initial value #{value} maximum initial value #{max_value}"
 
             expect {
               create_bit_field(width, 2, default_settings, [0, value])
-            }.to raise_register_map_error 'input initial value is greater than maximum initial value: ' \
+            }.to raise_source_error 'input initial value is greater than maximum initial value: ' \
                                           "initial value #{value} maximum initial value #{max_value}"
           end
         end
@@ -430,7 +430,7 @@ RSpec.describe 'bit_field/initial_value' do
       end
 
       context '与えられたブロックの評価結果が真の場合' do
-        it 'RegisterMapErrorを起こさない' do
+        it 'SourceErrorを起こさない' do
           expect {
             create_bit_field(3, 0, { valid_condition: valid_condition}, 5)
           }.not_to raise_error
@@ -454,26 +454,26 @@ RSpec.describe 'bit_field/initial_value' do
       end
 
       context '評価結果が偽の場合' do
-        it 'RegisterMapErrorを起こす' do
+        it 'SourceErrorを起こす' do
           expect {
             create_bit_field(3, 0, { valid_condition: valid_condition}, 4)
-          }.to raise_register_map_error 'does not match the valid initial value condition: 4'
+          }.to raise_source_error 'does not match the valid initial value condition: 4'
 
           expect {
             create_bit_field(3, 0, { valid_condition: valid_condition}, 7)
-          }.to raise_register_map_error 'does not match the valid initial value condition: 7'
+          }.to raise_source_error 'does not match the valid initial value condition: 7'
 
           expect {
             create_bit_field(3, 0, { valid_condition: valid_condition}, { default: 4 })
-          }.to raise_register_map_error 'does not match the valid initial value condition: 4'
+          }.to raise_source_error 'does not match the valid initial value condition: 4'
 
           expect {
             create_bit_field(3, 1, { valid_condition: valid_condition}, [4])
-          }.to raise_register_map_error 'does not match the valid initial value condition: 4'
+          }.to raise_source_error 'does not match the valid initial value condition: 4'
 
           expect {
             create_bit_field(3, 2, { valid_condition: valid_condition}, [5, 4])
-          }.to raise_register_map_error 'does not match the valid initial value condition: 4'
+          }.to raise_source_error 'does not match the valid initial value condition: 4'
         end
       end
     end

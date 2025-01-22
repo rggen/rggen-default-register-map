@@ -61,11 +61,11 @@ RSpec.describe 'global/enable_wide_register' do
 
   describe 'エラーチェック' do
     context 'true/yes/on/false/no/off以外が入力された場合' do
-      it 'ConfigurationErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [nil, '', 'foo', :foo, 0, 1, Object.new].each do |value|
           expect {
             create_configuration(enable_wide_register: value)
-          }.to raise_configuration_error "cannot convert #{value.inspect} into boolean"
+          }.to raise_source_error "cannot convert #{value.inspect} into boolean"
         end
       end
     end

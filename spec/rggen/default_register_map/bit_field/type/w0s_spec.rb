@@ -64,7 +64,7 @@ RSpec.describe 'bit_field/type/w0s' do
           bit_field { name :foo_0; bit_assignment lsb: 0, width: 1; type :w0s }
         end
       end
-    }.to raise_register_map_error
+    }.to raise_source_error
   end
 
   specify '参照ビットフィールドの指定は不要' do

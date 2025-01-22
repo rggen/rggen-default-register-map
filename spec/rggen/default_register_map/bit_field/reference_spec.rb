@@ -232,7 +232,7 @@ RSpec.describe 'bit_field/reference' do
 
   describe 'エラーチェック' do
     context '参照ビットフィールド名が入力パターンに合致しない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [
           0,
           '0foo',
@@ -250,13 +250,13 @@ RSpec.describe 'bit_field/reference' do
                 bit_field { name 'foo_0_0'; reference input_value }
               end
             end
-          }.to raise_register_map_error "illegal input value for reference: #{input_value.inspect}"
+          }.to raise_source_error "illegal input value for reference: #{input_value.inspect}"
         end
       end
     end
 
     context '自分自身を参照している場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             register do
@@ -264,12 +264,12 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_0_0'; reference 'foo_0.foo_0_0'; settings default_settings }
             end
           end
-        }.to raise_register_map_error 'self reference: foo_0.foo_0_0'
+        }.to raise_source_error 'self reference: foo_0.foo_0_0'
       end
     end
 
     context '参照ビットフィールドが存在しない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             register do
@@ -281,7 +281,7 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_1_0' }
             end
           end
-        }.to raise_register_map_error 'no such bit field found: foo_1.foo_1_1'
+        }.to raise_source_error 'no such bit field found: foo_1.foo_1_1'
 
         expect {
           create_bit_fields do
@@ -294,7 +294,7 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_1_0' }
             end
           end
-        }.to raise_register_map_error 'no such bit field found: foo_2.foo_1_0'
+        }.to raise_source_error 'no such bit field found: foo_2.foo_1_0'
 
         expect {
           create_bit_fields do
@@ -307,7 +307,7 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_1_0' }
             end
           end
-        }.to raise_register_map_error 'no such bit field found: foo_3.foo_3_0'
+        }.to raise_source_error 'no such bit field found: foo_3.foo_3_0'
 
         expect {
           create_bit_fields do
@@ -320,7 +320,7 @@ RSpec.describe 'bit_field/reference' do
               bit_field {}
             end
           end
-        }.to raise_register_map_error 'no such bit field found: foo_2'
+        }.to raise_source_error 'no such bit field found: foo_2'
 
         expect {
           create_bit_fields do
@@ -339,7 +339,7 @@ RSpec.describe 'bit_field/reference' do
               end
             end
           end
-        }.to raise_register_map_error 'no such bit field found: bar_1.foo_1_0.foo_1_0_0.foo_1_0_0_0'
+        }.to raise_source_error 'no such bit field found: bar_1.foo_1_0.foo_1_0_0.foo_1_0_0_0'
 
         expect {
           create_bit_fields do
@@ -358,7 +358,7 @@ RSpec.describe 'bit_field/reference' do
               end
             end
           end
-        }.to raise_register_map_error 'no such bit field found: foo_1.bar_1_0.foo_1_0_0.foo_1_0_0_0'
+        }.to raise_source_error 'no such bit field found: foo_1.bar_1_0.foo_1_0_0.foo_1_0_0_0'
 
         expect {
           create_bit_fields do
@@ -377,7 +377,7 @@ RSpec.describe 'bit_field/reference' do
               end
             end
           end
-        }.to raise_register_map_error 'no such bit field found: foo_1.foo_1_0.bar_1_0_0.foo_1_0_0_0'
+        }.to raise_source_error 'no such bit field found: foo_1.foo_1_0.bar_1_0_0.foo_1_0_0_0'
 
         expect {
           create_bit_fields do
@@ -396,12 +396,12 @@ RSpec.describe 'bit_field/reference' do
               end
             end
           end
-        }.to raise_register_map_error 'no such bit field found: foo_1.foo_1_0.foo_1_0_0.bar_1_0_0_0'
+        }.to raise_source_error 'no such bit field found: foo_1.foo_1_0.foo_1_0_0.bar_1_0_0_0'
       end
     end
 
     context 'require設定の指定があり、参照ビットフィールドの指定がない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             register do
@@ -409,7 +409,7 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_0_0'; settings reference: { use: true, require: true } }
             end
           end
-        }.to raise_register_map_error 'no reference bit field is given'
+        }.to raise_source_error 'no reference bit field is given'
       end
     end
 
@@ -427,7 +427,7 @@ RSpec.describe 'bit_field/reference' do
     end
 
     context '配列レジスタファイル/レジスタ中のビットフィールドを参照していて、自身と階層の深さが合わない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             register do
@@ -443,7 +443,7 @@ RSpec.describe 'bit_field/reference' do
               end
             end
           end
-        }.to raise_register_map_error 'depth of layer is not matched: own 4 reference 5'
+        }.to raise_source_error 'depth of layer is not matched: own 4 reference 5'
 
         expect {
           create_bit_fields do
@@ -460,7 +460,7 @@ RSpec.describe 'bit_field/reference' do
               end
             end
           end
-        }.to raise_register_map_error 'depth of layer is not matched: own 4 reference 5'
+        }.to raise_source_error 'depth of layer is not matched: own 4 reference 5'
 
         expect {
           create_bit_fields do
@@ -477,7 +477,7 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'bar' }
             end
           end
-        }.to raise_register_map_error 'depth of layer is not matched: own 5 reference 4'
+        }.to raise_source_error 'depth of layer is not matched: own 5 reference 4'
 
         expect {
           create_bit_fields do
@@ -500,7 +500,7 @@ RSpec.describe 'bit_field/reference' do
               end
             end
           end
-        }.to raise_register_map_error 'depth of layer is not matched: own 6 reference 5'
+        }.to raise_source_error 'depth of layer is not matched: own 6 reference 5'
 
         expect {
           create_bit_fields do
@@ -523,12 +523,12 @@ RSpec.describe 'bit_field/reference' do
               end
             end
           end
-        }.to raise_register_map_error 'depth of layer is not matched: own 6 reference 5'
+        }.to raise_source_error 'depth of layer is not matched: own 6 reference 5'
       end
     end
 
     context '自身は単体レジスタファイル/レジスタで、配列レジスタファイル/レジスタを参照している場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             register do
@@ -541,7 +541,7 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_1_0' }
             end
           end
-        }.to raise_register_map_error 'bit field within array register is not allowed for reference bit field: foo_1.foo_1_0'
+        }.to raise_source_error 'bit field within array register is not allowed for reference bit field: foo_1.foo_1_0'
 
         expect {
           create_bit_fields do
@@ -561,12 +561,12 @@ RSpec.describe 'bit_field/reference' do
               end
             end
           end
-        }.to raise_register_map_error 'bit field within array register file is not allowed for reference bit field: foo_1.foo_1_0.foo_1_0_0'
+        }.to raise_source_error 'bit field within array register file is not allowed for reference bit field: foo_1.foo_1_0.foo_1_0_0'
       end
     end
 
     context '自身は配列レジスタファイル/レジスタで、単体レジスタファイル/レジスタを参照している場合' do
-      it 'RegisterMapErrorを起こさない' do
+      it 'SourceErrorを起こさない' do
         expect {
           create_bit_fields do
             register do
@@ -604,7 +604,7 @@ RSpec.describe 'bit_field/reference' do
     end
 
     context '自身、参照レジスタともに配列レジスタファイル/レジスタで、配列のサイズが一致する場合' do
-      it 'RegisterMapErrorを起こさない' do
+      it 'SourceErrorを起こさない' do
         expect {
           create_bit_fields do
             register do
@@ -670,7 +670,7 @@ RSpec.describe 'bit_field/reference' do
     end
 
     context '自身、参照レジスタともに配列レジスタフィアル/レジスタで、配列のサイズが一致しない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             register do
@@ -684,7 +684,7 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_1_0' }
             end
           end
-        }.to raise_register_map_error 'array size is not matched: own [2] reference [1]'
+        }.to raise_source_error 'array size is not matched: own [2] reference [1]'
 
         expect {
           create_bit_fields do
@@ -699,7 +699,7 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_1_0' }
             end
           end
-        }.to raise_register_map_error 'array size is not matched: own [2] reference [2, 1]'
+        }.to raise_source_error 'array size is not matched: own [2] reference [2, 1]'
 
         expect {
           create_bit_fields do
@@ -714,7 +714,7 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_1_0' }
             end
           end
-        }.to raise_register_map_error 'array size is not matched: own [2, 1] reference [2]'
+        }.to raise_source_error 'array size is not matched: own [2, 1] reference [2]'
 
         expect {
           create_bit_fields do
@@ -735,7 +735,7 @@ RSpec.describe 'bit_field/reference' do
               end
             end
           end
-        }.to raise_register_map_error 'array size is not matched: own [2] reference [1]'
+        }.to raise_source_error 'array size is not matched: own [2] reference [1]'
 
         expect {
           create_bit_fields do
@@ -756,7 +756,7 @@ RSpec.describe 'bit_field/reference' do
               end
             end
           end
-        }.to raise_register_map_error 'array size is not matched: own [2, 1] reference [2]'
+        }.to raise_source_error 'array size is not matched: own [2, 1] reference [2]'
 
         expect {
           create_bit_fields do
@@ -777,12 +777,12 @@ RSpec.describe 'bit_field/reference' do
               end
             end
           end
-        }.to raise_register_map_error 'array size is not matched: own [2] reference [2, 1]'
+        }.to raise_source_error 'array size is not matched: own [2] reference [2, 1]'
       end
     end
 
     context '自身が単体ビットフィールドで、連番ビットフィールドを参照している場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             register do
@@ -794,12 +794,12 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_1_0'; sequential [true, 2] }
             end
           end
-        }.to raise_register_map_error 'sequential bit field is not allowed for reference bit field: foo_1.foo_1_0'
+        }.to raise_source_error 'sequential bit field is not allowed for reference bit field: foo_1.foo_1_0'
       end
     end
 
     context '自身が連番ビットフィールドで、単体ビットフィールドを参照している場合' do
-      it 'RegiterMapErrorを起こさない' do
+      it 'SourceErrorを起こさない' do
         expect {
           create_bit_fields do
             register do
@@ -816,7 +816,7 @@ RSpec.describe 'bit_field/reference' do
     end
 
     context '自身、参照ビットフィールドともに連番ビットフィールドで、連番サイズが一致する場合' do
-      it 'RegiterMapErrorを起こさない' do
+      it 'SourceErrorを起こさない' do
         expect {
           create_bit_fields do
             register do
@@ -833,7 +833,7 @@ RSpec.describe 'bit_field/reference' do
     end
 
     context '自身、参照ビットフィールドともに連番ビットフィールドで、連番サイズが一致しない場合' do
-      it 'RegiterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             register do
@@ -845,12 +845,12 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_1_0'; sequential [true, 3] }
             end
           end
-        }.to raise_register_map_error 'sequence size is not matched: own 2 reference 3'
+        }.to raise_source_error 'sequence size is not matched: own 2 reference 3'
       end
     end
 
     context '予約済みビットフィールドを参照してる場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             register do
@@ -862,13 +862,13 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_1_0'; reserved true }
             end
           end
-        }.to raise_register_map_error 'refer to reserved bit field: foo_1.foo_1_0'
+        }.to raise_source_error 'refer to reserved bit field: foo_1.foo_1_0'
       end
     end
 
     describe '幅の確認' do
       context 'width設定の指定があり、参照ビットフィールドの幅がそれより狭い場合' do
-        it 'RegisterMapErrorを起こす' do
+        it 'SourceErrorを起こす' do
           expect {
             create_bit_fields do
               register do
@@ -897,13 +897,13 @@ RSpec.describe 'bit_field/reference' do
                 bit_field { name 'foo_1'; width 1 }
               end
             end
-          }.to raise_register_map_error '2 bits reference bit field is required: 1 bit(s) width'
+          }.to raise_source_error '2 bits reference bit field is required: 1 bit(s) width'
         end
       end
     end
 
     context 'width設定の指定がなく、参照ビットフィールドの幅が自身の幅より狭い場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             register do
@@ -932,7 +932,7 @@ RSpec.describe 'bit_field/reference' do
               bit_field { name 'foo_1'; width 1 }
             end
           end
-        }.to raise_register_map_error '2 bits reference bit field is required: 1 bit(s) width'
+        }.to raise_source_error '2 bits reference bit field is required: 1 bit(s) width'
       end
     end
 
