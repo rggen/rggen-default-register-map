@@ -54,7 +54,7 @@ RSpec.describe 'bit_field/type/rowotrg' do
           bit_field { name :foo; bit_assignment lsb: 1; type :rowotrg }
         end
       end
-    }.to raise_register_map_error
+    }.to raise_source_error
   end
 
   context '参照ビットフィールドの指定がある場合' do
@@ -87,7 +87,7 @@ RSpec.describe 'bit_field/type/rowotrg' do
             bit_field { name :bar_1; bit_assignment lsb: 2, width: 1; type :rw; initial_value 0 }
           end
         end
-      }.to raise_register_map_error
+      }.to raise_source_error
     end
   end
 end

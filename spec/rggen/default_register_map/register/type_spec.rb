@@ -97,22 +97,22 @@ RSpec.describe 'register/type' do
     end
 
     context '有効になっていないレジスタ型が指定された場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register { type :qux }
           end
-        }.to raise_register_map_error 'unknown register type: :qux'
+        }.to raise_source_error 'unknown register type: :qux'
       end
     end
 
     context '定義されていないレジスタ型が指定された場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register { type :baz }
           end
-        }.to raise_register_map_error 'unknown register type: :baz'
+        }.to raise_source_error 'unknown register type: :baz'
       end
     end
   end
@@ -138,7 +138,7 @@ RSpec.describe 'register/type' do
           create_registers do
             register { type :foo }
           end
-        }.to raise_register_map_error 'no bit fields are given'
+        }.to raise_source_error 'no bit fields are given'
       end
     end
 
@@ -163,7 +163,7 @@ RSpec.describe 'register/type' do
         create_registers do
           register {}
         end
-      }.to raise_register_map_error 'no bit fields are given'
+      }.to raise_source_error 'no bit fields are given'
     end
   end
 

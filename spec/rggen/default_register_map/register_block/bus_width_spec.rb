@@ -110,49 +110,49 @@ RSpec.describe 'register_block/bus_width' do
 
   describe 'エラーチェック' do
     context '入力が整数に変換できない場合' do
-      it 'ConfigurationError/RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [true, false, 'foo', '0xef_gh', Object.new].each do |value|
           expect {
             create_configuration { bus_width value }
-          }.to raise_configuration_error "cannot convert #{value.inspect} into bus width"
+          }.to raise_source_error "cannot convert #{value.inspect} into bus width"
 
           expect {
             create_register_block { bus_width value }
-          }.to raise_register_map_error "cannot convert #{value.inspect} into bus width"
+          }.to raise_source_error "cannot convert #{value.inspect} into bus width"
         end
       end
     end
 
     context '入力が8未満の場合' do
-      it 'ConfigurationError/RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [-1, 0, 1, 7].each do |value|
           expect {
             create_configuration { bus_width value }
-          }.to raise_configuration_error "input bus width is less than 8: #{value}"
+          }.to raise_source_error "input bus width is less than 8: #{value}"
 
           expect {
             create_register_block { bus_width value }
-          }.to raise_register_map_error "input bus width is less than 8: #{value}"
+          }.to raise_source_error "input bus width is less than 8: #{value}"
         end
       end
     end
 
     context '入力が2のべき乗ではない場合' do
-      it 'ConfigurationError/RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [31, 33, 63, 65].each do |value|
           expect {
             create_configuration { bus_width value }
-          }.to raise_configuration_error "input bus width is not power of 2: #{value}"
+          }.to raise_source_error "input bus width is not power of 2: #{value}"
 
           expect {
             create_register_block { bus_width value }
-          }.to raise_register_map_error "input bus width is not power of 2: #{value}"
+          }.to raise_source_error "input bus width is not power of 2: #{value}"
         end
       end
     end
 
     context 'アドレス幅から求まる最大値を超える場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [
           [32, 1],
           [64, 1],
@@ -162,11 +162,11 @@ RSpec.describe 'register_block/bus_width' do
                     "bus width #{input_bus_width} maximum bus width #{2**(3 + address_width)}"
           expect {
             create_register_block(bus_width: input_bus_width, address_width:) {}
-          }.to raise_register_map_error message
+          }.to raise_source_error message
 
           expect {
             create_register_block(bus_width: 8, address_width: address_width) { bus_width input_bus_width }
-          }.to raise_register_map_error message
+          }.to raise_source_error message
         end
 
         [

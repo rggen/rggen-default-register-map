@@ -62,37 +62,37 @@ RSpec.describe 'register_block/byte_size' do
 
   describe 'エラーチェック' do
     context 'バイトサイズが未指定の場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_register_block {}
-        }.to raise_register_map_error 'no byte size is given'
+        }.to raise_source_error 'no byte size is given'
 
         expect {
           create_register_block { byte_size nil }
-        }.to raise_register_map_error 'no byte size is given'
+        }.to raise_source_error 'no byte size is given'
 
         expect {
           create_register_block { byte_size '' }
-        }.to raise_register_map_error 'no byte size is given'
+        }.to raise_source_error 'no byte size is given'
       end
     end
 
     context '入力値が整数に変換できない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [true, false, '0xef_gc', Object.new].each do |value|
           expect {
             create_register_block { byte_size value }
-          }.to raise_register_map_error "cannot convert #{value.inspect} into byte size"
+          }.to raise_source_error "cannot convert #{value.inspect} into byte size"
         end
       end
     end
 
     context '入力値が 0 以下の場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [0, -1, -2, rand(-10..-3)].each do |value|
           expect {
             create_register_block { byte_size value }
-          }.to raise_register_map_error "non positive value is not allowed for byte size: #{value}"
+          }.to raise_source_error "non positive value is not allowed for byte size: #{value}"
         end
       end
     end
@@ -102,11 +102,11 @@ RSpec.describe 'register_block/byte_size' do
 
       let(:configuration) { create_configuration(address_width: address_width) }
 
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [1025, 1028, 2048].each do |value|
           expect {
             create_register_block(configuration) { byte_size value }
-          }.to raise_register_map_error 'input byte size is greater than maximum byte size: ' \
+          }.to raise_source_error 'input byte size is greater than maximum byte size: ' \
                                         "input byte size #{value} maximum byte size 1024"
         end
       end
@@ -115,7 +115,7 @@ RSpec.describe 'register_block/byte_size' do
     context '入力値がバス幅に揃っていない場合' do
       let(:address_width) { 10 }
 
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         {
           16 => [1,    3,    5,    7, 9, 127, 1023],
           32 => [1, 2, 3,    5, 6, 7, 9, 127, 1023],
@@ -125,7 +125,7 @@ RSpec.describe 'register_block/byte_size' do
           values.each do |value|
             expect {
               create_register_block(configuration) { byte_size value; bus_width input_bus_width }
-            }.to raise_register_map_error "byte size is not aligned with bus width(#{input_bus_width}): #{value}"
+            }.to raise_source_error "byte size is not aligned with bus width(#{input_bus_width}): #{value}"
           end
         end
       end

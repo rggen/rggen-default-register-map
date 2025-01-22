@@ -55,7 +55,7 @@ RSpec.describe 'bit_field/type/rwhw' do
           bit_field { name :foo_0; bit_assignment lsb: 0; type :rwhw }
         end
       end
-    }.to raise_register_map_error
+    }.to raise_source_error
   end
 
   context '参照ビットフィールドの指定がある場合' do

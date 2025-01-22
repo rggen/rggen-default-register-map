@@ -751,133 +751,133 @@ RSpec.describe 'register/size' do
 
   describe 'エラーチェック' do
     context '大きさの各要素が整数に変換できなかった場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [nil, true, false, '', 'foo', '0xef_gh', Object.new].each_with_index do |value, i|
           if [1, 2, 4, 5, 6].include?(i)
             expect {
               create_register { register { size value } }
-            }.to raise_register_map_error "cannot convert #{value.inspect} into register size"
+            }.to raise_source_error "cannot convert #{value.inspect} into register size"
           end
 
           expect {
             create_register { register { size [value] } }
-          }.to raise_register_map_error "cannot convert #{value.inspect} into register size"
+          }.to raise_source_error "cannot convert #{value.inspect} into register size"
 
           expect {
             create_register { register { size [value, step: 4] } }
-          }.to raise_register_map_error "cannot convert #{value.inspect} into register size"
+          }.to raise_source_error "cannot convert #{value.inspect} into register size"
 
           expect {
             create_register { register { size [1, value] } }
-          }.to raise_register_map_error "cannot convert #{value.inspect} into register size"
+          }.to raise_source_error "cannot convert #{value.inspect} into register size"
 
           expect {
             create_register { register { size [1, value, step: 4] } }
-          }.to raise_register_map_error "cannot convert #{value.inspect} into register size"
+          }.to raise_source_error "cannot convert #{value.inspect} into register size"
 
           expect {
             create_register { register { size [1, 2, value] } }
-          }.to raise_register_map_error "cannot convert #{value.inspect} into register size"
+          }.to raise_source_error "cannot convert #{value.inspect} into register size"
 
           expect {
             create_register { register { size [1, 2, value, step: 4] } }
-          }.to raise_register_map_error "cannot convert #{value.inspect} into register size"
+          }.to raise_source_error "cannot convert #{value.inspect} into register size"
         end
       end
     end
 
     context '大きさに 1 未満の要素が含まれる場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [0, -1, -2, -7].each do |value|
           expect {
             create_register { register { size value } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [#{value}]"
 
           expect {
             create_register { register { size [value] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [#{value}]"
 
           expect {
             create_register { register { size [value, step: 4] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [#{value}]"
 
           expect {
             create_register { register { size [1, value] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [1, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [1, #{value}]"
 
           expect {
             create_register { register { size [1, value, step: 4] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [1, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [1, #{value}]"
 
           expect {
             create_register { register { size [value, 1] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}, 1]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [#{value}, 1]"
 
           expect {
             create_register { register { size [value, 1, step: 4] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}, 1]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [#{value}, 1]"
 
           expect {
             create_register { register { size [value, value] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [#{value}, #{value}]"
 
           expect {
             create_register { register { size [value, value, step: 4] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [#{value}, #{value}]"
 
           expect {
             create_register { register { size [1, value, 2] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [1, #{value}, 2]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [1, #{value}, 2]"
 
           expect {
             create_register { register { size [1, value, 2, step: 4] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [1, #{value}, 2]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [1, #{value}, 2]"
 
           expect {
             create_register { register { size [1, 2, value] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [1, 2, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [1, 2, #{value}]"
 
           expect {
             create_register { register { size [1, 2, value, step: 4] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [1, 2, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [1, 2, #{value}]"
 
           expect {
             create_register { register { size [1, value, value] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [1, #{value}, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [1, #{value}, #{value}]"
 
           expect {
             create_register { register { size [1, value, value, step: 4] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [1, #{value}, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [1, #{value}, #{value}]"
 
           expect {
             create_register { register { size [value, 1, value] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}, 1, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [#{value}, 1, #{value}]"
 
           expect {
             create_register { register { size [value, 1, value, step: 4] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}, 1, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [#{value}, 1, #{value}]"
 
           expect {
             create_register { register { size [value, value, 1] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}, #{value}, 1]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [#{value}, #{value}, 1]"
 
           expect {
             create_register { register { size [value, value, 1, step: 4] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}, #{value}, 1]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [#{value}, #{value}, 1]"
 
           expect {
             create_register { register { size [value, value, value] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}, #{value}, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [#{value}, #{value}, #{value}]"
 
           expect {
             create_register { register { size [value, value, value, step: 4] } }
-          }.to raise_register_map_error "non positive value(s) are not allowed for register size: [#{value}, #{value}, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register size: [#{value}, #{value}, #{value}]"
         end
       end
     end
 
     context '幅広レジスタが許可されておらず、幅が8バイトを超える場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_register(enable_wide_register: false) do
             register { bit_field { bit_assignment lsb: 63 } }
@@ -888,13 +888,13 @@ RSpec.describe 'register/size' do
           create_register(enable_wide_register: false) do
             register { bit_field { bit_assignment lsb: 64 } }
           end
-        }.to raise_register_map_error 'register width wider than 8 bytes is not allowed: 12 bytes'
+        }.to raise_source_error 'register width wider than 8 bytes is not allowed: 12 bytes'
 
         expect {
           create_register(enable_wide_register: false) do
             register { bit_field { bit_assignment lsb: 127 } }
           end
-        }.to raise_register_map_error 'register width wider than 8 bytes is not allowed: 16 bytes'
+        }.to raise_source_error 'register width wider than 8 bytes is not allowed: 16 bytes'
 
         expect {
           create_register(enable_wide_register: false) do
@@ -906,7 +906,7 @@ RSpec.describe 'register/size' do
           create_register(enable_wide_register: false) do
             register { size [1, step: 12]; bit_field { bit_assignment lsb: 0 } }
           end
-        }.to raise_register_map_error 'register width wider than 8 bytes is not allowed: 12 bytes'
+        }.to raise_source_error 'register width wider than 8 bytes is not allowed: 12 bytes'
       end
     end
 
@@ -933,47 +933,47 @@ RSpec.describe 'register/size' do
     end
 
     context '指定されたstepが整数に変換できなかった場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [nil, true, false, 'foo', '0xef_gh', Object.new].each do |value|
           expect {
             create_register do
               register { size [1, step: value]; bit_field { bit_assignment lsb: 0 } }
             end
-          }.to raise_register_map_error "cannot convert #{value.inspect} into step size"
+          }.to raise_source_error "cannot convert #{value.inspect} into step size"
         end
       end
     end
 
     context '配列未対応なレジスタに対してstepが指定された場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_register(support_array: false) do
             register { size [1, step: 4]; bit_field { bit_assignment lsb: 0 } }
           end
-        }.to raise_register_map_error 'step size cannot be specified for non-array register'
+        }.to raise_source_error 'step size cannot be specified for non-array register'
       end
     end
 
     context '指定されたstepがレジスタ幅未満の場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [7, 4, 3, 2, 1, 0, -1].each do |step|
           expect {
             create_register do
               register { size [1, step: step]; bit_field { bit_assignment lsb: 32 } }
             end
-          }.to raise_register_map_error "step size is less than register width: #{step}"
+          }.to raise_source_error "step size is less than register width: #{step}"
         end
       end
     end
 
     context '指定されたstepがバス幅の倍数になっていない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [5, 6, 7, 9, 10, 11].each do |step|
           expect {
             create_register do
               register { size [1, step: step]; bit_field { bit_assignment lsb: 0 } }
             end
-          }.to raise_register_map_error "step size is not multiple of bus width: #{step}"
+          }.to raise_source_error "step size is not multiple of bus width: #{step}"
         end
       end
     end

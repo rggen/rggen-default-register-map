@@ -325,7 +325,7 @@ RSpec.describe 'register/type/indirect' do
 
   describe 'エラーチェック' do
     context 'インデックスの指定がない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register do
@@ -334,7 +334,7 @@ RSpec.describe 'register/type/indirect' do
               type :indirect
             end
           end
-        }.to raise_register_map_error 'no indirect indices are given'
+        }.to raise_source_error 'no indirect indices are given'
 
         expect {
           create_registers do
@@ -344,7 +344,7 @@ RSpec.describe 'register/type/indirect' do
               type [:indirect]
             end
           end
-        }.to raise_register_map_error 'no indirect indices are given'
+        }.to raise_source_error 'no indirect indices are given'
 
         expect {
           create_registers do
@@ -354,12 +354,12 @@ RSpec.describe 'register/type/indirect' do
               type [:indirect, []]
             end
           end
-        }.to raise_register_map_error 'no indirect index is given'
+        }.to raise_source_error 'no indirect index is given'
       end
     end
 
     context 'インデックス名が文字列、または、シンボルではない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [nil, true, false, Object.new].each do |value|
           expect {
             create_registers do
@@ -369,13 +369,13 @@ RSpec.describe 'register/type/indirect' do
                 type [:indirect, value]
               end
             end
-          }.to raise_register_map_error "illegal input value for indirect index: #{value.inspect}"
+          }.to raise_source_error "illegal input value for indirect index: #{value.inspect}"
         end
       end
     end
 
     context 'フィールド名が入力パターンに一致しない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         ['0foo.foo', 'foo.0foo', 'foo.foo.0', '0foo'].each do |value|
           expect {
             create_registers do
@@ -385,13 +385,13 @@ RSpec.describe 'register/type/indirect' do
                 type [:indirect, value]
               end
             end
-          }.to raise_register_map_error "illegal input value for indirect index: #{value.inspect}"
+          }.to raise_source_error "illegal input value for indirect index: #{value.inspect}"
         end
       end
     end
 
     context 'インデックス値が整数に変換できない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [nil, true, false, '', '0xef_gh', Object.new].each do |value|
           expect {
             create_registers do
@@ -401,13 +401,13 @@ RSpec.describe 'register/type/indirect' do
                 type [:indirect, ['bar.bar_0', value]]
               end
             end
-          }.to raise_register_map_error "cannot convert #{value.inspect} into indirect index value"
+          }.to raise_source_error "cannot convert #{value.inspect} into indirect index value"
         end
       end
     end
 
     context 'インデックス指定の引数が多すぎる場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         value = ['bar.bar_0', 1, nil]
         expect {
           create_registers do
@@ -417,7 +417,7 @@ RSpec.describe 'register/type/indirect' do
               type [:indirect, value]
             end
           end
-        }.to raise_register_map_error "too many arguments for indirect index are given: #{value}"
+        }.to raise_source_error "too many arguments for indirect index are given: #{value}"
 
         value = ['bar.bar_0', 1, 0]
         expect {
@@ -428,12 +428,12 @@ RSpec.describe 'register/type/indirect' do
               type [:indirect, value]
             end
           end
-        }.to raise_register_map_error "too many arguments for indirect index are given: #{value}"
+        }.to raise_source_error "too many arguments for indirect index are given: #{value}"
       end
     end
 
     context '同じビットフィールドが複数回使用された場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register do
@@ -448,12 +448,12 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'same bit field is used as indirect index more than once: bar.bar_0'
+        }.to raise_source_error 'same bit field is used as indirect index more than once: bar.bar_0'
       end
     end
 
     context 'インデックス用のビットフィールドが存在しない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register do
@@ -468,7 +468,7 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'no such bit field for indirect index is found: bar.bar_1'
+        }.to raise_source_error 'no such bit field for indirect index is found: bar.bar_1'
 
         expect {
           create_registers do
@@ -484,7 +484,7 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'no such bit field for indirect index is found: baz.bar_0'
+        }.to raise_source_error 'no such bit field for indirect index is found: baz.bar_0'
 
         expect {
           create_registers do
@@ -504,7 +504,7 @@ RSpec.describe 'register/type/indirect' do
               end
             end
           end
-        }.to raise_register_map_error 'no such bit field for indirect index is found: baz.bar.bar_0'
+        }.to raise_source_error 'no such bit field for indirect index is found: baz.bar.bar_0'
 
         expect {
           create_registers do
@@ -524,7 +524,7 @@ RSpec.describe 'register/type/indirect' do
               end
             end
           end
-        }.to raise_register_map_error 'no such bit field for indirect index is found: bar.baz.bar_0'
+        }.to raise_source_error 'no such bit field for indirect index is found: bar.baz.bar_0'
 
         expect {
           create_registers do
@@ -544,12 +544,12 @@ RSpec.describe 'register/type/indirect' do
               end
             end
           end
-        }.to raise_register_map_error 'no such bit field for indirect index is found: bar.bar.baz_0'
+        }.to raise_source_error 'no such bit field for indirect index is found: bar.bar.baz_0'
       end
     end
 
     context 'インデックスビットフィールドが自身のビットフィールドの場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register do
@@ -560,7 +560,7 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :foo_1; bit_assignment lsb: 1; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'own bit field is not allowed for indirect index: foo.foo_1'
+        }.to raise_source_error 'own bit field is not allowed for indirect index: foo.foo_1'
 
         expect {
           create_registers do
@@ -576,7 +576,7 @@ RSpec.describe 'register/type/indirect' do
               end
             end
           end
-        }.to raise_register_map_error 'own bit field is not allowed for indirect index: foo.foo.foo_1'
+        }.to raise_source_error 'own bit field is not allowed for indirect index: foo.foo.foo_1'
 
         expect {
           create_registers do
@@ -602,7 +602,7 @@ RSpec.describe 'register/type/indirect' do
     end
 
     context 'インデックスフィードが配列レジスタファイルに属している場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register do
@@ -621,7 +621,7 @@ RSpec.describe 'register/type/indirect' do
               end
             end
           end
-        }.to raise_register_map_error 'bit field within array register file is not allowed for indirect index: bar.bar.bar_0'
+        }.to raise_source_error 'bit field within array register file is not allowed for indirect index: bar.bar.bar_0'
 
         expect {
           create_registers do
@@ -645,7 +645,7 @@ RSpec.describe 'register/type/indirect' do
               end
             end
           end
-        }.to raise_register_map_error 'bit field within array register file is not allowed for indirect index: bar.bar.bar.bar_0'
+        }.to raise_source_error 'bit field within array register file is not allowed for indirect index: bar.bar.bar.bar_0'
 
         expect {
           create_registers do
@@ -669,12 +669,12 @@ RSpec.describe 'register/type/indirect' do
               end
             end
           end
-        }.to raise_register_map_error 'bit field within array register file is not allowed for indirect index: bar.bar.bar.bar_0'
+        }.to raise_source_error 'bit field within array register file is not allowed for indirect index: bar.bar.bar.bar_0'
       end
     end
 
     context 'インデックスビットフィールドが配列レジスタに属している場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register do
@@ -690,7 +690,7 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'bit field within array register is not allowed for indirect index: bar.bar_0'
+        }.to raise_source_error 'bit field within array register is not allowed for indirect index: bar.bar_0'
 
         expect {
           create_registers do
@@ -711,12 +711,12 @@ RSpec.describe 'register/type/indirect' do
               end
             end
           end
-        }.to raise_register_map_error 'bit field within array register is not allowed for indirect index: bar.bar.bar_0'
+        }.to raise_source_error 'bit field within array register is not allowed for indirect index: bar.bar.bar_0'
       end
     end
 
     context 'インデックスビットフィールドが連番ビットフィールドの場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register do
@@ -731,12 +731,12 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_0; bit_assignment lsb: 0, sequence_size: 1; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'sequential bit field is not allowed for indirect index: bar.bar_0'
+        }.to raise_source_error 'sequential bit field is not allowed for indirect index: bar.bar_0'
       end
     end
 
     context 'インデックスビットフィールドの属性が予約済みの場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register do
@@ -751,12 +751,12 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_0; bit_assignment lsb: 0; type :reserved }
             end
           end
-        }.to raise_register_map_error 'reserved bit field is not allowed for indirect index: bar.bar_0'
+        }.to raise_source_error 'reserved bit field is not allowed for indirect index: bar.bar_0'
       end
     end
 
     context 'インデックス値がインデックスビットフィールドの幅より大きい場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register do
@@ -771,12 +771,12 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'bit width of indirect index is not enough for index value 2: bar.bar_0'
+        }.to raise_source_error 'bit width of indirect index is not enough for index value 2: bar.bar_0'
       end
     end
 
     context '非配列レジスタに配列インデックスが指定された場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register do
@@ -792,12 +792,12 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_1; bit_assignment lsb: 1; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'array indices are given to non-array register'
+        }.to raise_source_error 'array indices are given to non-array register'
       end
     end
 
     context '配列インデックスに過不足がある場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register do
@@ -815,7 +815,7 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_2; bit_assignment lsb: 2; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'too many array indices are given'
+        }.to raise_source_error 'too many array indices are given'
 
         expect {
           create_registers do
@@ -834,12 +834,12 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_2; bit_assignment lsb: 2; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'few array indices are given'
+        }.to raise_source_error 'few array indices are given'
       end
     end
 
     context '配列の大きさがインデックスビットフィールドの幅より大きい場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_registers do
             register do
@@ -855,7 +855,7 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'bit width of indirect index is not enough for array size 3: bar.bar_0'
+        }.to raise_source_error 'bit width of indirect index is not enough for array size 3: bar.bar_0'
 
         expect {
           create_registers do
@@ -873,7 +873,7 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_1; bit_assignment lsb: 1; type :rw; initial_value 0 }
             end
           end
-        }.to raise_register_map_error 'bit width of indirect index is not enough for array size 3: bar.bar_1'
+        }.to raise_source_error 'bit width of indirect index is not enough for array size 3: bar.bar_1'
       end
     end
 
@@ -1009,7 +1009,7 @@ RSpec.describe 'register/type/indirect' do
       end
 
       context 'インデックスが他のレジスタと区別できない場合' do
-        it 'RegisterMapErrorを起こす' do
+        it 'SourceErrorを起こす' do
           expect {
             create_registers do
               register do
@@ -1032,7 +1032,7 @@ RSpec.describe 'register/type/indirect' do
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
               end
             end
-          }.to raise_register_map_error 'cannot be distinguished from other registers'
+          }.to raise_source_error 'cannot be distinguished from other registers'
 
           expect {
             create_registers do
@@ -1056,7 +1056,7 @@ RSpec.describe 'register/type/indirect' do
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
               end
             end
-          }.to raise_register_map_error 'cannot be distinguished from other registers'
+          }.to raise_source_error 'cannot be distinguished from other registers'
 
           expect {
             create_registers do
@@ -1082,7 +1082,7 @@ RSpec.describe 'register/type/indirect' do
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
               end
             end
-          }.to raise_register_map_error 'cannot be distinguished from other registers'
+          }.to raise_source_error 'cannot be distinguished from other registers'
 
           expect {
             create_registers do
@@ -1108,7 +1108,7 @@ RSpec.describe 'register/type/indirect' do
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
               end
             end
-          }.to raise_register_map_error 'cannot be distinguished from other registers'
+          }.to raise_source_error 'cannot be distinguished from other registers'
 
           expect {
             create_registers do
@@ -1134,7 +1134,7 @@ RSpec.describe 'register/type/indirect' do
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
               end
             end
-          }.to raise_register_map_error 'cannot be distinguished from other registers'
+          }.to raise_source_error 'cannot be distinguished from other registers'
 
           expect {
             create_registers do
@@ -1160,7 +1160,7 @@ RSpec.describe 'register/type/indirect' do
                 bit_field { name :baz_2; bit_assignment lsb: 8, width: 4; type :rw; initial_value 0 }
               end
             end
-          }.to raise_register_map_error 'cannot be distinguished from other registers'
+          }.to raise_source_error 'cannot be distinguished from other registers'
         end
       end
     end

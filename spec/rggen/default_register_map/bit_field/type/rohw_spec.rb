@@ -57,7 +57,7 @@ RSpec.describe 'bit_field/type/rohw' do
           bit_field { name 'foo'; bit_assignment width: 1; type :rohw }
         end
       end
-    }.to raise_register_map_error
+    }.to raise_source_error
   end
 
   describe '参照ビットフィールド' do

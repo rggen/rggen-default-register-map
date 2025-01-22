@@ -586,99 +586,99 @@ RSpec.describe 'register_file/size' do
 
   describe 'エラーチェック' do
     context '入力値が整数に変換できなかった場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [nil, true, false, 'foo', '0xef_gh', Object.new].each_with_index do |value, i|
           if [1, 2, 5].include?(i)
             expect {
               create_register_file do
                 register_file { offset_address 0x00; size value }
               end
-            }.to raise_register_map_error "cannot convert #{value.inspect} into register file size"
+            }.to raise_source_error "cannot convert #{value.inspect} into register file size"
           end
 
           expect {
             create_register_file do
               register_file { offset_address 0x00; size [value] }
             end
-          }.to raise_register_map_error "cannot convert #{value.inspect} into register file size"
+          }.to raise_source_error "cannot convert #{value.inspect} into register file size"
 
           expect {
             create_register_file do
               register_file { offset_address 0x00; size [value, step: 8] }
             end
-          }.to raise_register_map_error "cannot convert #{value.inspect} into register file size"
+          }.to raise_source_error "cannot convert #{value.inspect} into register file size"
         end
       end
     end
 
     context '入力値に１未満の要素が含まれる場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [0, -1, -2, -7].each do |value|
           expect {
             create_register_file do
               register_file { offset_address 0x00; size value }
             end
-          }.to raise_register_map_error "non positive value(s) are not allowed for register file size: [#{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register file size: [#{value}]"
 
           expect {
             create_register_file do
               register_file { offset_address 0x00; size [value] }
             end
-          }.to raise_register_map_error "non positive value(s) are not allowed for register file size: [#{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register file size: [#{value}]"
 
           expect {
             create_register_file do
               register_file { offset_address 0x00; size [1, value] }
             end
-          }.to raise_register_map_error "non positive value(s) are not allowed for register file size: [1, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register file size: [1, #{value}]"
 
           expect {
             create_register_file do
               register_file { offset_address 0x00; size [value, value] }
             end
-          }.to raise_register_map_error "non positive value(s) are not allowed for register file size: [#{value}, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register file size: [#{value}, #{value}]"
 
           expect {
             create_register_file do
               register_file { offset_address 0x00; size [1, value, 2] }
             end
-          }.to raise_register_map_error "non positive value(s) are not allowed for register file size: [1, #{value}, 2]"
+          }.to raise_source_error "non positive value(s) are not allowed for register file size: [1, #{value}, 2]"
 
           expect {
             create_register_file do
               register_file { offset_address 0x00; size [1, 2, value] }
             end
-          }.to raise_register_map_error "non positive value(s) are not allowed for register file size: [1, 2, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register file size: [1, 2, #{value}]"
 
           expect {
             create_register_file do
               register_file { offset_address 0x00; size [1, value, value] }
             end
-          }.to raise_register_map_error "non positive value(s) are not allowed for register file size: [1, #{value}, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register file size: [1, #{value}, #{value}]"
 
           expect {
             create_register_file do
               register_file { offset_address 0x00; size [value, 1, value] }
             end
-          }.to raise_register_map_error "non positive value(s) are not allowed for register file size: [#{value}, 1, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register file size: [#{value}, 1, #{value}]"
 
           expect {
             create_register_file do
               register_file { offset_address 0x00; size [value, value, 1] }
             end
-          }.to raise_register_map_error "non positive value(s) are not allowed for register file size: [#{value}, #{value}, 1]"
+          }.to raise_source_error "non positive value(s) are not allowed for register file size: [#{value}, #{value}, 1]"
 
           expect {
             create_register_file do
               register_file { offset_address 0x00; size [value, value, value] }
             end
-          }.to raise_register_map_error "non positive value(s) are not allowed for register file size: [#{value}, #{value}, #{value}]"
+          }.to raise_source_error "non positive value(s) are not allowed for register file size: [#{value}, #{value}, #{value}]"
         end
       end
     end
 
     context '指定されたstepが実際のバイト数未満の場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [15, 8, 4, 3, 2, 1, 0, -1].each do |step|
           expect {
             create_register_file do
@@ -688,7 +688,7 @@ RSpec.describe 'register_file/size' do
                 register { offset_address 0x04; type :foo; size [3] }
               end
             end
-          }.to raise_register_map_error "step size is less than actual byte size: #{step}"
+          }.to raise_source_error "step size is less than actual byte size: #{step}"
         end
 
         [7, 4, 3, 2, 1, 0, -1].each do |step|
@@ -706,7 +706,7 @@ RSpec.describe 'register_file/size' do
                 end
               end
             end
-          }.to raise_register_map_error "step size is less than actual byte size: #{step}"
+          }.to raise_source_error "step size is less than actual byte size: #{step}"
         end
 
         [15, 8, 4, 3, 2, 1, 0, -1].each do |step|
@@ -720,13 +720,13 @@ RSpec.describe 'register_file/size' do
                 end
               end
             end
-          }.to raise_register_map_error "step size is less than actual byte size: #{step}"
+          }.to raise_source_error "step size is less than actual byte size: #{step}"
         end
       end
     end
 
     context '指定されたstepがバス幅の倍数になっていない場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         [5, 6, 7, 9, 10, 11].each do |step|
           expect {
             create_register_file do
@@ -735,7 +735,7 @@ RSpec.describe 'register_file/size' do
                 register { offset_address 0x00; type :foo }
               end
             end
-          }.to raise_register_map_error "step size is not multiple of bus width: #{step}"
+          }.to raise_source_error "step size is not multiple of bus width: #{step}"
         end
       end
     end

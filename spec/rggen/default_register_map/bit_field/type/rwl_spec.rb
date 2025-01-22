@@ -72,7 +72,7 @@ RSpec.describe 'bit_field/type/rwl' do
           bit_field { name :foo_0; bit_assignment lsb: 0; type :rwl }
         end
       end
-    }.to raise_register_map_error
+    }.to raise_source_error
   end
 
   context '参照ビットフィールドの指定がある場合' do
@@ -102,7 +102,7 @@ RSpec.describe 'bit_field/type/rwl' do
   end
 
   context '参照ビットフィールドに同一レジスタ内のビットフィールドを指定した場合' do
-    it 'RegisterMapErrorを起こす' do
+    it 'SourceErrorを起こす' do
       expect {
         create_bit_fields do
           register do
@@ -111,7 +111,7 @@ RSpec.describe 'bit_field/type/rwl' do
             bit_field { name :foo_1; bit_assignment lsb: 1, width: 1; type :rw; initial_value 0 }
           end
         end
-      }.to raise_register_map_error 'bit field within the same register is not allowed for reference bit field: foo.foo_1'
+      }.to raise_source_error 'bit field within the same register is not allowed for reference bit field: foo.foo_1'
     end
   end
 end

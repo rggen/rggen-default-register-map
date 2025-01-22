@@ -54,6 +54,6 @@ RSpec.describe 'bit_field/type/wrs' do
           bit_field { name :foo; bit_assignment lsb: 1; type :wrs }
         end
       end
-    }.to raise_register_map_error
+    }.to raise_source_error
   end
 end

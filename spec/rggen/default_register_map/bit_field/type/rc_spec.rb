@@ -64,7 +64,7 @@ RSpec.describe 'bit_field/type/rc' do
           bit_field { name :foo_0; bit_assignment lsb: 0, width: 1; type :rc }
         end
       end
-    }.to raise_register_map_error
+    }.to raise_source_error
   end
 
   context '参照ビットフィールドの指定がある場合' do
@@ -97,7 +97,7 @@ RSpec.describe 'bit_field/type/rc' do
             bit_field { name :bar_1; bit_assignment lsb: 2, width: 1; type :rw; initial_value 0 }
           end
         end
-      }.to raise_register_map_error
+      }.to raise_source_error
     end
   end
 end

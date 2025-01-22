@@ -50,7 +50,7 @@ RSpec.describe 'bit_field/type' do
     end
 
     context '型が指定されなかった場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             register do
@@ -58,7 +58,7 @@ RSpec.describe 'bit_field/type' do
               bit_field { name 'foo'; bit_assignment lsb: 0 }
             end
           end
-        }.to raise_register_map_error 'no bit field type is given'
+        }.to raise_source_error 'no bit field type is given'
 
         expect {
           create_bit_fields do
@@ -67,7 +67,7 @@ RSpec.describe 'bit_field/type' do
               bit_field { name 'foo'; bit_assignment lsb: 0; type nil }
             end
           end
-        }.to raise_register_map_error 'no bit field type is given'
+        }.to raise_source_error 'no bit field type is given'
 
         expect {
           create_bit_fields do
@@ -76,12 +76,12 @@ RSpec.describe 'bit_field/type' do
               bit_field { name 'foo'; bit_assignment lsb: 0; type '' }
             end
           end
-        }.to raise_register_map_error 'no bit field type is given'
+        }.to raise_source_error 'no bit field type is given'
       end
     end
 
     context '有効になっていない型が指定された場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             register do
@@ -89,12 +89,12 @@ RSpec.describe 'bit_field/type' do
               bit_field { name 'qux'; bit_assignment lsb: 0; type :qux }
             end
           end
-        }.to raise_register_map_error 'unknown bit field type: :qux'
+        }.to raise_source_error 'unknown bit field type: :qux'
       end
     end
 
     context '未定義の型が指定された場合' do
-      it 'RegisterMapErrorを起こす' do
+      it 'SourceErrorを起こす' do
         expect {
           create_bit_fields do
             register do
@@ -102,7 +102,7 @@ RSpec.describe 'bit_field/type' do
               bit_field { name 'baz'; bit_assignment lsb: 0; type :buz }
             end
           end
-        }.to raise_register_map_error 'unknown bit field type: :buz'
+        }.to raise_source_error 'unknown bit field type: :buz'
       end
     end
   end
