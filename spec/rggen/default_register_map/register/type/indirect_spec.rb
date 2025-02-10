@@ -134,16 +134,16 @@ RSpec.describe 'register/type/indirect' do
         end
         register do
           name :baz
-          offset_address 0x00
+          offset_address 0x04
           size [2, 3]
-          type [:indirect, 'fizz.fizz_0', 'fizz.fizz_1', ['fizz.fizz_2', 2]]
+          type [:indirect, 'fizz.fizz_0', ['fizz.fizz_1', 1], 'fizz.fizz_2', { 'fizz.fizz_3' => 3 }]
           bit_field { name :baz_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
         end
         register do
           name :qux
-          offset_address 0x04
+          offset_address 0x08
           size [2]
-          type [:indirect, 'buzz.buzz_0.buzz_0', ['buzz.buzz_1.buzz_1.buzz_1', 0], ['fizz_buzz', 1]]
+          type [:indirect, 'buzz.buzz_0.buzz_0', 'buzz.buzz_1.buzz_1.buzz_1': 0, 'fizz_buzz' => 1]
           bit_field { name :qux_0; bit_assignment lsb: 0; type :rw; initial_value 0 }
         end
         register do
@@ -152,6 +152,7 @@ RSpec.describe 'register/type/indirect' do
           bit_field { name :fizz_0; bit_assignment lsb: 0, width: 2; type :rw; initial_value 0 }
           bit_field { name :fizz_1; bit_assignment lsb: 2, width: 2; type :rw; initial_value 0 }
           bit_field { name :fizz_2; bit_assignment lsb: 4, width: 2; type :rw; initial_value 0 }
+          bit_field { name :fizz_3; bit_assignment lsb: 6, width: 2; type :rw; initial_value 0 }
         end
         register_file do
           name :buzz
@@ -187,8 +188,9 @@ RSpec.describe 'register/type/indirect' do
       ])
       expect(registers[2].index_entries.map(&:to_h)).to match([
         { name: 'fizz.fizz_0', value: nil },
-        { name: 'fizz.fizz_1', value: nil },
-        { name: 'fizz.fizz_2', value: 2 }
+        { name: 'fizz.fizz_2', value: nil },
+        { name: 'fizz.fizz_1', value: 1 },
+        { name: 'fizz.fizz_3', value: 3 }
       ])
       expect(registers[3].index_entries.map(&:to_h)).to match([
         { name: 'buzz.buzz_0.buzz_0', value: nil },
@@ -334,7 +336,7 @@ RSpec.describe 'register/type/indirect' do
               type :indirect
             end
           end
-        }.to raise_source_error 'no indirect indices are given'
+        }.to raise_source_error 'no indirect indexes are given'
 
         expect {
           create_registers do
@@ -344,7 +346,7 @@ RSpec.describe 'register/type/indirect' do
               type [:indirect]
             end
           end
-        }.to raise_source_error 'no indirect indices are given'
+        }.to raise_source_error 'no indirect indexes are given'
 
         expect {
           create_registers do
@@ -352,6 +354,16 @@ RSpec.describe 'register/type/indirect' do
               name :foo
               offset_address 0x0
               type [:indirect, []]
+            end
+          end
+        }.to raise_source_error 'no indirect index is given'
+
+        expect {
+          create_registers do
+            register do
+              name :foo
+              offset_address 0x0
+              type [:indirect, {}]
             end
           end
         }.to raise_source_error 'no indirect index is given'
@@ -792,7 +804,7 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_1; bit_assignment lsb: 1; type :rw; initial_value 0 }
             end
           end
-        }.to raise_source_error 'array indices are given to non-array register'
+        }.to raise_source_error 'array indexes are given to non-array register'
       end
     end
 
@@ -815,7 +827,7 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_2; bit_assignment lsb: 2; type :rw; initial_value 0 }
             end
           end
-        }.to raise_source_error 'too many array indices are given'
+        }.to raise_source_error 'too many array indexes are given'
 
         expect {
           create_registers do
@@ -834,7 +846,7 @@ RSpec.describe 'register/type/indirect' do
               bit_field { name :bar_2; bit_assignment lsb: 2; type :rw; initial_value 0 }
             end
           end
-        }.to raise_source_error 'few array indices are given'
+        }.to raise_source_error 'few array indexes are given'
       end
     end
 
