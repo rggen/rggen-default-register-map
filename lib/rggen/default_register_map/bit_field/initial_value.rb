@@ -3,7 +3,7 @@
 RgGen.define_simple_feature(:bit_field, :initial_value) do
   register_map do
     property :initial_value
-    property :initial_values
+    property :initial_values, forward_to: :initial_values_get
     property :initial_value?, forward_to: :initial_value_set?
     property :fixed_initial_value?, forward_to: :fixed_format?
     property :initial_value_array?, forward_to: :array_format?
@@ -12,15 +12,19 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
                      array: /#{integer}(?:[,\n]#{integer})+/ }]
 
     build do |value|
-      @input_format =
-        if hash?(value) || match_index == :parameterized
-          :parameterized
-        elsif array?(value) || match_index == :array
-          :array
-        else
-          :single
-        end
-      @initial_value, @initial_values = parse_initial_value(value)
+      if array?(value)
+        @input_format = :array
+        @initial_values = parse_arrayed_initial_value(value)
+      elsif match_index == :array
+        @input_format = :array
+        @raw_initial_values = parse_string_arrayed_initial_value(value)
+      elsif hash?(value) || match_index == :parameterized
+        @input_format = :parameterized
+        @initial_value = parse_parameterized_initial_value(value)
+      else
+        @input_format = :single
+        @initial_value = parse_value(value)
+      end
     end
 
     define_helpers do
@@ -40,7 +44,7 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
 
     verify(:component) do
       error_condition do
-        @input_format == :array && !bit_field.sequential?
+        array_format? && !array_bit_field?
       end
       message do
         'arrayed initial value is not allowed for non sequential bit field'
@@ -48,23 +52,13 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
     end
 
     verify(:component) do
-      error_condition do
-        @input_format == :array && initial_values.size > bit_field.sequence_size
-      end
-      message { 'too many initial values are given' }
-    end
-
-    verify(:component) do
-      error_condition do
-        @input_format == :array && initial_values.size < bit_field.sequence_size
-      end
-      message { 'few initial values are given' }
+      error_condition { !match_arrayed_initial_value_size? }
+      message { 'size of bit fields and size of initial values are not matched' }
     end
 
     verify(:component) do
       check_error do
-        Array(initial_value || initial_values)
-          .each(&method(:verify_initial_value))
+        verify_initial_value(initial_value || initial_values)
       end
     end
 
@@ -103,32 +97,17 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
 
     private
 
-    def initial_value_format
-      @initial_value_format ||=
-        if @input_format == :parameterized
-          bit_field.sequential? && :array || :single
-        else
-          @input_format
-        end
-    end
-
     def array_format?
-      initial_value_format == :array
+      @input_format == :array ||
+        @input_format == :parameterized && array_bit_field?
     end
 
     def fixed_format?
       [:array, :single].include?(@input_format)
     end
 
-    def parse_initial_value(input_value)
-      case @input_format
-      when :parameterized
-        [parse_parameterized_initial_value(input_value), nil]
-      when :array
-        [nil, parse_arrayed_initial_value(input_value)]
-      else
-        [parse_value(input_value), nil]
-      end
+    def array_bit_field?
+      bit_field.sequential? || register.array?(hierarchical: true)
     end
 
     def parse_parameterized_initial_value(input_value)
@@ -143,13 +122,19 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
     end
 
     def parse_arrayed_initial_value(input_value)
-      values =
-        if pattern_matched?
-          input_value.split(/[,\n]/)
+      input_value.map do |value|
+        if array?(value)
+          parse_arrayed_initial_value(value)
         else
-          input_value
+          parse_value(value)
         end
-      values.map(&method(:parse_value))
+      end
+    end
+
+    def parse_string_arrayed_initial_value(input_value)
+      input_value
+        .split(/[,\n]/)
+        .map(&method(:parse_value))
     end
 
     def parse_value(value)
@@ -157,8 +142,12 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
     end
 
     def verify_initial_value(value)
-      helper.initial_value_verifiers.each do |verifier|
-        verifier.verify(self, value)
+      if array?(value)
+        value.each { verify_initial_value(_1) }
+      elsif value
+        helper.initial_value_verifiers.each do |verifier|
+          verifier.verify(self, value)
+        end
       end
     end
 
@@ -172,6 +161,28 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
       when Proc then instance_exec(&settings[:require])
       else settings[:require]
       end
+    end
+
+    def match_arrayed_initial_value_size?
+      return true unless array_format? && fixed_format?
+
+      bit_field_size = [
+        *register.array_size(hierarchical: true), *bit_field.sequence_size
+      ]
+      if @raw_initial_values
+        @raw_initial_values.size == bit_field_size.inject(:*)
+      else
+        match_array_size?(@initial_values, bit_field_size)
+      end
+    end
+
+    def match_array_size?(initial_values, bit_field_size)
+      return false unless array?(initial_values) && !bit_field_size.empty?
+      return false if initial_values.size != bit_field_size.first
+
+      bit_field_size.size == 1 ||
+        initial_values
+          .all? { |sub_values| match_array_size?(sub_values, bit_field_size[1..]) }
     end
 
     def min_initial_value
@@ -188,12 +199,36 @@ RgGen.define_simple_feature(:bit_field, :initial_value) do
     end
 
     def initial_value_set?
-      [@initial_value, @initial_values].any?
+      [@initial_value, @initial_values, @raw_initial_values].any?
+    end
+
+    def initial_values_get
+      if @raw_initial_values
+        @initial_values ||=
+          build_initial_values(
+            @raw_initial_values, register.array_size(hierarchical: true)
+          )
+      end
+
+      @initial_values
+    end
+
+    def build_initial_values(raw_values, array_size)
+      return raw_values if array_size.nil? || array_size.empty?
+
+      div_size = raw_values.size / array_size.first
+      raw_values
+        .group_by.with_index { |_, i| i / div_size }
+        .map { |_, sub_values| build_initial_values(sub_values, array_size[1..]) }
     end
 
     def format_value(value)
-      print_width = (bit_field.width + 3) / 4
-      format('0x%0*x', print_width, value)
+      if array?(value)
+        value.map(&method(:format_value))
+      else
+        print_width = (bit_field.width + 3) / 4
+        format('0x%0*x', print_width, value)
+      end
     end
   end
 end
