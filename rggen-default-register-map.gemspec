@@ -28,6 +28,6 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = Gem::Requirement.new('>= 3.1')
 
-  spec.add_runtime_dependency 'erubi', '>= 1.7'
-  spec.add_runtime_dependency 'facets', '>= 3.0'
+  spec.add_dependency 'erubi', '>= 1.7'
+  spec.add_dependency 'facets', '>= 3.0'
 end

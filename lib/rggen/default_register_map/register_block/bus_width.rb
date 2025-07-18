@@ -23,7 +23,7 @@ RgGen.define_simple_feature(:register_block, :bus_width) do
       private
 
       def power_of_2?(value)
-        value.positive? && (value & value.pred).zero?
+        value.positive? && value.nobits?(value.pred)
       end
     end
   end
