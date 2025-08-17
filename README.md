@@ -2,8 +2,7 @@
 [![CI](https://github.com/rggen/rggen-default-register-map/workflows/CI/badge.svg)](https://github.com/rggen/rggen-default-register-map/actions?query=workflow%3ACI)
 [![Maintainability](https://qlty.sh/badges/4fe50039-28a8-4064-b224-2766eaf9e01f/maintainability.svg)](https://qlty.sh/gh/rggen/projects/rggen-default-register-map)
 [![codecov](https://codecov.io/gh/rggen/rggen-default-register-map/branch/master/graph/badge.svg)](https://codecov.io/gh/rggen/rggen-default-register-map)
-[![Gitter](https://badges.gitter.im/rggen/rggen.svg)](https://gitter.im/rggen/rggen?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-
+[![Discord](https://img.shields.io/discord/1406572699467124806?style=flat&logo=discord)](https://discord.com/invite/KWya83ZZxr)
 
 # RgGen::DefaultRegisterMap
 
@@ -32,7 +31,7 @@ Feedbacks, bug reports, questions and etc. are wellcome! You can post them by us
 
 * [GitHub Issue Tracker](https://github.com/rggen/rggen/issues)
 * [GitHub Discussions](https://github.com/rggen/rggen/discussions)
-* [Chat Room](https://gitter.im/rggen/rggen)
+* [Discord](https://discord.com/invite/KWya83ZZxr)
 * [Mailing List](https://groups.google.com/d/forum/rggen)
 * [Mail](mailto:rggen@googlegroups.com)
 
