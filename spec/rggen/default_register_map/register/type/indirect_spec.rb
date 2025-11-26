@@ -320,8 +320,8 @@ RSpec.describe 'register/type/indirect' do
       end
 
       expect(registers[0].printables[:index_bit_fields]).to match_array(['fizz.fizz_2: 0'])
-      expect(registers[1].printables[:index_bit_fields]).to match_array(['fizz.fizz_1', 'fizz.fizz_2: 1'])
-      expect(registers[2].printables[:index_bit_fields]).to match_array(['fizz.fizz_0', 'fizz.fizz_1', 'fizz.fizz_2: 2'])
+      expect(registers[1].printables[:index_bit_fields]).to match_array(['fizz.fizz_1: [0-1]', 'fizz.fizz_2: 1'])
+      expect(registers[2].printables[:index_bit_fields]).to match_array(['fizz.fizz_0: [0-1]', 'fizz.fizz_1: [0-2]', 'fizz.fizz_2: 2'])
     end
   end
 

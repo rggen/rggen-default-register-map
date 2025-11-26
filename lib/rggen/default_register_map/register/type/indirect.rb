@@ -29,10 +29,6 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
       def find_index_field(bit_fields)
         bit_fields.find { |bit_field| bit_field.full_name == name }
       end
-
-      def to_s
-        [name, value].compact.join(': ')
-      end
     end
 
     property :index_entries
@@ -170,7 +166,14 @@ RgGen.define_list_item_feature(:register, :type, :indirect) do
     end
 
     printable(:index_bit_fields) do
-      index_entries.map(&:to_s)
+      index_entries.map do |index|
+        if index.array_index?
+          value = array_index_value(index)
+          "#{index.name}: [0-#{value - 1}]"
+        else
+          "#{index.name}: #{index.value}"
+        end
+      end
     end
 
     private
