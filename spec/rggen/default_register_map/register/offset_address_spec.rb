@@ -265,7 +265,7 @@ RSpec.describe 'register/offset_address' do
     expect(registers[4].printables[:offset_address]).to match(['0x40', '0x48', '0x50', '0x58'])
     expect(registers[5].printables[:offset_address]).to match(['0x60'])
     expect(registers[6].printables[:offset_address]).to match(['0x90', '0x94', '0xd0', '0xd4'])
-    expect(registers[7].printables[:offset_address]).to match(['0x98', '0x98', '0xd8', '0xd8'])
+    expect(registers[7].printables[:offset_address]).to match(['0x98', '0xd8'])
     expect(registers[8].printables[:offset_address]).to match(['0xa0', '0xa8', '0xe0', '0xe8'])
   end
 

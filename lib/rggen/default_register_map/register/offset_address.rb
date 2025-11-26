@@ -3,7 +3,7 @@
 RgGen.define_simple_feature(:register, :offset_address) do
   register_map do
     property :offset_address, initial: -> { default_offset_address }
-    property :expanded_offset_addresses, forward_to: :expand_addresses
+    property :expanded_offset_addresses, body: -> { expand_addresses }
     property :address_range, initial: -> { start_address..end_address }
     property :overlap?, body: ->(other) { overlap_address_range?(other, false) }
 
@@ -45,12 +45,12 @@ RgGen.define_simple_feature(:register, :offset_address) do
       end
       message do
         'offset address range overlaps with other offset address range: ' \
-        "0x#{start_address(true).to_s(16)}-0x#{end_address(true).to_s(16)}"
+        "0x#{start_address(full: true).to_s(16)}-0x#{end_address(full: true).to_s(16)}"
       end
     end
 
     printable(:offset_address) do
-      expand_addresses.map(&method(:format_address))
+      expand_addresses(printable_address: true).map(&method(:format_address))
     end
 
     private
@@ -60,22 +60,29 @@ RgGen.define_simple_feature(:register, :offset_address) do
         (previous_component.offset_address + previous_component.total_byte_size)
     end
 
-    def start_address(full = false)
+    def start_address(full: false)
       full && expand_addresses.first || offset_address
     end
 
-    def end_address(full = false)
-      start_address(full) + register.total_byte_size - 1
+    def end_address(full: false)
+      start_address(full:) + register.total_byte_size - 1
     end
 
-    def expand_addresses
+    def expand_addresses(printable_address: false)
       (register_file&.expanded_offset_addresses || [0])
-        .product(expand_local_addresses).map(&:sum)
+        .product(expand_local_addresses(printable_address)).map(&:sum)
     end
 
-    def expand_local_addresses
-      width = shared_address? && 0 || register.entry_byte_size
-      Array.new(register.count) { |i| offset_address + width * i }
+    def expand_local_addresses(printable_address)
+      count, width =
+        if !shared_address?
+          [register.count, register.entry_byte_size]
+        elsif printable_address
+          [1, 0]
+        else
+          [register.count, 0]
+        end
+      Array.new(count) { |i| offset_address + width * i }
     end
 
     def previous_component
