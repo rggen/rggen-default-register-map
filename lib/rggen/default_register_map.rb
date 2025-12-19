@@ -27,6 +27,7 @@ RgGen.setup_plugin :'rggen-default-register-map' do |plugin|
     'default_register_map/register/type',
     'default_register_map/register/type/external',
     'default_register_map/register/type/indirect',
+    'default_register_map/register/type/maskable',
     'default_register_map/register/type/reserved',
     'default_register_map/register/type/rw',
     'default_register_map/register/comment',
