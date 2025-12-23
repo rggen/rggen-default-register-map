@@ -34,6 +34,7 @@ RgGen.setup_plugin :'rggen-default-register-map' do |plugin|
     'default_register_map/bit_field/name',
     'default_register_map/bit_field/bit_assignment',
     'default_register_map/bit_field/type',
+    'default_register_map/bit_field/type/counter',
     'default_register_map/bit_field/type/custom',
     'default_register_map/bit_field/type/rc',
     'default_register_map/bit_field/type/reserved',
