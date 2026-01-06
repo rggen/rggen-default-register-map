@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
 require 'erubi'
-if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('3.3.0')
-  require 'facets/range/overlap'
-end
+require 'facets/range/overlap' if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('3.3.0')
 
 require_relative 'default_register_map/version'
 require_relative 'default_register_map/comment'
