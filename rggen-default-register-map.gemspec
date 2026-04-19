@@ -29,5 +29,4 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = Gem::Requirement.new('>= 3.2')
 
   spec.add_dependency 'erubi', '>= 1.7'
-  spec.add_dependency 'facets', '>= 3.0'
 end
