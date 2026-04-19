@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 require 'erubi'
-require 'facets/range/overlap' if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('3.3.0')
 
 require_relative 'default_register_map/version'
 require_relative 'default_register_map/comment'
+require_relative 'default_register_map/core_extensions/range'
 
 RgGen.setup_plugin :'rggen-default-register-map' do |plugin|
   plugin.version RgGen::DefaultRegisterMap::VERSION
